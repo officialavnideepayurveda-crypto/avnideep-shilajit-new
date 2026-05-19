@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Secure Checkout | Avnideep Ayurveda</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+    * { -webkit-tap-highlight-color: transparent; }
+    body { font-family: 'Inter', sans-serif; background: #0b1329; overscroll-behavior: none; }
+    .safe-scroll { -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+  </style>
+</head>
+<body class="min-h-dvh flex items-center justify-center p-2 sm:p-4 bg-slate-950 selection:bg-blue-500 selection:text-white">
+
+  <!-- Trust Banner -->
+  <div class="fixed top-0 left-0 right-0 z-30 bg-emerald-600/90 backdrop-blur text-white text-[10px] sm:text-xs font-semibold py-1.5 px-3 flex items-center justify-center gap-2 tracking-wide shadow-lg">
+    <svg class="w-3.5 h-3.5 shrink-0 text-emerald-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+    <span>256-Bit Bank Level Encryption &bull; Secure UPI Checkout</span>
+  </div>
+  <div class="max-w-4xl w-full bg-white text-slate-900 rounded-3xl shadow-2xl overflow-hidden border border-slate-200 flex flex-col md:flex-row min-h-[520px] md:min-h-[600px] max-h-[90dvh] md:max-h-[95vh] my-8 md:my-auto mt-12 md:mt-auto">
+    
+    <!-- LEFT: Secure UPI sidebar -->
+    <div class="md:w-5/12 bg-slate-900 text-white p-4 sm:p-6 md:p-8 flex-shrink-0 md:flex md:flex-col md:justify-between border-b md:border-b-0 md:border-r border-slate-800 select-none">
+      <div class="space-y-4 sm:space-y-5 md:space-y-6">
+        
+        <!-- Brand + Amount Row for Mobile -->
+        <div class="flex items-center gap-3.5">
+          <div class="w-10 h-10 md:w-11 md:h-11 rounded-xl text-white font-black flex items-center justify-center shadow-lg shadow-blue-500/30 bg-gradient-to-br from-[#3399cc] to-blue-700 shrink-0">
+            A
+          </div>
+          <div class="overflow-hidden">
+            <h2 class="font-extrabold text-base md:text-lg leading-tight tracking-tight text-white truncate">Avnideep Ayurveda</h2>
+            <p class="text-[10px] md:text-xs text-blue-300 font-mono mt-0.5 truncate">Ref: #AVN-681164</p>
+          </div>
+        </div>
+
+        <!-- Amount Box (fixed visible on mobile) -->
+        <div class="bg-slate-800/90 rounded-xl md:rounded-2xl px-4 py-3 md:p-4.5 border border-slate-700 shadow-inner space-y-0.5 md:space-y-1">
+          <span class="text-[10px] md:text-xs font-semibold text-slate-400 uppercase tracking-wider">Amount Payable</span>
+          <div class="flex items-baseline gap-1.5 flex-wrap">
+            <span class="text-2xl md:text-3xl font-black font-mono tracking-tight text-white">₹999</span>
+            <span class="text-[10px] md:text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full flex items-center gap-0.5">
+              <svg class="w-2.5 h-2.5 md:w-3 md:h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg> Verified
+            </span>
+          </div>
+          <p class="text-[11px] md:text-xs text-slate-300 line-clamp-1 pt-1 border-t border-slate-700 font-medium mt-1">Ayurvedic Wellness Vitality Pack</p>
+        </div>
+
+        <div class="bg-slate-900/90 border border-slate-700 rounded-3xl p-4 md:p-5 mt-4 text-slate-200 shadow-inner">
+          <p class="text-[11px] md:text-xs text-emerald-300 uppercase tracking-wider font-bold mb-3">Secure Prepaid Checkout</p>
+          <ul class="space-y-2 text-[11px] md:text-[12px] leading-5">
+            <li class="flex items-start gap-2"><span class="mt-0.5 text-emerald-400">✓</span> Real-time UPI verification with your UTR number.</li>
+            <li class="flex items-start gap-2"><span class="mt-0.5 text-emerald-400">✓</span> No hidden fees — direct UPI transfer to merchant account.</li>
+            <li class="flex items-start gap-2"><span class="mt-0.5 text-emerald-400">✓</span> Trusted by customers with secure order confirmation.</li>
+            <li class="flex items-start gap-2"><span class="mt-0.5 text-emerald-400">✓</span> Pay with PhonePe, GPay, Paytm or BHIM.</li>
+          </ul>
+        </div>
+
+        <!-- Payment Options (compact for mobile) -->
+        <div class="space-y-1.5 md:space-y-2 pt-1 md:pt-2">
+          <p class="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-wider pl-1">Payment Options</p>
+          
+          <button onclick="document.querySelectorAll('.pay-method').forEach(el => el.classList.remove('active-method')); this.classList.add('active-method')" class="pay-method active-method w-full p-2.5 md:p-3.5 rounded-xl flex items-center justify-between text-[11px] md:text-xs font-extrabold bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/25 ring-2 ring-blue-400/30 transition-all">
+            <span class="flex items-center gap-2">&bull; UPI QR & Mobile Apps</span>
+            <span class="bg-white/20 text-white text-[9px] md:text-[10px] px-1.5 py-0.5 rounded font-black tracking-wider uppercase">INSTANT</span>
+          </button>
+
+          <div onclick="alert('To keep prices lowest with 0% gateway fees, cards are disabled.')" class="pay-method w-full p-2.5 md:p-3.5 rounded-xl flex items-center justify-between text-[11px] md:text-xs font-semibold bg-slate-800/30 text-slate-500 border border-slate-800 cursor-not-allowed opacity-60">
+            <span class="flex items-center gap-2">&bull; Credit / Debit Cards</span>
+            <span class="bg-rose-950 text-rose-400 border border-rose-500/20 text-[8px] md:text-[9px] px-1.5 py-0.5 rounded font-bold">+2.5% Fee</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-4 md:pt-6 border-t border-slate-800 mt-4 md:mt-0 flex items-center justify-between text-[10px] md:text-xs text-slate-400">
+        <span class="flex items-center gap-1"><svg class="w-3 h-3 md:w-3.5 md:h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg> PCI-DSS</span>
+        <span class="font-mono text-amber-400 font-bold flex items-center gap-1" id="timer">15:00</span>
+      </div>
+    </div>
+
+    <!-- RIGHT: QR + UPI Apps (scrollable area for mobile) -->
+    <div class="md:w-7/12 p-4 sm:p-6 md:p-8 md:px-10 flex flex-col justify-between bg-slate-50 relative overflow-y-auto safe-scroll max-h-[50dvh] md:max-h-[95vh]">
+      
+      <!-- Payment Steps (idle/modal/verifying/success) -->
+      <div id="step-idle" class="space-y-4 sm:space-y-5 md:space-y-6 my-auto py-1 md:py-2">
+        
+        <div class="text-center space-y-0.5 md:space-y-1">
+          <h3 class="text-lg sm:text-xl md:text-2xl font-black text-slate-900 tracking-tight">Scan & Pay via Any UPI App</h3>
+          <p class="text-[11px] md:text-xs text-slate-500 font-medium">Verified by Google Pay &amp; PhonePe P2M Network</p>
+        </div>
+
+        <!-- QR Code (responsive size) -->
+        <div class="bg-white p-3 sm:p-4 md:p-4.5 rounded-2xl md:rounded-3xl shadow-xl md:shadow-2xl border-2 md:border-4 border-slate-900 mx-auto flex justify-center items-center w-44 h-44 sm:w-52 sm:h-52 md:w-56 md:h-56 transition hover:scale-105 duration-300">
+          <div id="qrcode"></div>
+        </div>
+
+        <!-- UPI ID Copy Box -->
+        <div class="bg-slate-100/90 p-2 md:p-2.5 rounded-xl md:rounded-2xl flex items-center justify-between text-[11px] md:text-xs max-w-xs sm:max-w-sm mx-auto border border-slate-300 shadow-sm w-full">
+          <div class="text-left overflow-hidden pl-1 md:pl-2 min-w-0 flex-1">
+            <span class="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-slate-500 block">Merchant UPI ID</span>
+            <span class="font-mono font-bold text-slate-800 text-xs md:text-sm truncate block select-all" id="upi-id">8882195147@okbizaxis</span>
+          </div>
+          <button onclick="copyUpi()" id="copy-btn" class="bg-slate-900 hover:bg-slate-800 text-white px-3 md:px-4 py-1.5 md:py-2 rounded-xl font-bold transition shadow shrink-0 text-[11px] md:text-xs">Copy ID</button>
+        </div>
+
+        <!-- Mobile Apps Grid -->
+        <div class="space-y-2 md:space-y-3 pt-2 md:pt-3 pb-0 md:pb-2 max-w-sm mx-auto border-t border-slate-200 w-full">
+          <p class="text-xs md:text-sm font-black text-slate-700 uppercase tracking-wider text-center flex items-center justify-center gap-1.5">
+            <svg class="w-4 h-4 text-[#3399cc]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+            Open Mobile App Directly
+          </p>
+          <div class="grid grid-cols-2 gap-2 sm:gap-3">
+            <button onclick="openApp('phonepe')" class="flex items-center gap-1.5 font-black tracking-tight text-white bg-[#5f259f] hover:bg-[#4d1d82] active:scale-[0.97] py-2.5 md:py-3 px-2.5 md:px-4 rounded-xl shadow-lg shadow-purple-900/20 border border-purple-400/30 justify-center text-xs md:text-sm transition-all">
+              <div class="w-5 h-5 md:w-6 md:h-6 rounded-full bg-white text-[#5f259f] flex items-center justify-center font-black text-[11px] md:text-sm shrink-0 shadow-inner">पे</div>
+              <span>PhonePe</span>
+            </button>
+            <button onclick="openApp('gpay')" class="flex items-center gap-1 font-black text-slate-900 bg-white hover:bg-slate-100 active:scale-[0.97] py-2.5 md:py-3 px-2.5 md:px-4 rounded-xl shadow-lg shadow-black/10 border border-slate-300 justify-center transition-all">
+              <span class="font-extrabold text-sm md:text-base tracking-tighter"><span class="text-[#4285F4]">G</span><span class="text-[#EA4335]">P</span><span class="text-[#FBBC05]">a</span><span class="text-[#34A853]">y</span></span>
+            </button>
+            <button onclick="openApp('paytm')" class="flex items-center gap-0.5 font-black text-white bg-[#002970] hover:bg-[#001f54] active:scale-[0.97] py-2.5 md:py-3 px-2.5 md:px-4 rounded-xl shadow-lg shadow-blue-900/20 border border-blue-400/30 justify-center transition-all">
+              <span class="text-[#00b9f5] font-extrabold text-sm md:text-base">Pay</span><span class="text-white font-extrabold text-sm md:text-base">tm</span>
+            </button>
+            <button onclick="openApp('bhim')" class="flex items-center font-black text-white bg-gradient-to-r from-[#FF7A00] to-[#138A36] hover:opacity-90 active:scale-[0.97] py-2.5 md:py-3 px-2.5 md:px-4 rounded-xl shadow-lg justify-center text-[11px] md:text-sm tracking-widest uppercase transition-all">
+              BHIM UPI
+            </button>
+          </div>
+        </div>
+
+        <!-- CTA Button -->
+        <div class="pt-1 md:pt-2 space-y-3">
+          <button onclick="openModal()" type="button" class="w-full bg-[#3399cc] hover:bg-[#2580ac] active:scale-[0.97] text-white font-black py-3.5 md:py-4 px-5 md:px-6 rounded-xl text-sm md:text-base sm:text-lg transition-all shadow-xl md:shadow-2xl shadow-blue-500/25 flex items-center justify-center gap-2 tracking-wide border-2 border-blue-400/30">
+            <span>I Have Completed Payment</span> 
+            <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
+          </button>
+          <p class="text-center text-[10px] md:text-[11px] text-slate-400 mt-1.5 md:mt-2 font-medium">Click above after paying to submit your reference number</p>
+          <div class="text-center">
+            <a href="index.html" class="inline-flex items-center justify-center px-4 py-2 rounded-full border border-slate-300 text-slate-700 bg-white/90 hover:bg-white transition font-semibold text-[11px] md:text-xs">
+              Back to Home
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- UTR MODAL -->
+      <div id="step-modal" class="hidden space-y-4 md:space-y-6 my-auto bg-white p-4 md:p-6 rounded-2xl border border-slate-200 shadow-2xl">
+        ...UTR MODAL CONTENT...
+        <div class="text-center space-y-1 md:space-y-2">
+          <div class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-blue-100 text-[#3399cc] flex items-center justify-center mx-auto font-bold text-lg md:text-xl">🔒</div>
+          <h3 class="text-lg md:text-xl font-bold text-slate-900">Payment Reference Verification</h3>
+          <p class="text-[11px] md:text-xs text-slate-500 leading-relaxed px-2">Submit your 12-digit UTR/Ref number and name so we can verify instantly</p>
+        </div>
+        <div class="space-y-3 md:space-y-4 text-left">
+          <input id="utr-input" type="text" placeholder="e.g. 410291823901" maxlength="16" class="w-full bg-slate-100 border border-slate-300 rounded-xl px-3 md:px-4 py-3 md:py-3.5 text-slate-900 font-mono text-center text-base md:text-lg tracking-widest focus:outline-none focus:ring-2 focus:ring-[#3399cc] font-extrabold shadow-inner" />
+          <input id="cust-input" type="text" placeholder="Phone/Name" class="w-full bg-slate-100 border border-slate-300 rounded-xl px-3 md:px-4 py-3 md:py-3.5 text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-[#3399cc] text-sm" />
+          <div id="utr-error" class="hidden text-xs text-rose-600 bg-rose-50 p-2.5 rounded-xl border border-rose-200 font-semibold"></div>
+        </div>
+        <div class="flex items-center gap-3 pt-1 md:pt-2">
+          <button onclick="closeModal()" class="w-1/3 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-3 md:py-3.5 px-3 md:px-4 rounded-xl text-[11px] md:text-xs transition">Back</button>
+          <button onclick="submitUtr()" class="w-2/3 bg-gradient-to-r from-emerald-500 to-teal-600 hover:opacity-90 text-slate-950 font-black py-3 md:py-3.5 px-3 md:px-4 rounded-xl text-xs md:text-sm transition shadow-lg shadow-emerald-500/20 uppercase tracking-wider">Confirm Payment</button>
+        </div>
+      </div>
+
+      <!-- VERIFYING -->
+      <div id="step-verifying" class="hidden text-center space-y-4 md:space-y-6 my-auto py-8 md:py-12">
+        <div class="inline-block w-12 h-12 md:w-16 md:h-16 border-4 border-[#3399cc] border-t-transparent rounded-full animate-spin"></div>
+        <div class="space-y-1 md:space-y-2 max-w-sm mx-auto">
+          <h3 class="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">Verifying with Bank Network</h3>
+          <p class="text-xs font-mono text-[#3399cc] font-semibold bg-blue-50 px-2 md:px-3 py-1 rounded-full inline-block border border-blue-200 text-[11px] md:text-xs" id="verify-utr-text"></p>
+          <p class="text-[11px] md:text-xs text-slate-500 pt-1 md:pt-2">Do not close this window. Secure UPI verification in progress.</p>
+        </div>
+      </div>
+
+      <!-- SUCCESS -->
+      <div id="step-success" class="hidden text-center space-y-4 md:space-y-6 my-auto py-6 md:py-8">
+        <div class="w-16 h-16 md:w-20 md:h-20 bg-emerald-500 text-white rounded-full flex items-center justify-center font-bold text-3xl md:text-4xl mx-auto shadow-2xl shadow-emerald-500/40 animate-bounce ring-6 md:ring-8 ring-emerald-100">✓</div>
+        <div class="space-y-2 md:space-y-3">
+          <span class="text-[10px] md:text-[11px] font-mono font-bold text-emerald-800 bg-emerald-100 px-2 md:px-3 py-1 rounded-full uppercase tracking-wider border border-emerald-300">Payment Confirmed</span>
+          <h3 class="text-2xl md:text-3xl font-black text-slate-900">Thank You! Your Order is Booked</h3>
+          <p class="text-xs md:text-sm text-slate-600 font-medium">हमारी टीम जल्द ही आपके UTR की पुष्टि करके शिपिंग की तैयारी करती है।</p>
+          <p id="success-details" class="text-[11px] md:text-sm text-slate-500 max-w-xl mx-auto">Order ID <span class="font-bold text-slate-900">#AVN-681164</span> • ₹<span id="success-amount">999</span></p>
+        </div>
+        <div class="grid gap-3 sm:grid-cols-2 pt-2">
+          <a href="index.html" class="inline-flex items-center justify-center px-4 py-3 rounded-2xl bg-slate-900 text-white font-black text-sm hover:bg-slate-800 transition">Back to Home</a>
+          <a href="tel:+917060101043" class="inline-flex items-center justify-center px-4 py-3 rounded-2xl bg-emerald-500 text-slate-900 font-black text-sm hover:bg-emerald-400 transition">Need Help? Call Now</a>
+        </div>
+        <p id="success-note" class="text-[10px] md:text-[11px] text-slate-500 leading-relaxed">Payment verified. आपके order को prepaid के रूप में सेव किया जा रहा है।</p>
+      </div>
+
+      <!-- UPI Checkout Footer -->
+      <div class="pt-3 md:pt-4 border-t border-slate-200 flex items-center justify-between text-[10px] md:text-[11px] text-slate-400 font-semibold">
+        <span>Avnideep Secure Payment</span>
+        <span class="text-slate-700 flex items-center gap-1"><span class="hidden sm:inline">Verified by</span> <span class="font-black text-slate-900">UPI Network</span></span>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    var params = new URLSearchParams(window.location.search);
+    const upiId = params.get('upi') || "8882195147@okbizaxis";
+    const merchant = encodeURIComponent("Avnideep Ayurveda");
+    const amount = Number(params.get('amount') || "999");
+    const orderId = params.get('order_id') || "AVN-681164";
+    const API_ENDPOINT = "./api/order";
+    const ORDER_STORAGE_KEY = "avn_prepaid_order";
+    const upiString = `upi://pay?pa=${upiId}&pn=${merchant}&tr=${orderId}&am=${amount}&cu=INR`;
+
+    window.addEventListener('DOMContentLoaded', () => {
+      var upiElement = document.getElementById('upi-id');
+      if(upiElement) upiElement.textContent = upiId;
+      var successAmount = document.getElementById('success-amount');
+      if(successAmount) successAmount.textContent = amount;
+      var successDetails = document.getElementById('success-details');
+      if(successDetails) successDetails.innerHTML = `Order ID <span class="font-bold text-slate-900">#${orderId}</span> • ₹${amount}`;
+      new QRCode(document.getElementById("qrcode"), { text: upiString, width: typeof window !== 'undefined' && window.innerWidth < 640 ? 150 : 190, height: typeof window !== 'undefined' && window.innerWidth < 640 ? 150 : 190, colorDark: "#0f172a", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.H });
+      startTimer(900);
+    });
+
+    function startTimer(d) { let t=d; setInterval(function(){ let m=parseInt(t/60,10),s=parseInt(t%60,10); m=m<10?"0"+m:m; s=s<10?"0"+s:s; document.getElementById("timer").textContent=m+":"+s; if(--t<0)t=0; },1000); }
+
+    function copyUpi() { navigator.clipboard.writeText(upiId); const b=document.getElementById('copy-btn'); b.innerText="Copied!"; b.classList.add("bg-emerald-600"); setTimeout(()=>{ b.innerText="Copy ID"; b.classList.remove("bg-emerald-600"); },2000); }
+
+    function openApp(a) { window.location.href=a+"://pay?pa="+upiId+"&pn="+merchant+"&tr="+orderId+"&am="+amount+"&cu=INR"; }
+
+    function getStoredOrder() {
+      try {
+        var raw = sessionStorage.getItem(ORDER_STORAGE_KEY);
+        if(raw){
+          var data = JSON.parse(raw);
+          if(data && data.orderId === orderId && data.paymentMethod === 'prepaid'){
+            return data;
+          }
+        }
+      } catch(e) {}
+      return {
+        orderId: orderId,
+        name: params.get('name') || 'Customer',
+        phone: params.get('phone') || '',
+        pincode: params.get('pincode') || '',
+        address: params.get('address') || 'UPI Order',
+        paymentMethod: 'prepaid',
+        amount: amount,
+        product: 'Avnideep 6Pro Stamina Shilajit Capsules',
+        status: 'payment_confirmed',
+        pageUrl: window.location.href,
+        createdAt: new Date().toISOString(),
+        userAgent: navigator.userAgent || ''
+      };
+    }
+
+    async function savePrepaidOrder(order) {
+      try {
+        var res = await fetch(API_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(order)
+        });
+        var data = await res.json().catch(() => ({}));
+        return { ok: res.ok, data: data, error: data.error || (res.ok ? null : 'Order save failed') };
+      } catch (err) {
+        return { ok: false, error: String(err.message || err) };
+      }
+    }
+
+    function showInlineError(text) {
+      var e = document.getElementById('utr-error');
+      if(!e) return;
+      e.textContent = text;
+      e.classList.remove('hidden');
+    }
+
+    function openModal() { 
+      var e = document.getElementById('utr-error'); if(e) e.classList.add('hidden');
+      document.getElementById('step-idle').classList.add('hidden');
+      document.getElementById('step-modal').classList.remove('hidden'); 
+    }
+    function closeModal() { document.getElementById('step-modal').classList.add('hidden'); document.getElementById('step-idle').classList.remove('hidden'); }
+
+    async function submitUtr() {
+      var u = document.getElementById('utr-input').value.replace(/\s/g, '');
+      var c = document.getElementById('cust-input').value;
+      if(u.length < 12){ showInlineError("Enter valid 12-digit UTR"); return; }
+      if(!c.trim()){ showInlineError("Enter your phone/name"); return; }
+      document.getElementById('utr-error').classList.add('hidden');
+      document.getElementById('step-modal').classList.add('hidden');
+      document.getElementById('step-verifying').classList.remove('hidden');
+      document.getElementById('verify-utr-text').textContent = "Checking UTR #" + u;
+
+      var orderData = getStoredOrder();
+      orderData.utr = u;
+      orderData.status = 'prepaid_confirmed';
+      orderData.paymentNote = 'UPI UTR ' + u;
+
+      var saveResult = await savePrepaidOrder(orderData);
+      document.getElementById('step-verifying').classList.add('hidden');
+      document.getElementById('step-success').classList.remove('hidden');
+      var note = document.getElementById('success-note');
+      if(saveResult.ok){
+        if(note) note.textContent = 'Payment verified and prepaid order saved. हमारी टीम जल्दी confirm करेगी।';
+      } else {
+        if(note) note.textContent = 'Payment verified. Order save में समस्या हुई: ' + (saveResult.error || 'Please contact support.');
+      }
+    }
+  </script>
+</body>
+</html>

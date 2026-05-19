@@ -73,8 +73,22 @@ section{padding:24px 16px}
 
 /* TICKER */
 .ticker{background:linear-gradient(90deg,#7a0c0c,#b71c1c,#7a0c0c);color:#ffd54f;padding:9px 0;overflow:hidden;font-weight:800;font-size:13px;white-space:nowrap;border-bottom:1px solid #ffd54f33}
-.ticker__t{display:inline-block;animation:tick 22s linear infinite;padding-left:100%}
+.ticker__t{display:inline-block;animation:tick 22s linear infinite;-webkit-animation:tick 22s linear infinite;padding-left:100%;will-change:transform}
 .ticker__t span{margin:0 24px}
+
+/* Slower ticker on small screens (prevents feeling "too fast" on narrow iPhones) */
+@media (max-width:640px){
+  .ticker__t{animation-duration:40s;-webkit-animation-duration:40s}
+  .ticker__t span{margin:0 18px}
+}
+@media (max-width:380px){
+  .ticker__t{animation-duration:48s;-webkit-animation-duration:48s}
+  .ticker{font-size:12px}
+}
+
+@media (prefers-reduced-motion: reduce){
+  .ticker__t{animation: none !important; -webkit-animation: none !important}
+}
 @keyframes tick{from{transform:translate3d(0,0,0)}to{transform:translate3d(-100%,0,0)}}
 
 /* TOP BAR */
@@ -614,9 +628,10 @@ body.sb-on{padding-bottom:78px}
 
     <div class="hero-img-wrap">
       <div class="hero-badge-corner">50%<br>OFF</div>
-      <img src="images/mainimagee.webp"
-                 width="280" height="373" alt="Avnideep 6Pro Shilajit Capsules Bottle"
-           class="hero-img" fetchpriority="high" decoding="async">
+      <picture>
+        <source srcset="images/mainimagee.webp" type="image/webp">
+        <img src="images/mainimagee.webp" width="280" height="373" alt="Avnideep 6Pro Shilajit Capsules Bottle" class="hero-img" fetchpriority="high" decoding="async" onerror="this.onerror=null;this.src='images/mainimagee.jpg';">
+      </picture>
     </div>
 
     <div class="price-tag">
@@ -1221,7 +1236,7 @@ body.sb-on{padding-bottom:78px}
       <button class="smodal-btn" type="button" id="sClose">आगे बढ़ें</button>
     </div>
   </div>
-</div>
+</div>  
 
 <script>
 (function(){
@@ -1654,7 +1669,17 @@ function initForm(){
     track('Lead', {value:payload.amount, currency:'INR'});
 
     if(m === 'prepaid'){
-      window.location.href = '../payment.html?order_id=' + encodeURIComponent(payload.orderId) + '&amount=' + encodeURIComponent(payload.amount);
+      // Fire-and-forget send to backend so Supabase receives an initial record for prepaid orders
+      try{
+        fetch('/api/order', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify(payload),
+          keepalive: true
+        }).catch(function(e){ console.warn('background order save failed', e); });
+      }catch(e){ console.warn('background order save error', e); }
+
+      window.location.href = 'payment.html?order_id=' + encodeURIComponent(payload.orderId) + '&amount=' + encodeURIComponent(payload.amount);
       return;
     }
 
@@ -1680,7 +1705,7 @@ function initForm(){
 
     if(m === 'prepaid'){
       if(apiSuccess){
-        window.location.href = '../payment.html?order_id=' + encodeURIComponent(payload.orderId) + '&amount=' + encodeURIComponent(payload.amount);
+        window.location.href = 'payment.html?order_id=' + encodeURIComponent(payload.orderId) + '&amount=' + encodeURIComponent(payload.amount);
         return;
       }
       if(apiError){
