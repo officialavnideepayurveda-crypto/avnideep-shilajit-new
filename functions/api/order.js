@@ -44,6 +44,8 @@ function normalizeOrder(body, ip) {
     product: String(body.product || "Avnideep 6Pro Stamina Shilajit Capsules").slice(0, 100),
     status: String(body.status || "cod_order").slice(0, 50),
     page_url: String(body.pageUrl || "").slice(0, 300),
+    utr: String(body.utr || "").trim().slice(0, 50),
+    payment_note: String(body.paymentNote || "").trim().slice(0, 200),
     created_at: body.createdAt || new Date().toISOString(),
     ip_address: ip || "unknown",
     user_agent: String(body.userAgent || "").slice(0, 200),
@@ -106,10 +108,12 @@ async function sendTelegram(order, env) {
     `${emoji} Payment: *${order.payment_method.toUpperCase()}*`,
     `💰 Amount: *₹${order.amount}*`,
     `📦 Status: ${order.status}`,
+    order.utr ? `🔎 UTR: \`${order.utr}\`` : '',
+    order.payment_note ? `📝 Note: ${order.payment_note}` : '',
     `🕒 Time: ${istTime}`,
     `━━━━━━━━━━━━━━━━━━`,
     `⚡ *ACTION:* Call ${order.phone} to confirm`,
-  ].join("\n");
+  ].filter(Boolean).join("\n");
 
   try {
     const res = await withTimeout(fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
@@ -151,6 +155,24 @@ async function saveSupabase(order, env) {
   }
 
   try {
+    const supabaseOrder = {
+      order_id: order.order_id,
+      name: order.name,
+      phone: order.phone,
+      pincode: order.pincode,
+      address: order.address,
+      payment_method: order.payment_method,
+      amount: order.amount,
+      product: order.product,
+      status: order.status,
+      page_url: order.page_url,
+      created_at: order.created_at,
+      ip_address: order.ip_address,
+      user_agent: order.user_agent,
+      utm_source: order.utm_source,
+      utm_medium: order.utm_medium,
+      utm_campaign: order.utm_campaign,
+    };
     const res = await withTimeout(fetch(`${env.SUPABASE_URL}/rest/v1/orders`, {
       method: "POST",
       headers: {
@@ -159,7 +181,7 @@ async function saveSupabase(order, env) {
         "Content-Type": "application/json",
         "Prefer": "return=minimal",
       },
-      body: JSON.stringify(order),
+      body: JSON.stringify(supabaseOrder),
     }), 5000, "supabase");
 
     if (!res.ok) {
@@ -221,12 +243,14 @@ function buildEmailHtml(order) {
           <td style="color:#222;font-size:13px;line-height:1.5;border-bottom:1px solid #eee">${escHtml(order.address)}</td></tr>
       <tr><td style="color:#666;font-weight:600;font-size:13px;border-bottom:1px solid #eee">📦 Product</td>
           <td style="color:#222;font-size:13px;border-bottom:1px solid #eee">${escHtml(order.product)}</td></tr>
+      ${order.utr ? `<tr><td style="color:#666;font-weight:600;font-size:13px;border-bottom:1px solid #eee">🔎 UTR</td><td style="color:#222;font-weight:700;font-size:14px;border-bottom:1px solid #eee">${escHtml(order.utr)}</td></tr>` : ''}
+      ${order.payment_note ? `<tr><td style="color:#666;font-weight:600;font-size:13px;border-bottom:1px solid #eee">📝 Note</td><td style="color:#222;font-weight:600;font-size:14px;border-bottom:1px solid #eee">${escHtml(order.payment_note)}</td></tr>` : ''}
       <tr><td style="color:#666;font-weight:600;font-size:13px">💰 Total</td>
           <td style="color:#7A0C0C;font-weight:900;font-size:18px">₹${order.amount}</td></tr>
     </table>
     <div style="background:#fff7e6;border-left:4px solid #ff9800;padding:14px;margin-top:20px;border-radius:6px">
       <strong style="color:#7A0C0C;font-size:14px">⚡ ACTION REQUIRED:</strong>
-      <p style="color:#333;font-size:13px;margin:6px 0 0;line-height:1.5">Call <a href="tel:${escHtml(order.phone)}" style="color:#7A0C0C;font-weight:700">${escHtml(order.phone)}</a> to confirm this order ASAP. ${isPrepaid ? "Payment already received via Razorpay." : "Verify COD address before dispatch."}</p>
+      <p style="color:#333;font-size:13px;margin:6px 0 0;line-height:1.5">Call <a href="tel:${escHtml(order.phone)}" style="color:#7A0C0C;font-weight:700">${escHtml(order.phone)}</a> to confirm this order ASAP. ${isPrepaid ? "Payment already received as prepaid order." : "Verify COD address before dispatch."}</p>
     </div>
     <p style="color:#aaa;font-size:11px;margin-top:24px;text-align:center">
       Order ID: ${escHtml(order.order_id)} • IP: ${escHtml(order.ip_address)}
@@ -255,8 +279,9 @@ Address: ${order.address}
 Payment: ${order.payment_method.toUpperCase()}
 Amount: Rs.${order.amount}
 Product: ${order.product}
-
-${isPrepaid ? "Payment already received via Razorpay." : "ACTION: Call to confirm COD order."}
+${order.utr ? `UTR: ${order.utr}
+` : ''}${order.payment_note ? `Note: ${order.payment_note}
+` : ''}${isPrepaid ? "Payment already received as prepaid order." : "ACTION: Call to confirm COD order."}
 
 Call: ${order.phone}`;
 }
@@ -381,24 +406,32 @@ async function sendEmail(order, env) {
     return { skipped: true, reason: "no_notify_email" };
   }
 
-  try {
-    // Priority order: Brevo > MailerSend > Web3Forms > Resend
-    if (env.BREVO_API_KEY) {
-      return await sendViaBrevo(order, env);
+  const providers = [
+    { key: 'BREVO_API_KEY', fn: sendViaBrevo, name: 'brevo' },
+    { key: 'MAILERSEND_API_KEY', fn: sendViaMailerSend, name: 'mailersend' },
+    { key: 'WEB3FORMS_KEY', fn: sendViaWeb3Forms, name: 'web3forms' },
+    { key: 'RESEND_API_KEY', fn: sendViaResend, name: 'resend' },
+  ];
+
+  let lastResult = { skipped: true, reason: "no_email_provider_configured" };
+
+  for (const provider of providers) {
+    if (!env[provider.key]) {
+      continue;
     }
-    if (env.MAILERSEND_API_KEY) {
-      return await sendViaMailerSend(order, env);
+
+    try {
+      const result = await provider.fn(order, env);
+      if (result.ok) {
+        return result;
+      }
+      lastResult = result;
+    } catch (err) {
+      lastResult = { ok: false, provider: provider.name, error: String(err.message || err) };
     }
-    if (env.WEB3FORMS_KEY) {
-      return await sendViaWeb3Forms(order, env);
-    }
-    if (env.RESEND_API_KEY) {
-      return await sendViaResend(order, env);
-    }
-    return { skipped: true, reason: "no_email_provider_configured" };
-  } catch (err) {
-    return { ok: false, error: String(err.message || err) };
   }
+
+  return lastResult;
 }
 
 // ============================================================
@@ -435,8 +468,17 @@ async function saveGoogleSheets(order, env) {
       redirect: "follow",
     }), 6000, "google_sheets");
 
-    // Google Apps Script returns 200 even on errors, so we just check ok
-    return { ok: res.ok, status: res.status };
+    let debug = { ok: res.ok, status: res.status };
+    if (!res.ok) {
+      const errText = await res.text().catch(() => "");
+      debug.error = errText.slice(0, 500);
+    } else {
+      const bodyText = await res.text().catch(() => "");
+      if (bodyText && bodyText.trim().length && bodyText.trim().toLowerCase().indexOf('error') !== -1) {
+        debug.warning = bodyText.trim().slice(0, 500);
+      }
+    }
+    return debug;
   } catch (err) {
     return { ok: false, error: String(err.message || err) };
   }

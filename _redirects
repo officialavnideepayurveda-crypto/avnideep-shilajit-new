@@ -1,6 +1,22 @@
 # Cloudflare Pages Redirects
 # Force HTTPS & www handling done at Cloudflare DNS layer
 
+# Cache headers for static assets (30 days for images, fonts)
+/images/*  /:splat  200  
+  Cache-Control: public, immutable, max-age=2592000
+
+# Cache manifest, sitemap (7 days)
+/manifest.webmanifest  /manifest.webmanifest  200
+  Cache-Control: public, max-age=604800
+/sitemap.xml  /sitemap.xml  200
+  Cache-Control: public, max-age=604800
+/robots.txt  /robots.txt  200
+  Cache-Control: public, max-age=604800
+
+# HTML pages - cache 1 hour for stale-while-revalidate
+/*.html  /:splat  200
+  Cache-Control: public, max-age=3600, must-revalidate
+
 # SPA fallback - not needed but safe
 /home    /    301
 /buy     /#checkout    301
