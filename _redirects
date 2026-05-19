@@ -1,0 +1,7 @@
+# Cloudflare Pages Redirects
+# Force HTTPS & www handling done at Cloudflare DNS layer
+
+# SPA fallback - not needed but safe
+/home    /    301
+/buy     /#checkout    301
+/order   /#checkout    301
