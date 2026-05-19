@@ -517,16 +517,20 @@ export async function onRequestPost({ request, env }) {
       channels: { telegram, supabase, email, sheets },
     }));
 
-    // Step 8: Success if AT LEAST 1 channel worked
+    // Step 8: Success only if at least one channel worked
     const successCount = [telegram, supabase, email, sheets].filter((c) => c.ok).length;
     const skippedCount = [telegram, supabase, email, sheets].filter((c) => c.skipped).length;
+    const allChannelsSkipped = skippedCount === 4;
 
-    if (successCount === 0 && skippedCount < 4) {
-      // All configured channels failed
+    if (successCount === 0) {
+      const errorMessage = allChannelsSkipped
+        ? "Order backend not configured. कृपया site settings जांचें।"
+        : "Order save failed. कृपया WhatsApp पर contact करें।";
+
       return new Response(
         JSON.stringify({
           ok: false,
-          error: "Order save failed. कृपया WhatsApp पर contact करें।",
+          error: errorMessage,
           debug: { telegram, supabase, email, sheets },
         }),
         { status: 500, headers: jsonHeaders(env) }
@@ -544,6 +548,7 @@ export async function onRequestPost({ request, env }) {
           email: email.ok || email.skipped || false,
           sheets: sheets.ok || sheets.skipped || false,
         },
+        debug: { telegram, supabase, email, sheets },
       }),
       { status: 200, headers: jsonHeaders(env) }
     );
