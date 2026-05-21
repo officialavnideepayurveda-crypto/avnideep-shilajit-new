@@ -586,12 +586,13 @@ body.sb-on{padding-bottom:78px}
   .bcard img{height:140px}
 }
 </style>
-<!-- Google Tag Manager -->
-<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-N6NFBQR7');</script>
 </head>
 <body>
 <!-- Google Tag Manager (noscript) -->
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-N6NFBQR7" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+
+<!-- Google Tag Manager Script (moved to body for non-blocking load) -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-N6NFBQR7');</script>
 
 <a href="#checkout" class="skip">Skip to order</a>
 
@@ -1200,9 +1201,13 @@ body.sb-on{padding-bottom:78px}
       <a href="mailto:support@avnideepayurveda.in">✉️ support@avnideepayurveda.in</a>
     </div>
     <div class="f-links">
-      <a href="privacy-policy.html">Privacy</a>
-      <a href="refund-policy.html">Refund</a>
-      <a href="terms-and-conditions.html">Terms</a>
+      <a href="/privacy-policy">Privacy</a>
+      <a href="/refund-policy">Refund</a>
+      <a href="/terms-and-conditions">Terms</a>
+      <a href="/shipping-policy">Shipping</a>
+      <a href="/contact-us">Contact</a>
+      <a href="/about-us">About</a>
+      <a href="/disclaimer">Disclaimer</a>
     </div>
     <p class="f-copy">© 2026 Avnideep Ayurveda. All Rights Reserved.</p>
   </footer>
@@ -1277,34 +1282,27 @@ function buildUtmLabel(){
 function genEventId(){
   return 'evt_' + Date.now() + '_' + Math.random().toString(36).slice(2,10);
 }
+// Pixel tracking via Google Tag Manager only (GTM-N6NFBQR7)
+// Facebook Pixel disabled - GTM handles all Meta conversions
 function track(name, data){
-  if(typeof window.fbq === "function"){
-    try {
-      var eventId = genEventId();
-      var enrichedData = Object.assign({}, data || {}, {
-        currency: (data && data.currency) || 'INR'
-      });
-      window.fbq("track", name, enrichedData, {eventID: eventId});
-    } catch(e){}
-  }
+  // GTM dataLayer.push() handles event tracking
+  // Meta Pixel events sent via GTM, not direct fbq
+  try {
+    var eventId = genEventId();
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+      'event': name,
+      'value': data && data.value,
+      'currency': (data && data.currency) || 'INR',
+      'eventID': eventId
+    });
+  } catch(e){}
 }
 
-// ----- META PIXEL (Lazy load on first interaction) -----
-function loadPixel(){
-  if(!PIXEL_ID || window.fbq) return;
-  !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
-  window.fbq('init', PIXEL_ID);
-  window.fbq('track', 'PageView');
-}
-function defPixel(){
-  if(!PIXEL_ID) return;
-  loadPixel();
-
-  // Add noscript fallback pixel for JS-disabled / blocked users
-  var noscriptImg = document.createElement('noscript');
-  noscriptImg.innerHTML = '<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=' + PIXEL_ID + '&ev=PageView&noscript=1" alt="">';
-  document.body.appendChild(noscriptImg);
-}
+// Facebook Pixel initialization removed - use GTM tags instead
+// Avoid duplicate pixel fires and redundant 3P dependencies
+function loadPixel(){ /* GTM handles pixel */ }
+function defPixel(){ /* GTM handles pixel */ }
 
 // ----- COUNTDOWN TIMER (Persistent) -----
 function pad(n){return String(n).padStart(2,'0')}
@@ -1713,7 +1711,6 @@ function initForm(){
         showErr(err, 'Payment order backend पर सेव नहीं हुआ: ' + apiError + '। WhatsApp fallback भेजा जा रहा है।');
       }
       showSuccess('prepaid_whatsapp', payload.orderId);
-      track('Purchase', {value:payload.amount, currency:'INR', method:'whatsapp_fallback'});
       setTimeout(function(){ window.open(waOrderUrl, '_blank', 'noopener'); }, 1000);
       form.reset();
       updatePay();
@@ -1731,7 +1728,6 @@ function initForm(){
           showErr(err, 'ऑर्डर backend पर सेव नहीं हुआ: ' + apiError + '। WhatsApp fallback भेजा जा रहा है।');
         }
         showSuccess('cod_whatsapp', payload.orderId);
-        track('Purchase', {value:1250, currency:'INR', method:'whatsapp_fallback'});
         setTimeout(function(){
           window.open(waOrderUrl, '_blank', 'noopener');
         }, 1000);

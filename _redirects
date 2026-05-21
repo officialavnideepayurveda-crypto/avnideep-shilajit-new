@@ -16,6 +16,13 @@
 # HTML pages - cache 1 hour for stale-while-revalidate
 /*.html  /:splat  200
   Cache-Control: public, max-age=3600, must-revalidate
+/privacy-policy  /privacy-policy.html  200
+/refund-policy  /refund-policy.html  200
+/terms-and-conditions  /terms-and-conditions.html  200
+/shipping-policy  /shipping-policy.html  200
+/contact-us  /contact-us.html  200
+/about-us  /about-us.html  200
+/disclaimer  /disclaimer.html  200
 
 # SPA fallback - not needed but safe
 /home    /    301
