@@ -2,8 +2,6 @@
 # Force HTTPS & www handling done at Cloudflare DNS layer
 
 # Cache headers for static assets (30 days for images, fonts)
-/images/*  /:splat  200  
-  Cache-Control: public, max-age=604800, must-revalidate
 
 # Cache manifest, sitemap (7 days)
 /manifest.webmanifest  /manifest.webmanifest  200
