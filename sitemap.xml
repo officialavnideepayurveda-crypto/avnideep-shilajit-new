@@ -7,17 +7,37 @@
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://shop.avnideepayurveda.in/privacy-policy.html</loc>
+    <loc>https://shop.avnideepayurveda.in/privacy-policy</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://shop.avnideepayurveda.in/refund-policy.html</loc>
+    <loc>https://shop.avnideepayurveda.in/refund-policy</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://shop.avnideepayurveda.in/terms-and-conditions.html</loc>
+    <loc>https://shop.avnideepayurveda.in/terms-and-conditions</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://shop.avnideepayurveda.in/shipping-policy</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://shop.avnideepayurveda.in/contact-us</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://shop.avnideepayurveda.in/about-us</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://shop.avnideepayurveda.in/disclaimer</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
