@@ -2,21 +2,20 @@
 // AVNIDEEP GOOGLE SHEETS INTEGRATION - Apps Script
 // ============================================================
 // HOW TO DEPLOY:
-// 1. Go to https://script.google.com/
-// 2. Click "New Project"
-// 3. Delete any existing code and paste this entire file
-// 4. Name your project: "Avnideep Orders to Sheets"
-// 5. Click "Deploy" → "New Deployment"
-// 6. Choose type: "Web App"
-// 7. Execute as: "Me"
-// 8. Who has access: "Anyone" (needed to receive POST from Cloudflare)
-// 9. Click "Deploy"
-// 10. COPY THE WEB APP URL — this is your GOOGLE_SHEETS_URL
-// 11. Add GOOGLE_SHEETS_URL to Cloudflare Workers env variables
+// ============================================================
+// OPTION A (✅ BEST - Sheet-bound):
+// 1. Open your Google Sheet: https://docs.google.com/spreadsheets/d/16fZ3ptE1NQNYikz_7mLiFwtuCA37zRzdlWxaSeb-pIo/edit
+// 2. Extensions → Apps Script
+// 3. Delete existing code, paste this entire file
+// 4. Name: "Avnideep Orders to Sheets"
+// 5. Deploy → New Deployment → Web App
+//    - Execute as: "Me"
+//    - Who has access: "Anyone" ✅ IMPORTANT
+// 6. Click Deploy → COPY the Web App URL
+// 7. Add that URL as GOOGLE_SHEETS_URL in Cloudflare Pages env vars
 //
-// IMPORTANT: After deploying, enable Gmail service for error notifications:
-//   In Apps Script editor → left sidebar "Services" → + → "Gmail" → Add
-//   (Not required — error catch works without it, but admin emails won't send)
+// OPTION B (Standalone - script.google.com par banaya):
+// Update SHEET_ID below with your sheet ID, then deploy as Web App
 //
 // Sheet columns (auto-created):
 // Timestamp | Order ID | Name | Phone | Pincode | Address |
@@ -24,11 +23,36 @@
 // IP Address | UTM Source | UTM Medium | UTM Campaign | IST Time
 // ============================================================
 
+// ============================================================
+// ⚙️ CONFIGURATION
+// ============================================================
 const SHEET_NAME = "Orders";
 
-/**
- * Handle GET request — health check
- */
+// Your Google Sheet ID (from the URL between /d/ and /edit)
+// Example: https://docs.google.com/spreadsheets/d/THIS_IS_THE_ID/edit
+// If deploying from within the sheet (OPTION A), this is auto-detected.
+// If deploying standalone (OPTION B), FILL THIS IN:
+const SHEET_ID = "16fZ3ptE1NQNYikz_7mLiFwtuCA37zRzdlWxaSeb-pIo";
+
+// ============================================================
+// Helper: Get the spreadsheet (works both bound & standalone)
+// ============================================================
+function getSpreadsheet() {
+  try {
+    // First try: bound to sheet (deployed via Extensions → Apps Script)
+    return SpreadsheetApp.getActiveSpreadsheet();
+  } catch (e) {
+    // Fallback: standalone script — use openById
+    if (SHEET_ID) {
+      return SpreadsheetApp.openById(SHEET_ID);
+    }
+    throw new Error("SHEET_ID not configured! Deploy from within the sheet or set SHEET_ID.");
+  }
+}
+
+// ============================================================
+// Handle GET request — health check
+// ============================================================
 function doGet() {
   return HtmlService.createHtmlOutput(
     '<h2>✅ Avnideep Google Sheets Integration Active</h2>' +
@@ -37,9 +61,9 @@ function doGet() {
   );
 }
 
-/**
- * Handle POST request — save order to Google Sheet
- */
+// ============================================================
+// Handle POST request — save order to Google Sheet
+// ============================================================
 function doPost(e) {
   try {
     const data = e.parameter;
@@ -52,7 +76,6 @@ function doPost(e) {
     const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
 
     // Build row matching what order.js's saveGoogleSheets() sends
-    // Use timestamps from API to stay consistent with Supabase & Telegram
     const rowMap = {
       "Timestamp": data.created_at || new Date().toISOString(),
       "Order ID": data.order_id || "",
@@ -73,7 +96,6 @@ function doPost(e) {
     };
 
     const newRow = headers.map(h => rowMap[h] !== undefined ? rowMap[h] : "");
-
     sheet.appendRow(newRow);
 
     Logger.log(`✅ Order saved: ${data.order_id} — ${data.name}`);
@@ -81,16 +103,22 @@ function doPost(e) {
 
   } catch (error) {
     Logger.log(`❌ Error: ${error.toString()}`);
-    try { MailApp.sendEmail(Session.getActiveUser().getEmail(), "⚠️ Avnideep Sheets Error", error.toString()); } catch(e) {}
+    try {
+      MailApp.sendEmail(
+        Session.getActiveUser().getEmail() || "officialavnideepayurveda@gmail.com",
+        "⚠️ Avnideep Sheets Error",
+        error.toString()
+      );
+    } catch(e) {}
     return sendJson(500, { ok: false, error: error.toString() });
   }
 }
 
-/**
- * Get or create the Orders sheet with proper headers
- */
+// ============================================================
+// Get or create the Orders sheet with proper headers
+// ============================================================
 function getOrCreateSheet() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = getSpreadsheet();
   let sheet = ss.getSheetByName(SHEET_NAME);
   if (sheet) return sheet;
 
@@ -115,9 +143,9 @@ function getOrCreateSheet() {
   return sheet;
 }
 
-/**
- * Send JSON response
- */
+// ============================================================
+// Send JSON response
+// ============================================================
 function sendJson(status, data) {
   const output = ContentService.createTextOutput();
   output.setMimeType(ContentService.MimeType.JSON);
@@ -125,9 +153,9 @@ function sendJson(status, data) {
   return output;
 }
 
-/**
- * CORS preflight
- */
+// ============================================================
+// CORS preflight
+// ============================================================
 function doOptions() {
   return sendJson(200, { ok: true });
 }
