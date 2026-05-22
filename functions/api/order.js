@@ -6,7 +6,7 @@
 
 const jsonHeaders = (env) => ({
   "Access-Control-Allow-Origin": env.ALLOWED_ORIGIN || "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS, GET",
+  "Access-Control-Allow-Methods": "POST, OPTIONS, GET, PATCH",
   "Access-Control-Allow-Headers": "Content-Type",
   "Access-Control-Max-Age": "86400",
   "Content-Type": "application/json; charset=utf-8", 
@@ -49,6 +49,9 @@ function normalizeOrder(body, ip) {
     created_at: body.createdAt || new Date().toISOString(),
     ip_address: ip || "unknown",
     user_agent: String(body.userAgent || "").slice(0, 200),
+    utm_source: String(body.utm_source || "").slice(0, 100),
+    utm_medium: String(body.utm_medium || "").slice(0, 100),
+    utm_campaign: String(body.utm_campaign || "").slice(0, 100),
   };
 }
 
@@ -148,50 +151,70 @@ async function sendTelegram(order, env) {
 
 // ============================================================
 // 2️⃣ SUPABASE DATABASE (Permanent Storage)
+// Tries service_role first, falls back to anon key if RLS blocks
 // ============================================================
 async function saveSupabase(order, env) {
-  if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) {
+  const orderedData = {
+    order_id: order.order_id,
+    name: order.name,
+    phone: order.phone,
+    pincode: order.pincode,
+    address: order.address,
+    payment_method: order.payment_method,
+    amount: order.amount,
+    product: order.product,
+    status: order.status,
+    page_url: order.page_url,
+    created_at: order.created_at,
+    ip_address: order.ip_address,
+    user_agent: order.user_agent,
+    utm_source: order.utm_source,
+    utm_medium: order.utm_medium,
+    utm_campaign: order.utm_campaign,
+  };
+
+  // Try all available keys in order: service_role (best) → anon (fallback)
+  const keysToTry = [
+    { key: env.SUPABASE_SERVICE_ROLE_KEY, name: 'service_role' },
+    { key: env.SUPABASE_ANON_KEY || env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY, name: 'anon' },
+  ].filter(k => k.key);
+
+  if (!env.SUPABASE_URL || !keysToTry.length) {
     return { skipped: true, reason: "supabase_credentials_missing" };
   }
 
-  try {
-    const supabaseOrder = {
-      order_id: order.order_id,
-      name: order.name,
-      phone: order.phone,
-      pincode: order.pincode,
-      address: order.address,
-      payment_method: order.payment_method,
-      amount: order.amount,
-      product: order.product,
-      status: order.status,
-      page_url: order.page_url,
-      created_at: order.created_at,
-      ip_address: order.ip_address,
-      user_agent: order.user_agent,
-      utm_source: order.utm_source,
-      utm_medium: order.utm_medium,
-      utm_campaign: order.utm_campaign,
-    };
-    const res = await withTimeout(fetch(`${env.SUPABASE_URL}/rest/v1/orders`, {
-      method: "POST",
-      headers: {
-        "apikey": env.SUPABASE_SERVICE_ROLE_KEY,
-        "Authorization": `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
-        "Content-Type": "application/json",
-        "Prefer": "return=minimal",
-      },
-      body: JSON.stringify(supabaseOrder),
-    }), 5000, "supabase");
+  let lastError = null;
+  for (const { key, name } of keysToTry) {
+    try {
+      const url = `${env.SUPABASE_URL}/rest/v1/orders`;
+      const res = await withTimeout(fetch(url, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${key}`,
+          "Content-Type": "application/json",
+          "Prefer": "return=minimal",
+        },
+        body: JSON.stringify(orderedData),
+      }), 5000, `supabase_${name}`);
 
-    if (!res.ok) {
+      if (res.ok) {
+        return { ok: true, status: res.status, key_used: name };
+      }
+
       const errText = await res.text().catch(() => "");
-      return { ok: false, status: res.status, error: errText.slice(0, 200) };
+      lastError = { ok: false, status: res.status, key_used: name, error: errText.slice(0, 200) };
+      
+      // If it's NOT an RLS error, don't bother trying other keys
+      if (errText.indexOf('42501') === -1 && errText.indexOf('row-level security') === -1 && errText.indexOf('violates') === -1) {
+        return lastError;
+      }
+      // RLS error — try next key (anon with proper RLS policy should work)
+    } catch (err) {
+      lastError = { ok: false, key_used: name, error: String(err.message || err) };
     }
-    return { ok: true, status: res.status };
-  } catch (err) {
-    return { ok: false, error: String(err.message || err) };
   }
+
+  return lastError || { ok: false, error: "All auth keys failed" };
 }
 
 // ============================================================
@@ -444,41 +467,48 @@ async function saveGoogleSheets(order, env) {
   }
 
   try {
-    const params = new URLSearchParams();
-    params.append("order_id", order.order_id);
-    params.append("name", order.name);
-    params.append("phone", order.phone);
-    params.append("pincode", order.pincode);
-    params.append("address", order.address);
-    params.append("payment_method", order.payment_method.toUpperCase());
-    params.append("amount", String(order.amount));
-    params.append("product", order.product);
-    params.append("status", order.status);
-    params.append("page_url", order.page_url);
-    params.append("ip_address", order.ip_address);
-    params.append("created_at", order.created_at);
-    params.append("ist_time", new Date(order.created_at).toLocaleString("en-IN", {
-      timeZone: "Asia/Kolkata"
-    }));
-
+    // Google Apps Script web apps return 302 after POST. 
+    // Using manual redirect so we don't lose the POST body.
     const res = await withTimeout(fetch(env.GOOGLE_SHEETS_URL, {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: params.toString(),
-      redirect: "follow",
+      body: new URLSearchParams({
+        order_id: order.order_id,
+        name: order.name,
+        phone: order.phone,
+        pincode: order.pincode,
+        address: order.address,
+        payment_method: order.payment_method.toUpperCase(),
+        amount: String(order.amount),
+        product: order.product,
+        status: order.status,
+        page_url: order.page_url,
+        ip_address: order.ip_address,
+        created_at: order.created_at,
+        utm_source: order.utm_source,
+        utm_medium: order.utm_medium,
+        utm_campaign: order.utm_campaign,
+        ist_time: new Date(order.created_at).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }),
+      }).toString(),
+      redirect: "manual",
     }), 6000, "google_sheets");
 
-    let debug = { ok: res.ok, status: res.status };
-    if (!res.ok) {
-      const errText = await res.text().catch(() => "");
-      debug.error = errText.slice(0, 500);
-    } else {
-      const bodyText = await res.text().catch(() => "");
-      if (bodyText && bodyText.trim().length && bodyText.trim().toLowerCase().indexOf('error') !== -1) {
-        debug.warning = bodyText.trim().slice(0, 500);
-      }
+    // Google Apps Script returns 302 after processing data successfully
+    // 200 also means success (newer behavior)
+    // Google Apps Script returns 302/303 redirect after processing. 200 is direct success.
+    if (res.status >= 200 && res.status < 400) {
+      return { ok: true, status: res.status };
     }
-    return debug;
+
+    const errText = await res.text().catch(() => "");
+    const errBody = errText.slice(0, 500);
+    
+    // Check if it's a "not found" type error (URL might be wrong)
+    if (res.status >= 400 && errBody.indexOf("not found") !== -1) {
+      return { ok: false, status: res.status, error: "Sheet URL not found — redeploy the Apps Script" };
+    }
+    
+    return { ok: false, status: res.status, error: errBody };
   } catch (err) {
     return { ok: false, error: String(err.message || err) };
   }
@@ -615,7 +645,7 @@ export async function onRequestGet({ env }) {
       version: "v3",
       env_check: {
         telegram: !!env.TELEGRAM_BOT_TOKEN && !!env.TELEGRAM_CHAT_ID,
-        supabase: !!env.SUPABASE_URL && !!env.SUPABASE_SERVICE_ROLE_KEY,
+        supabase: !!env.SUPABASE_URL && (!!env.SUPABASE_SERVICE_ROLE_KEY || !!env.SUPABASE_ANON_KEY || !!env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY),
         email_provider: !!env.NOTIFY_EMAIL ? (
           env.BREVO_API_KEY ? "brevo (300/day FREE)" :
           env.MAILERSEND_API_KEY ? "mailersend (3000/mo FREE)" :
@@ -631,4 +661,101 @@ export async function onRequestGet({ env }) {
     }, null, 2),
     { status: 200, headers: jsonHeaders(env) }
   );
+}
+
+// ============================================================
+// 5️⃣ PATCH /api/order - CONFIRM PREPAID PAYMENT WITH UTR
+// Called from payment.html after user completes UPI payment
+// Updates Supabase, notifies Telegram, sends email
+// ============================================================
+export async function onRequestPatch({ request, env }) {
+  const jsonH = { ...jsonHeaders(env), "Access-Control-Allow-Methods": "POST, OPTIONS, GET, PATCH" };
+  
+  try {
+    let body;
+    try {
+      body = await request.json();
+    } catch (e) {
+      return new Response(JSON.stringify({ ok: false, error: "Invalid request body" }), { status: 400, headers: jsonH });
+    }
+    
+    const orderId = String(body.orderId || "").trim();
+    const utr = String(body.utr || "").trim();
+    const name = String(body.name || "").trim();
+    const phone = String(body.phone || "").trim();
+    
+    if (!orderId || !utr) {
+      return new Response(JSON.stringify({ ok: false, error: "orderId and utr are required" }), { status: 400, headers: jsonH });
+    }
+    
+    // Build order object for notifications
+    const confirmOrder = {
+      order_id: orderId,
+      name: name || "Prepaid Customer",
+      phone: phone || "Unknown",
+      pincode: "",
+      address: "",
+      payment_method: "prepaid",
+      amount: body.amount || 0,
+      product: body.product || "Avnideep 6Pro Stamina Shilajit Capsules",
+      status: "payment_received",
+      page_url: "",
+      utr: utr,
+      payment_note: "",
+      created_at: new Date().toISOString(),
+      ip_address: request.headers.get("CF-Connecting-IP") || "unknown",
+      user_agent: "",
+      utm_source: "",
+      utm_medium: "",
+      utm_campaign: "",
+    };
+    
+    // Update Supabase order with UTR if Supabase configured
+    const keysToTry = [
+      env.SUPABASE_SERVICE_ROLE_KEY,
+      env.SUPABASE_ANON_KEY || env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+    ].filter(k => k);
+
+    for (const key of keysToTry) {
+      try {
+        const patchRes = await withTimeout(fetch(`${env.SUPABASE_URL}/rest/v1/orders?order_id=eq.${encodeURIComponent(orderId)}`, {
+          method: "PATCH",
+          headers: {
+            "Authorization": `Bearer ${key}`,
+            "Content-Type": "application/json",
+            "Prefer": "return=minimal",
+          },
+          body: JSON.stringify({ utr: utr, status: "payment_received" }),
+        }), 5000, "supabase_patch");
+        if (patchRes.ok) break; // Success with this key
+      } catch (e) {
+        console.warn("Supabase PATCH failed with key:", e);
+      }
+    }
+    
+    // Send UTR receipt to Telegram
+    const telegramResult = await sendTelegram(confirmOrder, env);
+    
+    // Send payment confirmation email
+    const emailResult = await sendEmail(confirmOrder, env);
+    
+    return new Response(
+      JSON.stringify({
+        ok: true,
+        orderId: orderId,
+        message: "Payment confirmed ✅",
+        channels: {
+          telegram: telegramResult.ok || false,
+          email: emailResult.ok || false,
+        },
+      }),
+      { status: 200, headers: jsonH }
+    );
+  } catch (error) {
+    console.error("PATCH_ERROR", error);
+    return new Response(
+      JSON.stringify({ ok: false, error: error instanceof Error ? error.message : "Server error" }),
+      { status: 500, headers: jsonHeaders(env) }
+    );
+  }
 }

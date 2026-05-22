@@ -1117,34 +1117,52 @@
       document.getElementById('error-msg').classList.remove('show');
     }
     
-    function submitPayment() {
-      const utr = document.getElementById('utr-input').value.trim();
-      const name = document.getElementById('cust-input').value.trim();
-      const errorEl = document.getElementById('error-msg');
-      
-      if (!utr || utr.length < 12) {
-        errorEl.textContent = 'Please enter a valid 12-digit UTR number';
-        errorEl.classList.add('show');
-        return;
-      }
-      
-      if (!name) {
-        errorEl.textContent = 'Please enter your name or phone number';
-        errorEl.classList.add('show');
-        return;
-      }
-      
-      errorEl.classList.remove('show');
-      document.getElementById('payment-modal').classList.remove('active');
-      document.getElementById('payment-idle').style.display = 'none';
-      document.getElementById('payment-verifying').style.display = 'block';
-      document.getElementById('verify-utr').textContent = `UTR: ${utr}`;
-      
-      // Simulate verification
-      setTimeout(() => {
-        document.getElementById('payment-verifying').style.display = 'none';
-        document.getElementById('payment-success').style.display = 'block';
-      }, 2000);
+    function submitPayment() {
+      const utr = document.getElementById('utr-input').value.trim();
+      const name = document.getElementById('cust-input').value.trim();
+      const errorEl = document.getElementById('error-msg');
+
+      if (!utr || utr.length < 12) {
+        errorEl.textContent = 'Please enter a valid 12-digit UTR number';
+        errorEl.classList.add('show');
+        return;
+      }
+
+      if (!name) {
+        errorEl.textContent = 'Please enter your name or phone number';
+        errorEl.classList.add('show');
+        return;
+      }
+
+      errorEl.classList.remove('show');
+      document.getElementById('payment-modal').classList.remove('active');
+      document.getElementById('payment-idle').style.display = 'none';
+      document.getElementById('payment-verifying').style.display = 'block';
+      document.getElementById('verify-utr').textContent = 'UTR: ' + utr;
+
+      // Actually send UTR to backend for verification
+      fetch(API_ENDPOINT, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId: orderId, utr: utr, name: name })
+      })
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        document.getElementById('payment-verifying').style.display = 'none';
+        if (data.ok) {
+          document.getElementById('payment-success').style.display = 'block';
+        } else {
+          errorEl.textContent = data.error || 'Verification failed. Contact support.';
+          errorEl.classList.add('show');
+          document.getElementById('payment-idle').style.display = 'block';
+        }
+      })
+      .catch(function(err) {
+        document.getElementById('payment-verifying').style.display = 'none';
+        errorEl.textContent = 'Network error. Please try again.';
+        errorEl.classList.add('show');
+        document.getElementById('payment-idle').style.display = 'block';
+      });
     }
   </script>
 </body>

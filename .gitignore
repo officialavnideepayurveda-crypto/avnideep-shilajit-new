@@ -16,3 +16,7 @@ images/unused_backup/
 images/*.tmp
 images/*.optimized
 nul
+
+# Backup files
+*.bak
+*.sql

@@ -10,5 +10,16 @@
   },
   "compatibility_flags": [
     "nodejs_compat"
+  ],
+  "vars": {
+    "ALLOWED_ORIGIN": "https://shop.avnideepayurveda.in",
+    "NOTIFY_EMAIL": "support@avnideepayurveda.in",
+    "SUPABASE_ANON_KEY": "sb_publishable_DBSk2EtFly50Cl12Wv22wA_ild2BF9x"
+  },
+  "kv_namespaces": [
+    {
+      "binding": "RATE_LIMIT_KV",
+      "id": "YOUR_KV_NAMESPACE_ID"
+    }
   ]
 }
