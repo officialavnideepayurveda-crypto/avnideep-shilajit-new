@@ -18,9 +18,9 @@
 // Update SHEET_ID below with your sheet ID, then deploy as Web App
 //
 // Sheet columns (auto-created):
-// Timestamp | Order ID | Name | Phone | Pincode | Address |
-// Payment Method | Amount | Product | Status | Page URL |
-// IP Address | UTM Source | UTM Medium | UTM Campaign | IST Time
+// Timestamp (IST) | Order ID | Name | Phone | Pincode | Address |
+// Payment | Amount | Product | Status | Page URL |
+// IP Address | Called? | UTM Source | UTM Medium | UTM Campaign
 // ============================================================
 
 // ============================================================
@@ -77,22 +77,22 @@ function doPost(e) {
 
     // Build row matching what order.js's saveGoogleSheets() sends
     const rowMap = {
-      "Timestamp": data.created_at || new Date().toISOString(),
+      "Timestamp (IST)": data.ist_time || data.created_at || new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }),
       "Order ID": data.order_id || "",
       "Name": data.name || "",
       "Phone": data.phone || "",
       "Pincode": data.pincode || "",
       "Address": data.address || "",
-      "Payment Method": (data.payment_method || "").toUpperCase(),
+      "Payment": (data.payment_method || "").toUpperCase(),
       "Amount": data.amount ? Number(data.amount) : 0,
       "Product": data.product || "Avnideep 6Pro Stamina Shilajit Capsules",
       "Status": data.status || "cod_order",
       "Page URL": data.page_url || "",
       "IP Address": data.ip_address || "",
+      "Called?": "",
       "UTM Source": data.utm_source || "",
       "UTM Medium": data.utm_medium || "",
       "UTM Campaign": data.utm_campaign || "",
-      "IST Time": data.ist_time || new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }),
     };
 
     const newRow = headers.map(h => rowMap[h] !== undefined ? rowMap[h] : "");
@@ -122,12 +122,13 @@ function getOrCreateSheet() {
   let sheet = ss.getSheetByName(SHEET_NAME);
   if (sheet) return sheet;
 
-  // Create new sheet with headers matching order.js API output
+  // Create new sheet with headers matching user's existing sheet format
+  // (Timestamp (IST) | Order ID | Name | Phone | Pincode | Address | Payment | Amount | Product | Status | Page URL | IP Address | Called? | UTM Source | UTM Medium | UTM Campaign)
   sheet = ss.insertSheet(SHEET_NAME);
   const headers = [
-    "Timestamp", "Order ID", "Name", "Phone", "Pincode", "Address",
-    "Payment Method", "Amount", "Product", "Status", "Page URL",
-    "IP Address", "UTM Source", "UTM Medium", "UTM Campaign", "IST Time"
+    "Timestamp (IST)", "Order ID", "Name", "Phone", "Pincode", "Address",
+    "Payment", "Amount", "Product", "Status", "Page URL",
+    "IP Address", "Called?", "UTM Source", "UTM Medium", "UTM Campaign"
   ];
 
   const headerRange = sheet.getRange(1, 1, 1, headers.length);
