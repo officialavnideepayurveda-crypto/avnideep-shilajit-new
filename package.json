@@ -13,12 +13,8 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
   "bugs": {
     "url": "https://github.com/officialavnideepayurveda-crypto/avnideep-shilajit-new/issues"
   },
-  "homepage": "https://github.com/officialavnideepayurveda-crypto/avnideep-shilajit-new#readme",
-  "dependencies": {
-    "sharp": "^0.34.5"
-  }
+  "homepage": "https://github.com/officialavnideepayurveda-crypto/avnideep-shilajit-new#readme"
 }
