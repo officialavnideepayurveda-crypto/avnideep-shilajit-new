@@ -190,6 +190,7 @@ async function saveSupabase(order, env) {
       const res = await withTimeout(fetch(url, {
         method: "POST",
         headers: {
+          "apikey": key,
           "Authorization": `Bearer ${key}`,
           "Content-Type": "application/json",
           "Prefer": "return=minimal",
@@ -721,6 +722,7 @@ export async function onRequestPatch({ request, env }) {
         const patchRes = await withTimeout(fetch(`${env.SUPABASE_URL}/rest/v1/orders?order_id=eq.${encodeURIComponent(orderId)}`, {
           method: "PATCH",
           headers: {
+            "apikey": key,
             "Authorization": `Bearer ${key}`,
             "Content-Type": "application/json",
             "Prefer": "return=minimal",
