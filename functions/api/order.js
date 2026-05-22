@@ -468,8 +468,9 @@ async function saveGoogleSheets(order, env) {
   }
 
   try {
-    // Google Apps Script web apps return 302 after POST. 
-    // Using manual redirect so we don't lose the POST body.
+    // Google Apps Script web apps return 302 after POST.
+    // We follow the redirect (default) to read the ACTUAL JSON response body.
+    // This way we can detect if the Apps Script returned an error.
     const res = await withTimeout(fetch(env.GOOGLE_SHEETS_URL, {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -491,22 +492,38 @@ async function saveGoogleSheets(order, env) {
         utm_campaign: order.utm_campaign,
         ist_time: new Date(order.created_at).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }),
       }).toString(),
-      redirect: "manual",
     }), 6000, "google_sheets");
 
-    // Google Apps Script returns 302 after processing data successfully
-    // 200 also means success (newer behavior)
-    // Google Apps Script returns 302/303 redirect after processing. 200 is direct success.
-    if (res.status >= 200 && res.status < 400) {
-      return { ok: true, status: res.status };
-    }
-
-    const errText = await res.text().catch(() => "");
-    const errBody = errText.slice(0, 500);
+    // Read the actual response body from the redirected page
+    const bodyText = await res.text().catch(() => "");
     
-    // Check if it's a "not found" type error (URL might be wrong)
-    if (res.status >= 400 && errBody.indexOf("not found") !== -1) {
-      return { ok: false, status: res.status, error: "Sheet URL not found — redeploy the Apps Script" };
+    // Try to parse as JSON (Google Apps Script ContentService returns raw JSON)
+    let jsonBody;
+    try {
+      jsonBody = JSON.parse(bodyText);
+    } catch (parseErr) {
+      // If it's not JSON (maybe HTML), success depends on status
+      jsonBody = null;
+    }
+    
+    // If we got valid JSON and it says ok: true, data saved successfully!
+    if (jsonBody && jsonBody.ok === true) {
+      return { ok: true, status: res.status, message: jsonBody.message };
+    }
+    
+    // If we got valid JSON but it says ok: false, Apps Script had an error
+    if (jsonBody && jsonBody.ok === false) {
+      return { ok: false, status: res.status, error: jsonBody.error || "Sheets API error" };
+    }
+    
+    // Fallback: if status is in 200-399 range but no JSON, still count as success
+    // (This handles older or non-standard responses)
+    const errBody = bodyText.slice(0, 500);
+    if (res.status >= 200 && res.status < 400) {
+      if (errBody.toLowerCase().indexOf("not found") !== -1 || errBody.toLowerCase().indexOf("error") !== -1) {
+        return { ok: false, status: res.status, error: errBody.slice(0, 200) };
+      }
+      return { ok: true, status: res.status, note: "non_json_response" };
     }
     
     return { ok: false, status: res.status, error: errBody };
