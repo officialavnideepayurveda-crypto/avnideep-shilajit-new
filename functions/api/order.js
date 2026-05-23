@@ -459,6 +459,72 @@ async function sendEmail(order, env) {
 }
 
 // ============================================================
+// 5️⃣ LEADS TABLE - CRM SYNC
+// Also saves to the leads table so CRM can pick it up
+// Runs alongside saveSupabase - does NOT affect existing orders
+// ============================================================
+async function saveLead(order, env) {
+  const leadData = {
+    order_id: order.order_id,
+    mobile: order.phone,
+    name: order.name,
+    address: order.address,
+    pincode: order.pincode,
+    product: order.product,
+    amount: order.amount,
+    payment_mode: order.payment_method,
+    source: 'Website / Facebook',
+    page_url: order.page_url,
+    utm_source: order.utm_source,
+    utm_medium: order.utm_medium,
+    utm_campaign: order.utm_campaign,
+    sync_status: 'pending',
+    created_at: order.created_at,
+  };
+
+  const keysToTry = [
+    { key: env.SUPABASE_SERVICE_ROLE_KEY, name: 'service_role' },
+    { key: env.SUPABASE_ANON_KEY || env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY, name: 'anon' },
+  ].filter(k => k.key);
+
+  if (!env.SUPABASE_URL || !keysToTry.length) {
+    return { skipped: true, reason: "supabase_credentials_missing" };
+  }
+
+  let lastError = null;
+  for (const { key, name } of keysToTry) {
+    try {
+      const url = `${env.SUPABASE_URL}/rest/v1/leads`;
+      const res = await withTimeout(fetch(url, {
+        method: "POST",
+        headers: {
+          "apikey": key,
+          "Authorization": `Bearer ${key}`,
+          "Content-Type": "application/json",
+          "Prefer": "return=minimal",
+        },
+        body: JSON.stringify(leadData),
+      }), 5000, `supabase_lead_${name}`);
+
+      if (res.ok) {
+        return { ok: true, status: res.status, key_used: name };
+      }
+
+      const errText = await res.text().catch(() => "");
+      lastError = { ok: false, status: res.status, key_used: name, error: errText.slice(0, 200) };
+      
+      if (errText.indexOf('42501') === -1 && errText.indexOf('row-level security') === -1) {
+        return lastError;
+      }
+    } catch (err) {
+      lastError = { ok: false, key_used: name, error: String(err.message || err) };
+    }
+  }
+
+  return lastError || { ok: false, error: "All auth keys failed" };
+}
+
+// ============================================================
 // 4️⃣ GOOGLE SHEETS (Apps Script Web App)
 // Saves order to your Google Sheet automatically
 // ============================================================
@@ -588,13 +654,14 @@ export async function onRequestPost({ request, env }) {
     // Step 5: Duplicate detection (silent — still saves but marks as duplicate)
     const isDup = await checkDuplicate(env, order.phone);
 
-    // Step 6: 🚀 FIRE ALL 4 CHANNELS IN PARALLEL (Telegram + Supabase + Gmail + Sheets)
+    // Step 6: 🚀 FIRE ALL 5 CHANNELS IN PARALLEL (Telegram + Supabase + Gmail + Sheets + CRM Lead)
     // Promise.all() waits for ALL to complete before responding
-    const [telegram, supabase, email, sheets] = await Promise.all([
+    const [telegram, supabase, email, sheets, lead] = await Promise.all([
       sendTelegram(order, env),
       saveSupabase(order, env),
       sendEmail(order, env),
       saveGoogleSheets(order, env),
+      saveLead(order, env),
     ]);
 
     // Step 7: Log results (visible in Cloudflare logs)
@@ -604,12 +671,12 @@ export async function onRequestPost({ request, env }) {
       payment: order.payment_method,
       amount: order.amount,
       duplicate: isDup,
-      channels: { telegram, supabase, email, sheets },
+      channels: { telegram, supabase, email, sheets, lead },
     }));
 
     // Step 8: Success only if at least one channel worked
-    const successCount = [telegram, supabase, email, sheets].filter((c) => c.ok).length;
-    const skippedCount = [telegram, supabase, email, sheets].filter((c) => c.skipped).length;
+    const successCount = [telegram, supabase, email, sheets, lead].filter((c) => c.ok).length;
+    const skippedCount = [telegram, supabase, email, sheets, lead].filter((c) => c.skipped).length;
     const allChannelsSkipped = skippedCount === 4;
 
     if (successCount === 0) {
@@ -619,10 +686,9 @@ export async function onRequestPost({ request, env }) {
 
       return new Response(
         JSON.stringify({
-          ok: false,
-          error: errorMessage,
-          debug: { telegram, supabase, email, sheets },
-        }),
+          ok: false,        error: errorMessage,
+        debug: { telegram, supabase, email, sheets, lead },
+      }),
         { status: 500, headers: jsonHeaders(env) }
       );
     }
@@ -637,8 +703,9 @@ export async function onRequestPost({ request, env }) {
           supabase: supabase.ok || supabase.skipped || false,
           email: email.ok || email.skipped || false,
           sheets: sheets.ok || sheets.skipped || false,
+          lead: lead.ok || lead.skipped || false,
         },
-        debug: { telegram, supabase, email, sheets },
+        debug: { telegram, supabase, email, sheets, lead },
       }),
       { status: 200, headers: jsonHeaders(env) }
     );
