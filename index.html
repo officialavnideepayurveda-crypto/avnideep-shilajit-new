@@ -187,6 +187,110 @@ section{padding:24px 16px}
 .guarantee-icon{width:80px;height:80px;border-radius:50%;background:none;display:grid;place-items:center;box-shadow:0 8px 22px rgba(255,213,79,.3)}
 .guarantee-icon img{width:70px;height:70px;object-fit:contain;border-radius:50%;}
 
+.mechanism-grid{display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:18px}
+.mech-card{background:linear-gradient(180deg,#1a0808,#0d0303);border:1px solid #4a1212;border-radius:18px;padding:20px 16px;text-align:center;width:100%;transition:transform .2s,border-color .2s}
+.mech-card:hover{transform:translateY(-2px);border-color:#ffd54f}
+.mech-num{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#ffd54f,#ff9800);color:#000;font-weight:900;font-size:16px;display:grid;place-items:center;margin:0 auto 8px;box-shadow:0 4px 12px rgba(255,213,79,.3)}
+.mech-icon{font-size:32px;margin-bottom:8px;line-height:1}
+.mech-card h4{color:#ffd54f;font-size:15px;font-weight:900;margin-bottom:6px}
+.mech-card p{font-size:13px;color:#ccc;line-height:1.5}
+.mech-card p strong{color:#fff}
+.mech-result{border:2px solid #ffd54f;background:linear-gradient(180deg,rgba(255,213,79,.12),rgba(10,3,3,.8));box-shadow:0 8px 25px rgba(255,213,79,.15)}
+.mech-arrow{color:#ffd54f;font-size:22px;opacity:.7;line-height:1;padding:2px 0}
+
+.cert-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+.cert-item{background:rgba(255,255,255,.04);border:1px solid rgba(255,213,79,.18);border-radius:14px;padding:16px 10px;text-align:center;transition:transform .2s,background .2s}
+.cert-item:hover{transform:translateY(-2px);background:rgba(255,213,79,.08)}
+.cert-icon{font-size:22px;display:flex;align-items:center;justify-content:center;margin:0 auto 6px;line-height:1;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.03)}
+.cert-item strong{display:block;color:#ffd54f;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.5px;line-height:1.3}
+.cert-item small{display:block;color:#aaa;font-size:10px;margin-top:3px;line-height:1.3}
+
+@media (max-width:540px){
+  .mechanism-grid{gap:5px}
+  .mech-card{padding:16px 12px}
+  .mech-card h4{font-size:14px}
+  .mech-card p{font-size:12px}
+  .mech-icon{font-size:28px}
+  .mech-arrow{font-size:18px}
+  .cert-strip{gap:8px}
+  .cert-item{padding:14px 8px}
+  .cert-item strong{font-size:11px}
+  .cert-item small{font-size:9px}
+  .cert-icon{width:32px;height:32px}
+  .cert-icon svg{width:32px;height:32px}
+}
+@media (max-width:360px){
+  .cert-strip{grid-template-columns:repeat(2,1fr)}
+}
+
+/* === AYUSH Certificate Card === */
+.cert-card{background:linear-gradient(180deg,#1a0808,#0d0303);border:2px solid rgba(255,82,82,.35);border-radius:18px;padding:20px;margin-top:16px;text-align:center;position:relative;overflow:hidden;transition:border-color .3s,box-shadow .3s}
+.cert-card:hover{border-color:#ff5252;box-shadow:0 12px 40px rgba(255,82,82,.15)}
+.cert-card-badge{display:inline-block;background:linear-gradient(135deg,rgba(255,82,82,.15),rgba(245,0,0,.08));border:1px solid rgba(255,82,82,.35);color:#ff8a8a;font-size:11px;font-weight:800;padding:6px 14px;border-radius:50px;margin-bottom:14px;letter-spacing:.5px;text-transform:uppercase}
+.cert-card-img-wrap{position:relative;border-radius:12px;overflow:hidden;cursor:pointer;border:1px solid rgba(255,255,255,.1);background:#000;display:inline-block;max-width:100%}
+.cert-card-img{display:block;max-width:100%;height:auto;max-height:400px;object-fit:contain;transition:transform .3s;margin:0 auto}
+.cert-card-img-wrap:hover .cert-card-img{transform:scale(1.03)}
+.cert-card-zoom{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(0,0,0,.5);opacity:0;transition:opacity .25s;gap:4px}
+.cert-card-img-wrap:hover .cert-card-zoom{opacity:1}
+.cert-card-zoom span{font-size:32px}
+.cert-card-zoom small{color:#fff;font-size:12px;font-weight:700;background:rgba(0,0,0,.6);padding:4px 12px;border-radius:6px;letter-spacing:.5px}
+.cert-card-desc{font-size:13px;color:#ccc;line-height:1.6;margin-top:14px;max-width:480px;margin-left:auto;margin-right:auto}
+
+@media (max-width:540px){
+  .cert-card{padding:16px 12px}
+  .cert-card-badge{font-size:10px;padding:5px 10px}
+  .cert-card-img{max-height:300px}
+  .cert-card-desc{font-size:12px;margin-top:12px}
+  .cert-card-zoom span{font-size:26px}
+  .cert-card-zoom small{font-size:11px}
+}
+@media (max-width:360px){
+  .cert-card-img{max-height:240px}
+}
+
+/* === Customer Gallery === */
+.cust-gallery{margin-top:14px}
+.gallery-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.gal-item{position:relative;border-radius:14px;overflow:hidden;cursor:pointer;aspect-ratio:1;border:2px solid rgba(255,255,255,.08);transition:transform .25s,border-color .25s,box-shadow .25s}
+.gal-item:hover{transform:translateY(-3px);border-color:#ffd54f;box-shadow:0 12px 30px rgba(255,213,79,.18)}
+.gal-img{width:100%;height:100%;object-fit:cover;transition:transform .35s ease}
+.gal-item:hover .gal-img{transform:scale(1.08)}
+.gal-overlay{position:absolute;bottom:0;left:0;right:0;padding:10px;background:linear-gradient(transparent,rgba(0,0,0,.85));opacity:0;transition:opacity .25s}
+.gal-item:hover .gal-overlay,.gal-item:focus-within .gal-overlay{opacity:1}
+.gal-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(0,230,118,.2);backdrop-filter:blur(4px);border:1px solid rgba(0,230,118,.4);color:#00e676;font-size:10px;font-weight:800;padding:4px 10px;border-radius:50px;letter-spacing:.3px}
+.gal-badge::before{content:"✓";font-weight:900;font-size:10px}
+.gallery-foot{text-align:center;font-size:12px;color:#888;margin-top:12px;font-weight:600}
+
+@media (min-width:480px){
+  .gallery-grid{grid-template-columns:repeat(3,1fr)}
+}
+@media (max-width:380px){
+  .gallery-grid{gap:8px}
+}
+
+/* === Lightbox === */
+.glightbox{position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:10000002;display:none;align-items:center;justify-content:center;padding:20px;-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);opacity:0;transition:opacity .3s}
+.glightbox.active{display:flex;opacity:1}
+.glightbox-content{max-width:90vw;max-height:85vh;display:flex;align-items:center;justify-content:center;animation:glZoom .35s ease}
+@keyframes glZoom{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
+.glightbox-img{max-width:100%;max-height:85vh;border-radius:12px;object-fit:contain;box-shadow:0 20px 60px rgba(0,0,0,.8);border:2px solid rgba(255,255,255,.1)}
+.glightbox-close{position:absolute;top:16px;right:16px;width:40px;height:40px;background:rgba(255,255,255,.1);border:none;border-radius:50%;color:#fff;font-size:22px;cursor:pointer;z-index:10;display:grid;place-items:center;transition:background .2s;border:1px solid rgba(255,255,255,.15)}
+.glightbox-close:hover{background:rgba(255,255,255,.2)}
+.glightbox-nav{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;background:rgba(255,255,255,.08);border:none;border-radius:50%;color:#ffd54f;font-size:32px;cursor:pointer;z-index:10;display:grid;place-items:center;transition:background .2s,transform .2s;border:1px solid rgba(255,255,255,.12)}
+.glightbox-nav:hover{background:rgba(255,255,255,.18);transform:translateY(-50%) scale(1.1)}
+.glightbox-prev{left:12px}
+.glightbox-next{right:12px}
+.glightbox-counter{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.1);color:#ffd54f;font-size:13px;font-weight:800;padding:6px 16px;border-radius:50px;letter-spacing:.5px;font-variant-numeric:tabular-nums}
+@media (max-width:540px){
+  .glightbox{padding:10px}
+  .glightbox-content{max-width:96vw;max-height:80vh}
+  .glightbox-img{max-height:80vh;border-radius:8px}
+  .glightbox-close{top:10px;right:10px;width:36px;height:36px;font-size:18px}
+  .glightbox-nav{width:36px;height:36px;font-size:26px}
+  .glightbox-prev{left:6px}
+  .glightbox-next{right:6px}
+}
+
 .guarantee{background:rgba(255,213,79,.05);border:2px dashed #ffd54f;border-radius:18px;padding:22px 18px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center}
 .guarantee h3{font-size:20px;color:#ffd54f;font-weight:900}
 .guarantee p{font-size:14px;color:#ddd;line-height:1.55}
@@ -537,7 +641,7 @@ body.sb-on{padding-bottom:78px}
 
 <a href="#checkout" class="skip">Skip to order</a>
 
-<noscript><div style="background:#ff5252;color:#fff;padding:14px;text-align:center;font-weight:700">कृपया JavaScript enable करें या <a href="tel:+917060101043" style="color:#fff;text-decoration:underline">+91 7060101043</a> पर call करें</div></noscript>
+<noscript><div style="background:#ff5252;color:#fff;padding:14px;text-align:center;font-weight:700">कृपया JavaScript enable करें या <a href="tel:+917060190670" style="color:#fff;text-decoration:underline">+91 7060190670</a> पर call करें</div></noscript>
 
 <div class="wrap">
 
@@ -557,7 +661,7 @@ body.sb-on{padding-bottom:78px}
       <div class="logo-mark">6A</div>
       <div class="logo-text">Avnideep<small>6Pro Ayurveda</small></div>
     </div>
-    <a class="topbar-call" href="tel:+917060101043">Call</a>
+    <a class="topbar-call" href="tel:+917060190670">Call</a>
   </header>
 
   <section class="hero">
@@ -594,7 +698,7 @@ body.sb-on{padding-bottom:78px}
       <span>⚡ अभी ऑर्डर करें - ₹1250</span>
       <small>👇 Tap to claim 50% OFF</small>
     </button>
-    <a class="cta-wa" href="https://wa.me/917060101043?text=Hello%20I%20want%20to%20order%20Avnideep%206Pro&utm_source=facebook&utm_medium=cpc&utm_campaign=avnideep_6pro" target="_blank" rel="noopener"><img src="https://cdn.avnideepayurveda.in/Avnideep-shilajit/WhatsApp.svg_4_4.webp" alt="WhatsApp logo" width="20" height="20" loading="lazy" decoding="async"><span>WhatsApp पर Order करें</span></a>
+    <a class="cta-wa" href="https://wa.me/917060190670?text=Hello%20I%20want%20to%20order%20Avnideep%206Pro&utm_source=facebook&utm_medium=cpc&utm_campaign=avnideep_6pro" target="_blank" rel="noopener"><img src="https://cdn.avnideepayurveda.in/Avnideep-shilajit/WhatsApp.svg_4_4.webp" alt="WhatsApp logo" width="20" height="20" loading="lazy" decoding="async"><span>WhatsApp पर Order करें</span></a>
 
     <div class="urgent" role="status">
       <span class="pulse"></span>
@@ -715,6 +819,43 @@ body.sb-on{padding-bottom:78px}
 
   <section>
     <div class="text-center">
+      <span class="section-kicker">🧬 6Pro का साइंस</span>
+      <h2 class="section-h">कैसे काम करता है <span class="hl">6Pro?</span></h2>
+    </div>
+    <div class="mechanism-grid">
+      <div class="mech-card">
+        <div class="mech-num">1</div>
+        <div class="mech-icon">🏔️</div>
+        <h4>शुद्ध हिमालयन शिलाजीत</h4>
+        <p>Natural Testosterone booster — शरीर में ताकत और स्टैमिना का बेस बढ़ाता है</p>
+      </div>
+      <div class="mech-arrow">⬇</div>
+      <div class="mech-card">
+        <div class="mech-num">2</div>
+        <div class="mech-icon">🌿</div>
+        <h4>अश्वगंधा + सफेद मूसली</h4>
+        <p>तनाव और थकान खत्म — दिमाग शांत, एनर्जी लेवल बूस्ट</p>
+      </div>
+      <div class="mech-arrow">⬇</div>
+      <div class="mech-card">
+        <div class="mech-num">3</div>
+        <div class="mech-icon">🩸</div>
+        <h4>गोक्षुरा + 10 आयुर्वेदिक Herbs</h4>
+        <p>Blood circulation improve — लंबे समय तक टिकने की क्षमता</p>
+      </div>
+      <div class="mech-arrow">⬇</div>
+      <div class="mech-card mech-result">
+        <div class="mech-num">🏆</div>
+        <div class="mech-icon">⚡</div>
+        <h4>पूरा Result!</h4>
+        <p><strong>पूरे दिन का स्टैमिना • फौलादी मजबूती • आत्मविश्वास वापस</strong></p>
+      </div>
+    </div>
+    <button class="btn-light" type="button" data-scroll="checkout" style="margin-top:18px">⚡ 6Pro अभी आज़माएं</button>
+  </section>
+
+  <section>
+    <div class="text-center">
       <span class="section-kicker">सिर्फ 3 आसान Steps</span>
       <h2 class="section-h">कैसे <span class="hl">Order करें?</span></h2>
     </div>
@@ -818,6 +959,145 @@ body.sb-on{padding-bottom:78px}
           <li>Strong & satisfied feeling</li>
         </ul>
       </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="text-center">
+      <span class="section-kicker">🏅 प्रमाणित</span>
+      <h2 class="section-h">हमारी <span class="hl">प्रमाणपत्रे</span></h2>
+    </div>
+    <div class="cert-strip">
+      <div class="cert-item">          <span class="cert-icon">
+          <svg viewBox="0 0 40 40" width="36" height="36" fill="none" aria-hidden="true">
+            <path d="M20 4L6 10v9c0 8.6 5.8 16.7 14 19 8.2-2.3 14-10.4 14-19v-9L20 4z" fill="#ffd54f" opacity=".15"/>
+            <path d="M20 6L8 11.5v7.5c0 7.5 5 14.6 12 16.7 7-2.1 12-9.2 12-16.7v-7.5L20 6z" stroke="#ffd54f" stroke-width="1.2" fill="none"/>
+            <path d="M20 8L10 13v6c0 6.7 4.3 13 10 14.9 5.7-1.9 10-8.2 10-14.9v-6L20 8z" fill="url(#gmpG)" opacity=".3"/>
+            <text x="20" y="23" text-anchor="middle" fill="#ffd54f" font-size="9" font-weight="900" font-family="Arial">GMP</text>
+            <line x1="14" y1="27" x2="26" y2="27" stroke="#ffd54f" stroke-width="0.8" opacity=".5"/>
+            <defs><linearGradient id="gmpG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ffd54f"/><stop offset="100%" stop-color="#ff9800"/></linearGradient></defs>
+          </svg>
+        </span>
+        <strong>GMP Certified</strong>
+        <small>Good Manufacturing Practice</small>
+      </div>
+      <div class="cert-item">
+        <span class="cert-icon">
+          <svg viewBox="0 0 40 40" width="36" height="36" fill="none" aria-hidden="true">
+            <path d="M20 4L6 10v9c0 8.6 5.8 16.7 14 19 8.2-2.3 14-10.4 14-19v-9L20 4z" fill="#4fc3f7" opacity=".15"/>
+            <path d="M20 6L8 11.5v7.5c0 7.5 5 14.6 12 16.7 7-2.1 12-9.2 12-16.7v-7.5L20 6z" stroke="#4fc3f7" stroke-width="1.2" fill="none"/>
+            <path d="M20 8L10 13v6c0 6.7 4.3 13 10 14.9 5.7-1.9 10-8.2 10-14.9v-6L20 8z" fill="url(#isoG)" opacity=".3"/>
+            <text x="20" y="19" text-anchor="middle" fill="#4fc3f7" font-size="7" font-weight="900" font-family="Arial">ISO</text>
+            <text x="20" y="27" text-anchor="middle" fill="#fff" font-size="6" font-weight="700" font-family="Arial" opacity=".8">9001</text>
+            <defs><linearGradient id="isoG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#4fc3f7"/><stop offset="100%" stop-color="#0288d1"/></linearGradient></defs>
+          </svg>
+        </span>
+        <strong>ISO 9001:2015</strong>
+        <small>Quality Management</small>
+      </div>
+      <div class="cert-item">
+        <span class="cert-icon">
+          <svg viewBox="0 0 40 40" width="36" height="36" fill="none" aria-hidden="true">
+            <path d="M20 4L6 10v9c0 8.6 5.8 16.7 14 19 8.2-2.3 14-10.4 14-19v-9L20 4z" fill="#00e676" opacity=".15"/>
+            <path d="M20 6L8 11.5v7.5c0 7.5 5 14.6 12 16.7 7-2.1 12-9.2 12-16.7v-7.5L20 6z" stroke="#00e676" stroke-width="1.2" fill="none"/>
+            <path d="M20 8L10 13v6c0 6.7 4.3 13 10 14.9 5.7-1.9 10-8.2 10-14.9v-6L20 8z" fill="url(#labG)" opacity=".3"/>
+            <!-- Flask icon -->
+            <path d="M16 14v4l-4 7c-.5.8.1 2 1 2h14c.9 0 1.5-1.2 1-2l-4-7v-4" stroke="#00e676" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+            <line x1="18" y1="14" x2="22" y2="14" stroke="#00e676" stroke-width="1.3"/>
+            <circle cx="20" cy="22" r="1.5" fill="#00e676" opacity=".5"/>
+            <circle cx="18" cy="25" r="1" fill="#00e676" opacity=".4"/>
+            <defs><linearGradient id="labG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#00e676"/><stop offset="100%" stop-color="#009624"/></linearGradient></defs>
+          </svg>
+        </span>
+        <strong>Lab Tested</strong>
+        <small>Third Party Approved</small>
+      </div>
+      <div class="cert-item">
+        <span class="cert-icon">
+          <svg viewBox="0 0 40 40" width="36" height="36" fill="none" aria-hidden="true">
+            <path d="M20 4L6 10v9c0 8.6 5.8 16.7 14 19 8.2-2.3 14-10.4 14-19v-9L20 4z" fill="#ff9800" opacity=".15"/>
+            <path d="M20 6L8 11.5v7.5c0 7.5 5 14.6 12 16.7 7-2.1 12-9.2 12-16.7v-7.5L20 6z" stroke="#ff9800" stroke-width="1.2" fill="none"/>
+            <path d="M20 8L10 13v6c0 6.7 4.3 13 10 14.9 5.7-1.9 10-8.2 10-14.9v-6L20 8z" fill="url(#fssG)" opacity=".3"/>
+            <text x="20" y="18" text-anchor="middle" fill="#ff9800" font-size="6" font-weight="900" font-family="Arial">FSSAI</text>
+            <text x="20" y="26" text-anchor="middle" fill="#fff" font-size="7" font-weight="800" font-family="Arial" opacity=".85">✓</text>
+            <defs><linearGradient id="fssG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ff9800"/><stop offset="100%" stop-color="#e65100"/></linearGradient></defs>
+          </svg>
+        </span>
+        <strong>FSSAI Approved</strong>
+        <small>Food Safety Certified</small>
+      </div>
+      <div class="cert-item">
+        <span class="cert-icon">
+          <svg viewBox="0 0 40 40" width="36" height="36" fill="none" aria-hidden="true">
+            <path d="M20 4L6 10v9c0 8.6 5.8 16.7 14 19 8.2-2.3 14-10.4 14-19v-9L20 4z" fill="#ce93d8" opacity=".15"/>
+            <path d="M20 6L8 11.5v7.5c0 7.5 5 14.6 12 16.7 7-2.1 12-9.2 12-16.7v-7.5L20 6z" stroke="#ce93d8" stroke-width="1.2" fill="none"/>
+            <path d="M20 8L10 13v6c0 6.7 4.3 13 10 14.9 5.7-1.9 10-8.2 10-14.9v-6L20 8z" fill="url(#clnG)" opacity=".3"/>
+            <!-- Clinical cross -->
+            <rect x="17" y="15" width="6" height="12" rx="1" fill="#ce93d8"/>
+            <rect x="14" y="18" width="12" height="6" rx="1" fill="#ce93d8"/>
+            <path d="M24 26l4 4" stroke="#00e676" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M27 27l-1.5 1.5" stroke="#00e676" stroke-width="1.2" stroke-linecap="round"/>
+            <defs><linearGradient id="clnG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ce93d8"/><stop offset="100%" stop-color="#7b1fa2"/></linearGradient></defs>
+          </svg>
+        </span>
+        <strong>Clinical Trial</strong>
+        <small>Proven Results</small>
+      </div>
+      <div class="cert-item">
+        <span class="cert-icon">
+          <svg viewBox="0 0 40 40" width="36" height="36" fill="none" aria-hidden="true">
+            <path d="M20 4L6 10v9c0 8.6 5.8 16.7 14 19 8.2-2.3 14-10.4 14-19v-9L20 4z" fill="#69f0ae" opacity=".15"/>
+            <path d="M20 6L8 11.5v7.5c0 7.5 5 14.6 12 16.7 7-2.1 12-9.2 12-16.7v-7.5L20 6z" stroke="#69f0ae" stroke-width="1.2" fill="none"/>
+            <path d="M20 8L10 13v6c0 6.7 4.3 13 10 14.9 5.7-1.9 10-8.2 10-14.9v-6L20 8z" fill="url(#ayurG)" opacity=".3"/>
+            <!-- Ayurvedic leaf -->
+            <path d="M20 24c-4 0-7-3-7-7s3-7 7-7c4 0 7 3 7 7s-3 7-7 7z" stroke="#69f0ae" stroke-width="1" fill="none"/>
+            <path d="M20 16c-1.5 1.5-3 4-2.5 7" stroke="#69f0ae" stroke-width="1" fill="none" stroke-linecap="round"/>
+            <path d="M20 16c1.5 1.5 3 4 2.5 7" stroke="#69f0ae" stroke-width="1" fill="none" stroke-linecap="round"/>
+            <path d="M16 18c1-1 3-2 5-2" stroke="#69f0ae" stroke-width="0.8" fill="none" stroke-linecap="round"/>
+            <path d="M24 18c-1-1-3-2-5-2" stroke="#69f0ae" stroke-width="0.8" fill="none" stroke-linecap="round"/>
+            <text x="20" y="30" text-anchor="middle" fill="#69f0ae" font-size="5.5" font-weight="900" font-family="Arial" opacity=".9">100%</text>
+            <defs><linearGradient id="ayurG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#69f0ae"/><stop offset="100%" stop-color="#00c853"/></linearGradient></defs>
+          </svg>
+        </span>
+        <strong>100% Ayurvedic</strong>
+        <small>No Chemicals</small>
+      </div>
+      <div class="cert-item">
+        <span class="cert-icon">
+          <svg viewBox="0 0 40 40" width="36" height="36" fill="none" aria-hidden="true">
+            <path d="M20 4L6 10v9c0 8.6 5.8 16.7 14 19 8.2-2.3 14-10.4 14-19v-9L20 4z" fill="#ff5252" opacity=".15"/>
+            <path d="M20 6L8 11.5v7.5c0 7.5 5 14.6 12 16.7 7-2.1 12-9.2 12-16.7v-7.5L20 6z" stroke="#ff5252" stroke-width="1.2" fill="none"/>
+            <path d="M20 8L10 13v6c0 6.7 4.3 13 10 14.9 5.7-1.9 10-8.2 10-14.9v-6L20 8z" fill="url(#ayushG)" opacity=".3"/>
+            <circle cx="20" cy="20" r="7" stroke="#ff5252" stroke-width="1" fill="none"/>
+            <circle cx="20" cy="20" r="3" stroke="#ff5252" stroke-width="0.8" fill="none"/>
+            <line x1="20" y1="14" x2="20" y2="26" stroke="#ff5252" stroke-width="0.6" opacity=".5"/>
+            <line x1="14" y1="20" x2="26" y2="20" stroke="#ff5252" stroke-width="0.6" opacity=".5"/>
+            <text x="20" y="31" text-anchor="middle" fill="#ff5252" font-size="4.5" font-weight="900" font-family="Arial">AYUSH</text>
+            <defs><linearGradient id="ayushG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ff5252"/><stop offset="100%" stop-color="#d50000"/></linearGradient></defs>
+          </svg>
+        </span>
+        <strong>AYUSH Approved</strong>
+        <small>Ministry of AYUSH • Govt. of India</small>
+      </div>
+    </div>
+  </section>
+
+  <!-- AYUSH Certificate Showcase -->
+  <section id="ayush-cert">
+    <div class="text-center">
+      <span class="section-kicker">🇮🇳 सरकारी मान्यता</span>
+      <h2 class="section-h">AYUSH Ministry <span class="hl">प्रमाणपत्र</span></h2>
+    </div>
+    <div class="cert-card" id="certCard">
+      <div class="cert-card-badge">🏅 Ministry of AYUSH • Govt. of India</div>
+      <div class="cert-card-img-wrap">
+        <img src="https://cdn.avnideepayurveda.in/Avnideep-shilajit/Avnideep%20ayush%20approved%20(1).webp" width="600" height="auto" loading="lazy" decoding="async" alt="AYUSH Ministry Approved Certificate for Avnideep 6Pro" class="cert-card-img" id="certCardImg">
+        <div class="cert-card-zoom" aria-hidden="true">
+          <span>🔍</span>
+          <small>Click to View Full</small>
+        </div>
+      </div>
+      <p class="cert-card-desc">Avnideep 6Pro को Ministry of AYUSH (Government of India) से आधिकारिक प्रमाणीकरण प्राप्त है। यह हमारे उत्पाद की गुणवत्ता, शुद्धता और आयुर्वेदिक मानकों की पुष्टि करता है।</p>
     </div>
   </section>
 
@@ -1076,6 +1356,90 @@ body.sb-on{padding-bottom:78px}
 
   <section>
     <div class="text-center">
+      <span class="section-kicker">📸 Real Customers</span>
+      <h2 class="section-h">हमारे खुश <span class="hl">ग्राहक</span></h2>
+      <p class="sub" style="font-size:13px;color:#bbb;margin-top:-10px">हमारे असली ग्राहक — उनके अपने हाथों में 6Pro</p>
+    </div>
+    <div class="cust-gallery" id="custGallery">
+      <div class="gallery-grid">
+        <div class="gal-item">
+          <img src="https://cdn.avnideepayurveda.in/Avnideep-shilajit/rev1.jpg" width="280" height="280" loading="lazy" decoding="async" alt="Happy customer with Avnideep 6Pro bottle" class="gal-img">
+          <div class="gal-overlay">
+            <span class="gal-badge">⭐ Verified Customer</span>
+          </div>
+        </div>
+        <div class="gal-item">
+          <img src="https://cdn.avnideepayurveda.in/Avnideep-shilajit/rev2.jpg" width="280" height="280" loading="lazy" decoding="async" alt="Happy customer with Avnideep 6Pro bottle" class="gal-img">
+          <div class="gal-overlay">
+            <span class="gal-badge">⭐ Verified Customer</span>
+          </div>
+        </div>
+        <div class="gal-item">
+          <img src="https://cdn.avnideepayurveda.in/Avnideep-shilajit/rev4.jpg" width="280" height="280" loading="lazy" decoding="async" alt="Happy customer with Avnideep 6Pro bottle" class="gal-img">
+          <div class="gal-overlay">
+            <span class="gal-badge">⭐ Verified Customer</span>
+          </div>
+        </div>
+        <div class="gal-item">
+          <img src="https://cdn.avnideepayurveda.in/Avnideep-shilajit/rev5.jpg" width="280" height="280" loading="lazy" decoding="async" alt="Happy customer with Avnideep 6Pro bottle" class="gal-img">
+          <div class="gal-overlay">
+            <span class="gal-badge">⭐ Verified Customer</span>
+          </div>
+        </div>
+        <div class="gal-item">
+          <img src="https://cdn.avnideepayurveda.in/Avnideep-shilajit/review%20(1).jpg" width="280" height="280" loading="lazy" decoding="async" alt="Happy customer with Avnideep 6Pro bottle" class="gal-img">
+          <div class="gal-overlay">
+            <span class="gal-badge">⭐ Verified Customer</span>
+          </div>
+        </div>
+        <div class="gal-item">
+          <img src="https://cdn.avnideepayurveda.in/Avnideep-shilajit/1%20(1).jpg" width="280" height="280" loading="lazy" decoding="async" alt="Happy customer with Avnideep 6Pro bottle" class="gal-img">
+          <div class="gal-overlay">
+            <span class="gal-badge">⭐ Verified Customer</span>
+          </div>
+        </div>
+        <div class="gal-item">
+          <img src="https://cdn.avnideepayurveda.in/Avnideep-shilajit/2%20(1).jpg" width="280" height="280" loading="lazy" decoding="async" alt="Happy customer with Avnideep 6Pro bottle" class="gal-img">
+          <div class="gal-overlay">
+            <span class="gal-badge">⭐ Verified Customer</span>
+          </div>
+        </div>
+        <div class="gal-item">
+          <img src="https://cdn.avnideepayurveda.in/Avnideep-shilajit/3%20(1).jpg" width="280" height="280" loading="lazy" decoding="async" alt="Happy customer with Avnideep 6Pro bottle" class="gal-img">
+          <div class="gal-overlay">
+            <span class="gal-badge">⭐ Verified Customer</span>
+          </div>
+        </div>
+        <div class="gal-item">
+          <img src="https://cdn.avnideepayurveda.in/Avnideep-shilajit/4.jpg" width="280" height="280" loading="lazy" decoding="async" alt="Happy customer with Avnideep 6Pro bottle" class="gal-img">
+          <div class="gal-overlay">
+            <span class="gal-badge">⭐ Verified Customer</span>
+          </div>
+        </div>
+        <div class="gal-item">
+          <img src="https://cdn.avnideepayurveda.in/Avnideep-shilajit/6.jpg" width="280" height="280" loading="lazy" decoding="async" alt="Happy customer with Avnideep 6Pro bottle" class="gal-img">
+          <div class="gal-overlay">
+            <span class="gal-badge">⭐ Verified Customer</span>
+          </div>
+        </div>
+      </div>
+      <p class="gallery-foot">👆 फोटो पर टैप करें बड़ा देखने के लिए</p>
+    </div>
+  </section>
+
+  <!-- Lightbox -->
+  <div class="glightbox" id="glightbox" role="dialog" aria-modal="true" aria-hidden="true">
+    <button class="glightbox-close" id="glClose" aria-label="Close">✕</button>
+    <button class="glightbox-nav glightbox-prev" id="glPrev" aria-label="Previous">‹</button>
+    <button class="glightbox-nav glightbox-next" id="glNext" aria-label="Next">›</button>
+    <div class="glightbox-content">
+      <img id="glImage" src="" alt="Customer photo" class="glightbox-img">
+    </div>
+    <div class="glightbox-counter" id="glCounter">1 / 5</div>
+  </div>
+
+  <section>
+    <div class="text-center">
       <span class="section-kicker">सवाल-जवाब</span>
       <h2 class="section-h">FAQ</h2>
     </div>
@@ -1113,7 +1477,7 @@ body.sb-on{padding-bottom:78px}
     <p class="f-desc">प्राकृतिक ingredients और पारंपरिक ज्ञान से बने trusted product।</p>
     <div class="f-contact">
       <span>📍 Haridwar, Uttarakhand, India</span>
-      <a href="tel:+917060101043">📞 +91 7060101043</a>
+      <a href="tel:+917060190670">📞 +91 7060190670</a>
       <a href="mailto:support@avnideepayurveda.in">✉️ support@avnideepayurveda.in</a>
     </div>
     <div class="f-links">
@@ -1134,7 +1498,7 @@ body.sb-on{padding-bottom:78px}
     <p>₹1250</p>
     <span>COD उपलब्ध</span>
   </div>
-  <a class="sbar-wa" href="https://wa.me/917060101043?text=Hello%20I%20want%20to%20order%20Avnideep%206Pro&utm_source=facebook&utm_medium=cpc&utm_campaign=avnideep_6pro" target="_blank" rel="noopener" aria-label="WhatsApp">
+  <a class="sbar-wa" href="https://wa.me/917060190670?text=Hello%20I%20want%20to%20order%20Avnideep%206Pro&utm_source=facebook&utm_medium=cpc&utm_campaign=avnideep_6pro" target="_blank" rel="noopener" aria-label="WhatsApp">
     <img src="https://cdn.avnideepayurveda.in/Avnideep-shilajit/WhatsApp.svg_4_4.webp" width="24" height="24" alt="WhatsApp" loading="lazy" decoding="async">
   </a>
   <button class="sbar-order" type="button" data-scroll="checkout">⚡ ऑर्डर करें</button>
@@ -1151,7 +1515,7 @@ body.sb-on{padding-bottom:78px}
       <strong id="sOrderIdText">-</strong>
     </div>
     <div class="smodal-actions">
-      <a class="smodal-wa" id="sWaBtn" href="https://wa.me/917060101043?utm_source=facebook&utm_medium=cpc&utm_campaign=avnideep_6pro" target="_blank" rel="noopener">💬 WhatsApp पर Track करें</a>
+      <a class="smodal-wa" id="sWaBtn" href="https://wa.me/917060190670?utm_source=facebook&utm_medium=cpc&utm_campaign=avnideep_6pro" target="_blank" rel="noopener">💬 WhatsApp पर Track करें</a>
       <button class="smodal-btn" type="button" id="sClose">आगे बढ़ें</button>
     </div>
   </div>
@@ -1162,7 +1526,7 @@ body.sb-on{padding-bottom:78px}
 var $ = function(s,c){return (c||document).querySelector(s)};
 var $$ = function(s,c){return Array.prototype.slice.call((c||document).querySelectorAll(s))};
 var body = document.body;
-var WA_URL = "https://wa.me/917060101043?text=Hello%20I%20want%20to%20order%20Avnideep%206Pro";
+var WA_URL = "https://wa.me/917060190670?text=Hello%20I%20want%20to%20order%20Avnideep%206Pro";
 var submitting = false;
 var UTM_DEFAULTS = {source:'facebook', medium:'cpc', campaign:'avnideep_6pro'};
 
@@ -1372,7 +1736,7 @@ function showSuccess(method, orderId){
     oidTxt.textContent = orderId;
     oidBox.hidden = false;
     if(waBtn){
-      waBtn.href = appendUtm('https://wa.me/917060101043?text=' + encodeURIComponent('Hi, मेरा order ID: ' + orderId + ' है। Status check करना है।'));
+      waBtn.href = appendUtm('https://wa.me/917060190670?text=' + encodeURIComponent('Hi, मेरा order ID: ' + orderId + ' है। Status check करना है।'));
     }
   } else if(oidBox){
     oidBox.hidden = true;
@@ -1514,7 +1878,7 @@ function initForm(){
       '━━━━━━━━━━━━━━━\n' +
       buildUtmLabel() + '\n' +
       'कृपया मेरा order confirm करें।';
-    return appendUtm('https://wa.me/917060101043?text=' + encodeURIComponent(msg));
+    return appendUtm('https://wa.me/917060190670?text=' + encodeURIComponent(msg));
   }
 
   form.addEventListener('submit', async function(e){
@@ -1823,6 +2187,82 @@ function initExit(){
   // NOTE: Removed visibilitychange trigger - was too aggressive (fired on every tab switch)
   // Removed pagehide - users got popup on next visit unexpectedly
 }
+function initLightbox(){
+  var box = $('#glightbox');
+  var img = $('#glImage');
+  var close = $('#glClose');
+  var prev = $('#glPrev');
+  var next = $('#glNext');
+  var counter = $('#glCounter');
+  var items = $$('.gal-item img');
+  if(!box || !items.length) return;
+  var current = 0;
+  function open(idx){
+    current = idx;
+    var src = items[current].getAttribute('src');
+    img.setAttribute('src', src);
+    counter.textContent = (current + 1) + ' / ' + items.length;
+    box.classList.add('active');
+    box.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    close.focus();
+  }
+  function closeBox(){
+    box.classList.remove('active');
+    box.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+  function prevImg(){
+    current = (current - 1 + items.length) % items.length;
+    open(current);
+  }
+  function nextImg(){
+    current = (current + 1) % items.length;
+    open(current);
+  }
+  items.forEach(function(item, idx){
+    item.parentElement.addEventListener('click', function(){ open(idx); });
+    item.parentElement.setAttribute('tabindex', '0');
+    item.parentElement.setAttribute('role', 'button');
+  });
+  close.addEventListener('click', closeBox);
+  prev.addEventListener('click', prevImg);
+  next.addEventListener('click', nextImg);
+  // Restore nav visibility when a gallery item opens
+  var restoreNav = function(){
+    prev.style.display = '';
+    next.style.display = '';
+    counter.style.display = '';
+  };
+  // Certificate click handler
+  var certImg = $('#certCardImg');
+  if(certImg){
+    certImg.parentElement.addEventListener('click', function(){
+      if(img && items.length){
+        img.setAttribute('src', certImg.getAttribute('src'));
+        box.classList.add('active');
+        box.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+        counter.textContent = 'Certificate';
+        counter.style.display = '';
+        prev.style.display = 'none';
+        next.style.display = 'none';
+        close.focus();
+      }
+    });
+  }
+  // When gallery items open, show nav
+  items.forEach(function(item, idx){
+    item.parentElement.addEventListener('click', restoreNav);
+  });
+  box.addEventListener('click', function(e){ if(e.target === box) closeBox(); });
+  document.addEventListener('keydown', function(e){
+    if(!box.classList.contains('active')) return;
+    if(e.key === 'Escape') closeBox();
+    if(e.key === 'ArrowLeft') prevImg();
+    if(e.key === 'ArrowRight') nextImg();
+  });
+}
 function setupVisibility(){
   var paused = false;
   var pausedStyles = document.createElement('style');
@@ -1868,6 +2308,7 @@ function init(){
   // Delayed non-essential
   setTimeout(initSocial, 5000);
   setTimeout(initExit, 10000);
+  setTimeout(initLightbox, 3000);
 }
 
 if(document.readyState === 'loading'){
