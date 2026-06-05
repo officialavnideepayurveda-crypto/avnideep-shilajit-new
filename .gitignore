@@ -1,0 +1,22 @@
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+.env*
+!.env.example
+
+# Dependencies
+node_modules/
+
+# IDE
+.vscode/
+
+# Temp/backup files
+images/unused_backup/
+images/*.tmp
+images/*.optimized
+nul
+
+# Backup files
+*.bak
+*.sql

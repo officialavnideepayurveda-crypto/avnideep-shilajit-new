@@ -1,0 +1,25 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "avnideepshilajit",
+  "compatibility_date": "2026-05-19",
+  "observability": {
+    "enabled": true
+  },
+  "assets": {
+    "directory": "."
+  },
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "vars": {
+    "ALLOWED_ORIGIN": "https://shop.avnideepayurveda.in",
+    "NOTIFY_EMAIL": "support@avnideepayurveda.in",
+    "SUPABASE_ANON_KEY": "sb_publishable_DBSk2EtFly50Cl12Wv22wA_ild2BF9x"
+  },
+  "kv_namespaces": [
+    {
+      "binding": "RATE_LIMIT_KV",
+      "id": "92b72dc001834919a12e81ac86c936ff"
+    }
+  ]
+}

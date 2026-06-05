@@ -1,0 +1,26 @@
+{
+  "name": "Avnideep 6Pro Stamina Shilajit Capsules",
+  "short_name": "Avnideep 6Pro",
+  "description": "100% Ayurvedic Shilajit Capsules - ऊर्जा और स्टैमिना के लिए",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#000000",
+  "theme_color": "#7A0C0C",
+  "lang": "hi-IN",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "https://cdn.avnideepayurveda.in/Avnideep-shilajit/mainimagee.webp",
+      "sizes": "192x192",
+      "type": "image/webp",
+      "purpose": "any"
+    },
+    {
+      "src": "https://cdn.avnideepayurveda.in/Avnideep-shilajit/mainimagee.webp",
+      "sizes": "512x512",
+      "type": "image/webp",
+      "purpose": "any maskable"
+    }
+  ]
+}
