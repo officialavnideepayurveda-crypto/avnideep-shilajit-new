@@ -1,19 +1,12 @@
-# Cloudflare Pages Redirects
-# Force HTTPS & www handling done at Cloudflare DNS layer
+# Cloudflare Workers Redirects
+# Remove trailing slashes and handle clean URLs
 
-# Cache headers for static assets (30 days for images, fonts)
-
-# Cache manifest, sitemap (7 days)
+# Cache manifest, sitemap (cache handled by _headers file)
 /manifest.webmanifest  /manifest.webmanifest  200
-  Cache-Control: public, max-age=604800
 /sitemap.xml  /sitemap.xml  200
-  Cache-Control: public, max-age=604800
 /robots.txt  /robots.txt  200
-  Cache-Control: public, max-age=604800
 
-# HTML pages - cache 1 hour for stale-while-revalidate
-/*.html  /:splat  200
-  Cache-Control: public, max-age=3600, must-revalidate
+# Clean URL redirects
 /privacy-policy  /privacy-policy.html  200
 /refund-policy  /refund-policy.html  200
 /terms-and-conditions  /terms-and-conditions.html  200
@@ -22,7 +15,7 @@
 /about-us  /about-us.html  200
 /disclaimer  /disclaimer.html  200
 
-# SPA fallback - not needed but safe
+# Shortcuts
 /home    /    301
 /buy     /#checkout    301
 /order   /#checkout    301

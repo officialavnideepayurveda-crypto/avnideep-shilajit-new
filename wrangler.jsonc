@@ -14,7 +14,8 @@
   "vars": {
     "ALLOWED_ORIGIN": "https://shop.avnideepayurveda.in",
     "NOTIFY_EMAIL": "support@avnideepayurveda.in",
-    "SUPABASE_ANON_KEY": "sb_publishable_DBSk2EtFly50Cl12Wv22wA_ild2BF9x"
+    "SUPABASE_ANON_KEY": "sb_publishable_DBSk2EtFly50Cl12Wv22wA_ild2BF9x",
+    "GOOGLE_SHEETS_URL": "https://script.google.com/macros/s/AKfycbwIQtmQROUYf0Mtbx5wfagLROAObzYFAPG3mL80RtQnTFYcEk1s9V7HNGAf0Wz5XyRP/exec"
   },
   "kv_namespaces": [
     {
