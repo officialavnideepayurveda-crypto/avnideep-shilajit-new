@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#7A0C0C" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0a0606" media="(prefers-color-scheme: dark)">
 <meta name="color-scheme" content="dark light">
-<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="format-detection" content="telephone=yes">
 <meta http-equiv="x-ua-compatible" content="ie=edge">
@@ -687,7 +687,7 @@ s.parentNode.insertBefore(t,s)}(window, document,'script',
 fbq('init', '1715387275770711');
 fbq('track', 'PageView');
 </script>
-<noscript><img height="1" width="1" style="display:none"
+<noscript><img height="1" width="1" style="display:none" alt=""
 src="https://www.facebook.com/tr?id=1715387275770711&ev=PageView&noscript=1"
 /></noscript>
 <!-- End Meta Pixel Code -->
@@ -716,7 +716,8 @@ src="https://www.facebook.com/tr?id=1715387275770711&ev=PageView&noscript=1"
       <div class="logo-text">Avnideep<small>6Pro Ayurveda</small></div>
     </div>
     <a class="topbar-call" href="tel:+917060101043">Call</a>
-  </header>
+  </header
+<main>>
 
   <section class="hero">
     <div class="hero-badge">India's Trusted Ayurvedic Supplement</div>
@@ -1517,7 +1518,8 @@ src="https://www.facebook.com/tr?id=1715387275770711&ev=PageView&noscript=1"
     </div>
   </section>
 
-  <footer class="footer">
+  
+</main><footer class="footer">
     <div class="f-brand">Avnideep Ayurveda</div>
     <div class="f-tag">असली आयुर्वेदिक वेलनेस</div>
     <p class="f-desc">प्राकृतिक ingredients और पारंपरिक ज्ञान से बने trusted product।</p>
@@ -2040,8 +2042,8 @@ function initForm(){
       if(apiSuccess){
         // Also save to Google Sheets (fire-and-forget)
         sendToGoogleSheets(payload);
-        showSuccess('cod', payload.orderId);
         dataLayer.push({event:'Purchase', value:1250, currency:'INR'});
+        window.location.href = 'thank-you.html?order_id=' + encodeURIComponent(payload.orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.name) + '&method=cod';
         form.reset();
         updatePay();
         btn.innerHTML = origHTML;
@@ -2049,11 +2051,8 @@ function initForm(){
         if(apiError){
           showErr(err, 'ऑर्डर backend पर सेव नहीं हुआ: ' + apiError + '। WhatsApp fallback भेजा जा रहा है।');
         }
-        showSuccess('cod_whatsapp', payload.orderId);
         dataLayer.push({event:'Purchase', value:1250, currency:'INR', method:'whatsapp_fallback'});
-        setTimeout(function(){
-          window.open(waOrderUrl, '_blank', 'noopener');
-        }, 1000);
+        window.location.href = 'thank-you.html?order_id=' + encodeURIComponent(payload.orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.name) + '&method=cod_whatsapp&wa_url=' + encodeURIComponent(waOrderUrl);
         form.reset();
         updatePay();
         btn.innerHTML = origHTML;
