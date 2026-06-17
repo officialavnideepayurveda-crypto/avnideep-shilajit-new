@@ -19,4 +19,4 @@
 /home    /    301
 /buy     /#checkout    301
 /order   /#checkout    301
-/thank-you /thank-you.html 200
+# /thank-you handled by Workers clean URL (auto serves thank-you.html)

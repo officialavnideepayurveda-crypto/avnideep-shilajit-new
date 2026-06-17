@@ -2043,7 +2043,7 @@ function initForm(){
         // Also save to Google Sheets (fire-and-forget)
         sendToGoogleSheets(payload);
         dataLayer.push({event:'Purchase', value:1250, currency:'INR'});
-        window.location.href = 'thank-you.html?order_id=' + encodeURIComponent(payload.orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.name) + '&method=cod';
+        window.location.href = '/thank-you?order_id=' + encodeURIComponent(payload.orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.name) + '&method=cod';
         form.reset();
         updatePay();
         btn.innerHTML = origHTML;
@@ -2052,7 +2052,7 @@ function initForm(){
           showErr(err, 'ऑर्डर backend पर सेव नहीं हुआ: ' + apiError + '। WhatsApp fallback भेजा जा रहा है।');
         }
         dataLayer.push({event:'Purchase', value:1250, currency:'INR', method:'whatsapp_fallback'});
-        window.location.href = 'thank-you.html?order_id=' + encodeURIComponent(payload.orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.name) + '&method=cod_whatsapp&wa_url=' + encodeURIComponent(waOrderUrl);
+        window.location.href = '/thank-you?order_id=' + encodeURIComponent(payload.orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.name) + '&method=cod_whatsapp&wa_url=' + encodeURIComponent(waOrderUrl);
         form.reset();
         updatePay();
         btn.innerHTML = origHTML;
