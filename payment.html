@@ -4,6 +4,32 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
   <title>Secure UPI Checkout | Avnideep Ayurveda</title>
+  <!-- Google Tag Manager -->
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','G-HTH3FR9SF6');</script>
+  <!-- End Google Tag Manager -->
+
+  <!-- Meta Pixel Code -->
+  <script>
+  !function(f,b,e,v,n,t,s)
+  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];
+  s.parentNode.insertBefore(t,s)}(window, document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', '1715387275770711');
+  fbq('track', 'PageView');
+  </script>
+  <noscript><img height="1" width="1" style="display:none"
+  src="https://www.facebook.com/tr?id=1715387275770711&ev=PageView&noscript=1"
+  /></noscript>
+  <!-- End Meta Pixel Code -->
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -824,6 +850,11 @@
   </style>
 </head>
 <body>
+  <!-- Google Tag Manager (noscript) -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=G-HTH3FR9SF6"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <!-- End Google Tag Manager (noscript) -->
+
 
   <!-- SECURITY BAR -->
   <div class="security-bar">
@@ -1062,6 +1093,32 @@
         correctLevel: QRCode.CorrectLevel.H
       });
       startTimer(900);
+
+      // === Facebook Pixel Purchase Event for Prepaid ===
+      try {
+        if (typeof fbq === 'function') {
+          fbq('track', 'Purchase', {
+            value: amount,
+            currency: 'INR',
+            content_name: '6Pro Stamina Shilajit Capsules',
+            content_type: 'product',
+            order_id: orderId
+          });
+        } else {
+          setTimeout(function(){
+            if(typeof fbq === 'function') fbq('track','Purchase',{value:amount,currency:'INR',content_name:'6Pro Stamina Shilajit Capsules',content_type:'product',order_id:orderId});
+          }, 1000);
+        }
+      } catch(e) {
+        console.warn('FB Pixel error:', e);
+      }
+
+      // === GTM / dataLayer Purchase Event ===
+      try {
+        dataLayer.push({event:'Purchase', value:amount, currency:'INR', order_id:orderId});
+      } catch(e) {
+        console.warn('dataLayer error:', e);
+      }
     });
     
     let timerInterval;
@@ -1117,52 +1174,98 @@
       document.getElementById('error-msg').classList.remove('show');
     }
     
-    function submitPayment() {
-      const utr = document.getElementById('utr-input').value.trim();
-      const name = document.getElementById('cust-input').value.trim();
-      const errorEl = document.getElementById('error-msg');
-
-      if (!utr || utr.length < 12) {
-        errorEl.textContent = 'Please enter a valid 12-digit UTR number';
-        errorEl.classList.add('show');
-        return;
-      }
-
-      if (!name) {
-        errorEl.textContent = 'Please enter your name or phone number';
-        errorEl.classList.add('show');
-        return;
-      }
-
-      errorEl.classList.remove('show');
-      document.getElementById('payment-modal').classList.remove('active');
-      document.getElementById('payment-idle').style.display = 'none';
-      document.getElementById('payment-verifying').style.display = 'block';
-      document.getElementById('verify-utr').textContent = 'UTR: ' + utr;
-
-      // Actually send UTR to backend for verification
-      fetch(API_ENDPOINT, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderId: orderId, utr: utr, name: name })
-      })
-      .then(function(res) { return res.json(); })
-      .then(function(data) {
-        document.getElementById('payment-verifying').style.display = 'none';
-        if (data.ok) {
-          document.getElementById('payment-success').style.display = 'block';
-        } else {
-          errorEl.textContent = data.error || 'Verification failed. Contact support.';
-          errorEl.classList.add('show');
-          document.getElementById('payment-idle').style.display = 'block';
-        }
-      })
-      .catch(function(err) {
-        document.getElementById('payment-verifying').style.display = 'none';
-        errorEl.textContent = 'Network error. Please try again.';
-        errorEl.classList.add('show');
-        document.getElementById('payment-idle').style.display = 'block';
-      });
+    function submitPayment() {
+
+      const utr = document.getElementById('utr-input').value.trim();
+
+      const name = document.getElementById('cust-input').value.trim();
+
+      const errorEl = document.getElementById('error-msg');
+
+
+
+      if (!utr || utr.length < 12) {
+
+        errorEl.textContent = 'Please enter a valid 12-digit UTR number';
+
+        errorEl.classList.add('show');
+
+        return;
+
+      }
+
+
+
+      if (!name) {
+
+        errorEl.textContent = 'Please enter your name or phone number';
+
+        errorEl.classList.add('show');
+
+        return;
+
+      }
+
+
+
+      errorEl.classList.remove('show');
+
+      document.getElementById('payment-modal').classList.remove('active');
+
+      document.getElementById('payment-idle').style.display = 'none';
+
+      document.getElementById('payment-verifying').style.display = 'block';
+
+      document.getElementById('verify-utr').textContent = 'UTR: ' + utr;
+
+
+
+      // Actually send UTR to backend for verification
+
+      fetch(API_ENDPOINT, {
+
+        method: 'PATCH',
+
+        headers: { 'Content-Type': 'application/json' },
+
+        body: JSON.stringify({ orderId: orderId, utr: utr, name: name })
+
+      })
+
+      .then(function(res) { return res.json(); })
+
+      .then(function(data) {
+
+        document.getElementById('payment-verifying').style.display = 'none';
+
+        if (data.ok) {
+
+          document.getElementById('payment-success').style.display = 'block';
+
+        } else {
+
+          errorEl.textContent = data.error || 'Verification failed. Contact support.';
+
+          errorEl.classList.add('show');
+
+          document.getElementById('payment-idle').style.display = 'block';
+
+        }
+
+      })
+
+      .catch(function(err) {
+
+        document.getElementById('payment-verifying').style.display = 'none';
+
+        errorEl.textContent = 'Network error. Please try again.';
+
+        errorEl.classList.add('show');
+
+        document.getElementById('payment-idle').style.display = 'block';
+
+      });
+
     }
   </script>
 </body>
