@@ -176,16 +176,16 @@
     var method = params.get('method') || 'cod';
     var waUrl = params.get('wa_url') || '';
 
-    // === FACEBOOK PIXEL PURCHASE EVENT (fires IMMEDIATELY) ===
+    // === FACEBOOK PIXEL PURCHASE EVENT ===
     try {
-      fbq('track', 'Purchase', {
+      if (typeof fbq === 'function') { fbq('track', 'Purchase', {
         value: amount,
         currency: 'INR',
         content_name: '6Pro Stamina Shilajit Capsules',
         content_type: 'product',
         order_id: orderId
       });
-      console.log('FB Pixel Purchase tracked: INR ' + amount);
+      console.log('FB Pixel Purchase tracked: INR ' + amount); } else { setTimeout(function(){ if(typeof fbq === 'function') fbq('track','Purchase',{value:amount,currency:'INR',content_name:'6Pro Stamina Shilajit Capsules',content_type:'product',order_id:orderId}); }, 1000); }
     } catch(e) {
       console.warn('FB Pixel error:', e);
     }
@@ -233,8 +233,6 @@
           savedPhone = data.phone || savedPhone;
         }
       } catch(e){}
-
-
 
       // If WhatsApp fallback, open WhatsApp after short delay
       if(waUrl) {
