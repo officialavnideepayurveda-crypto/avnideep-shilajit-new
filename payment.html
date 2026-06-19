@@ -1101,7 +1101,23 @@
     const orderId = params.get('order_id') || "AVN-681164";
     const API_ENDPOINT = "./api/order";
     const upiString = `upi://pay?pa=${upiId}&pn=${merchant}&tr=${orderId}&am=${amount}&cu=INR`;
-    
+
+    // Fire Purchase immediately on page load - order already created
+    try {
+      if (typeof fbq === 'function') {
+        fbq('track', 'Purchase', {
+          value: amount,
+          currency: 'INR',
+          content_name: 'AVN-6PRO-001',
+          content_type: 'product',
+          order_id: orderId,
+          eventID: orderId
+        });
+      }
+    } catch(e) {
+      console.warn('FB Pixel immediate error:', e);
+    }
+
     window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('upi-id').textContent = upiId;
       document.getElementById('success-order').textContent = orderId;
