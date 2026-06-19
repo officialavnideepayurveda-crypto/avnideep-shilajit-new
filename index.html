@@ -1653,6 +1653,7 @@ function initTimer(){
 function initScroll(){
   $$('[data-scroll]').forEach(function(b){
     b.addEventListener('click', function(e){
+      if(window._lastIC && Date.now() - window._lastIC < 3000) return; window._lastIC = Date.now();
       e.preventDefault();
       var t = $('#'+b.dataset.scroll);
       if(!t) return;
@@ -2051,7 +2052,7 @@ function initForm(){
       }
       showSuccess('prepaid_whatsapp', payload.orderId);
       dataLayer.push({event:'Purchase', value:payload.amount, currency:'INR', method:'whatsapp_fallback'});
-      try{ if(typeof fbq === 'function') fbq('track', 'Purchase', {value:Number(payload.amount) || 1250, currency:'INR', content_name:'6Pro Stamina Shilajit Capsules', content_type:'product'}); }catch(e){}
+
       setTimeout(function(){ window.open(waOrderUrl, '_blank', 'noopener'); }, 1000);
       form.reset();
       updatePay();
@@ -2060,14 +2061,14 @@ function initForm(){
       // COD flow: Show success when backend saved, otherwise use WhatsApp fallback
       if(apiSuccess){
         dataLayer.push({event:'Purchase', value:1250, currency:'INR'});
-        try{ if(typeof fbq === 'function') fbq('track', 'Purchase', {value:1250, currency:'INR', content_name:'6Pro Stamina Shilajit Capsules', content_type:'product'}); }catch(e){}
+  
         window.location.href = '/thank-you?order_id=' + encodeURIComponent(payload.orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.name) + '&method=cod';
       } else {
         if(apiError){
           showErr(err, 'ऑर्डर backend पर सेव नहीं हुआ: ' + apiError + '। WhatsApp fallback भेजा जा रहा है।');
         }
         dataLayer.push({event:'Purchase', value:1250, currency:'INR', method:'whatsapp_fallback'});
-        try{ if(typeof fbq === 'function') fbq('track', 'Purchase', {value:1250, currency:'INR', content_name:'6Pro Stamina Shilajit Capsules', content_type:'product'}); }catch(e){}
+  
         window.location.href = '/thank-you?order_id=' + encodeURIComponent(payload.orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.name) + '&method=cod_whatsapp&wa_url=' + encodeURIComponent(waOrderUrl);
         form.reset();
         updatePay();
