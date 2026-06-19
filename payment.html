@@ -1160,12 +1160,23 @@
       }, 2000);
     }
     
-    function openApp(app) {
-      // Use intent:// URL — Chrome Android handles this natively (much better than window.open)
-      // First try: intent:// scheme that Chrome uses to open external apps
-      var url = 'intent://pay?pa=' + encodeURIComponent(upiId) + '&pn=' + encodeURIComponent(merchant) + '&tr=' + encodeURIComponent(orderId) + '&am=' + encodeURIComponent(amount) + '&cu=INR#Intent;scheme=upi;action=android.intent.action.VIEW;end';
-      try { window.location.href = url; } catch(e) {}
-      // Copy UPI ID as backup — user can paste in any UPI app
+            function openApp(app) {
+      // Build UPI params
+      var params = 'pa=' + encodeURIComponent(upiId) + '&pn=' + encodeURIComponent(merchant) + '&tr=' + encodeURIComponent(orderId) + '&am=' + encodeURIComponent(amount) + '&cu=INR';
+      
+      // Platform detection — different devices need different URL schemes
+      // Android: intent:// URL (Chrome shows system UPI chooser — most reliable)
+      // iOS/others: upi:// scheme (standard UPI)
+      var isAndroid = /android/i.test(navigator.userAgent);
+      var url = isAndroid
+        ? 'intent://pay?' + params + '#Intent;scheme=upi;action=android.intent.action.VIEW;end'
+        : 'upi://pay?' + params;
+      
+      // Direct redirect — preserves user gesture, most reliable approach
+      // NO setTimeout — that's what was breaking it before!
+      window.location.href = url;
+      
+      // Also copy UPI ID as backup so user can paste in any app
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(upiId).catch(function(){});
       }
