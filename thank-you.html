@@ -181,11 +181,12 @@
       if (typeof fbq === 'function') { fbq('track', 'Purchase', {
         value: amount,
         currency: 'INR',
-        content_name: '6Pro Stamina Shilajit Capsules',
+        content_name: '6Pro Vitality Shilajit Capsules',
         content_type: 'product',
-        order_id: orderId
+        order_id: orderId,
+        eventID: orderId
       });
-      console.log('FB Pixel Purchase tracked: INR ' + amount); } else { setTimeout(function(){ if(typeof fbq === 'function') fbq('track','Purchase',{value:amount,currency:'INR',content_name:'6Pro Stamina Shilajit Capsules',content_type:'product',order_id:orderId}); }, 1000); }
+      console.log('FB Pixel Purchase tracked: INR ' + amount); } else { setTimeout(function(){ if(typeof fbq === 'function') fbq('track','Purchase',{value:amount,currency:'INR',content_name:'6Pro Vitality Shilajit Capsules',content_type:'product',order_id:orderId,eventID:orderId}); }, 1000); }
     } catch(e) {
       console.warn('FB Pixel error:', e);
     }

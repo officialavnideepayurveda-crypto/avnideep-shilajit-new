@@ -1094,31 +1094,7 @@
       });
       startTimer(900);
 
-      // === Facebook Pixel Purchase Event for Prepaid ===
-      try {
-        if (typeof fbq === 'function') {
-          fbq('track', 'Purchase', {
-            value: amount,
-            currency: 'INR',
-            content_name: '6Pro Stamina Shilajit Capsules',
-            content_type: 'product',
-            order_id: orderId
-          });
-        } else {
-          setTimeout(function(){
-            if(typeof fbq === 'function') fbq('track','Purchase',{value:amount,currency:'INR',content_name:'6Pro Stamina Shilajit Capsules',content_type:'product',order_id:orderId});
-          }, 1000);
-        }
-      } catch(e) {
-        console.warn('FB Pixel error:', e);
-      }
 
-      // === GTM / dataLayer Purchase Event ===
-      try {
-        dataLayer.push({event:'Purchase', value:amount, currency:'INR', order_id:orderId});
-      } catch(e) {
-        console.warn('dataLayer error:', e);
-      }
     });
     
     let timerInterval;
@@ -1258,6 +1234,33 @@
         if (data.ok) {
 
           document.getElementById('payment-success').style.display = 'block';
+
+          // === Facebook Pixel Purchase Event (on successful payment) ===
+          try {
+            if (typeof fbq === 'function') {
+              fbq('track', 'Purchase', {
+                value: amount,
+                currency: 'INR',
+                content_name: '6Pro Vitality Shilajit Capsules',
+                content_type: 'product',
+                order_id: orderId,
+                eventID: orderId
+              });
+            } else {
+              setTimeout(function(){
+                if(typeof fbq === 'function') fbq('track','Purchase',{value:amount,currency:'INR',content_name:'6Pro Vitality Shilajit Capsules',content_type:'product',order_id:orderId,eventID:orderId});
+              }, 1000);
+            }
+          } catch(e) {
+            console.warn('FB Pixel error:', e);
+          }
+
+          // === GTM / dataLayer Purchase Event (on successful payment) ===
+          try {
+            dataLayer.push({event:'Purchase', value:amount, currency:'INR', order_id:orderId});
+          } catch(e) {
+            console.warn('dataLayer error:', e);
+          }
 
         } else {
 
