@@ -182,11 +182,10 @@
         value: amount,
         currency: 'INR',
         content_name: 'AVN-6PRO-001',
-        content_type: 'product',
         order_id: orderId,
         eventID: orderId
       });
-      console.log('FB Pixel Purchase tracked: INR ' + amount); } else { setTimeout(function(){ if(typeof fbq === 'function') fbq('track','Purchase',{value:amount,currency:'INR',content_name:'AVN-6PRO-001',content_type:'product',order_id:orderId,eventID:orderId}); }, 1000); }
+      console.log('FB Pixel Purchase tracked: INR ' + amount); } else { setTimeout(function(){ if(typeof fbq === 'function') fbq('track','Purchase',{value:amount,currency:'INR',content_name:'AVN-6PRO-001',order_id:orderId,eventID:orderId}); }, 1000); }
     } catch(e) {
       console.warn('FB Pixel error:', e);
     }

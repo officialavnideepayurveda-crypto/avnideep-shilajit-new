@@ -20,3 +20,6 @@ nul
 # Backup files
 *.bak
 *.sql
+
+# Wrangler auto-generated config
+wrangler.toml
