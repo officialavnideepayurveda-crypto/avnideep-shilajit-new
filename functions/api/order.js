@@ -525,6 +525,83 @@ async function saveLead(order, env) {
 }
 
 // ============================================================
+// 🔷 FACEBOOK CONVERSION API (Server-Side Events)
+// Sends Purchase events to Facebook for better ad optimization
+// ============================================================
+async function sha256(str) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(str);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function sendFacebookCAPI(order, env, eventName = 'Purchase') {
+  if (!env.META_ACCESS_TOKEN || !env.META_PIXEL_ID) {
+    return { skipped: true, reason: 'facebook_capi_credentials_missing' };
+  }    try {
+      // Skip if no phone (Facebook needs at least one identifier for matching)
+      const rawPhone = String(order.phone || '').replace(/[^0-9]/g, '');
+      if (!rawPhone) {
+        return { skipped: true, reason: 'no_phone_for_matching' };
+      }
+
+      // Hash phone with country code for Facebook matching (E.164 format)
+      const phoneWithCode = rawPhone.startsWith('91') ? `+${rawPhone}` : `+91${rawPhone}`;
+      const hashedPhone = await sha256(phoneWithCode);
+
+      const eventData = {
+        data: [{
+          event_name: eventName,
+          event_time: Math.floor(Date.now() / 1000),
+          event_id: String(order.order_id || ''),
+          action_source: 'website',
+          event_source_url: String(order.page_url || 'https://shop.avnideepayurveda.in/'),
+          user_data: {
+            ph: hashedPhone,
+            client_ip_address: String(order.ip_address || '0.0.0.0'),
+            client_user_agent: String(order.user_agent || ''),
+          },
+          custom_data: {
+            value: Number(order.amount) || 0,
+            currency: 'INR',
+            content_name: String(order.product || 'Avnideep 6Pro Stamina Shilajit Capsules'),
+            content_type: 'product',
+            order_id: String(order.order_id || ''),
+          },
+        }],
+        access_token: env.META_ACCESS_TOKEN,
+      };
+
+    const url = `https://graph.facebook.com/v22.0/${env.META_PIXEL_ID}/events`;
+
+    const res = await withTimeout(fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(eventData),
+    }), 4000, 'facebook_capi');
+
+    const resBody = await res.text().catch(() => '');
+
+    if (!res.ok) {
+      return { ok: false, status: res.status, error: resBody.slice(0, 300) };
+    }
+
+    let json;
+    try { json = JSON.parse(resBody); } catch (e) { json = null; }
+
+    return {
+      ok: true,
+      status: res.status,
+      events_received: json?.events_received || 0,
+      message: json?.events_received ? 'Events sent to Facebook' : 'Unknown response',
+    };
+  } catch (err) {
+    return { ok: false, error: String(err.message || err) };
+  }
+}
+
+// ============================================================
 // 4️⃣ GOOGLE SHEETS (Apps Script Web App)
 // Saves order to your Google Sheet automatically
 // ============================================================
@@ -654,14 +731,15 @@ export async function onRequestPost({ request, env }) {
     // Step 5: Duplicate detection (silent — still saves but marks as duplicate)
     const isDup = await checkDuplicate(env, order.phone);
 
-    // Step 6: 🚀 FIRE ALL 5 CHANNELS IN PARALLEL (Telegram + Supabase + Gmail + Sheets + CRM Lead)
+    // Step 6: 🚀 FIRE ALL 6 CHANNELS IN PARALLEL (Telegram + Supabase + Email + Sheets + CRM Lead + Facebook CAPI)
     // Promise.all() waits for ALL to complete before responding
-    const [telegram, supabase, email, sheets, lead] = await Promise.all([
+    const [telegram, supabase, email, sheets, lead, facebookCapi] = await Promise.all([
       sendTelegram(order, env),
       saveSupabase(order, env),
       sendEmail(order, env),
       saveGoogleSheets(order, env),
       saveLead(order, env),
+      sendFacebookCAPI(order, env, 'Purchase'),
     ]);
 
     // Step 7: Log results (visible in Cloudflare logs)
@@ -671,13 +749,13 @@ export async function onRequestPost({ request, env }) {
       payment: order.payment_method,
       amount: order.amount,
       duplicate: isDup,
-      channels: { telegram, supabase, email, sheets, lead },
+      channels: { telegram, supabase, email, sheets, lead, facebookCapi },
     }));
 
     // Step 8: Success only if at least one channel worked
-    const successCount = [telegram, supabase, email, sheets, lead].filter((c) => c.ok).length;
-    const skippedCount = [telegram, supabase, email, sheets, lead].filter((c) => c.skipped).length;
-    const allChannelsSkipped = skippedCount === 4;
+    const successCount = [telegram, supabase, email, sheets, lead, facebookCapi].filter((c) => c.ok).length;
+    const skippedCount = [telegram, supabase, email, sheets, lead, facebookCapi].filter((c) => c.skipped).length;
+    const allChannelsSkipped = skippedCount === 5;
 
     if (successCount === 0) {
       const errorMessage = allChannelsSkipped
@@ -687,7 +765,7 @@ export async function onRequestPost({ request, env }) {
       return new Response(
         JSON.stringify({
           ok: false,        error: errorMessage,
-        debug: { telegram, supabase, email, sheets, lead },
+        debug: { telegram, supabase, email, sheets, lead, facebookCapi },
       }),
         { status: 500, headers: jsonHeaders(env) }
       );
@@ -704,6 +782,7 @@ export async function onRequestPost({ request, env }) {
           email: email.ok || email.skipped || false,
           sheets: sheets.ok || sheets.skipped || false,
           lead: lead.ok || lead.skipped || false,
+          facebook_capi: facebookCapi.ok || facebookCapi.skipped || false,
         },
         debug: { telegram, supabase, email, sheets, lead },
       }),
@@ -739,6 +818,7 @@ export async function onRequestGet({ env }) {
           false
         ) : false,
         google_sheets: !!env.GOOGLE_SHEETS_URL,
+        facebook_capi: !!env.META_ACCESS_TOKEN && !!env.META_PIXEL_ID,
         rate_limit_kv: !!env.RATE_LIMIT_KV,
         allowed_origin: env.ALLOWED_ORIGIN || "* (not set)",
       },
@@ -825,6 +905,9 @@ export async function onRequestPatch({ request, env }) {
     // Send payment confirmation email
     const emailResult = await sendEmail(confirmOrder, env);
     
+    // Send payment confirmation to Facebook CAPI
+    const facebookResult = await sendFacebookCAPI(confirmOrder, env, 'Purchase');
+    
     return new Response(
       JSON.stringify({
         ok: true,
@@ -833,6 +916,7 @@ export async function onRequestPatch({ request, env }) {
         channels: {
           telegram: telegramResult.ok || false,
           email: emailResult.ok || false,
+          facebook_capi: facebookResult.ok || false,
         },
       }),
       { status: 200, headers: jsonH }

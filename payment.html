@@ -1161,8 +1161,14 @@
     }
     
     function openApp(app) {
-      const href = `${app}://pay?pa=${upiId}&pn=${merchant}&tr=${orderId}&am=${amount}&cu=INR`;
-      setTimeout(() => { window.location.href = href; }, 100);
+      // Use intent:// URL — Chrome Android handles this natively (much better than window.open)
+      // First try: intent:// scheme that Chrome uses to open external apps
+      var url = 'intent://pay?pa=' + encodeURIComponent(upiId) + '&pn=' + encodeURIComponent(merchant) + '&tr=' + encodeURIComponent(orderId) + '&am=' + encodeURIComponent(amount) + '&cu=INR#Intent;scheme=upi;action=android.intent.action.VIEW;end';
+      try { window.location.href = url; } catch(e) {}
+      // Copy UPI ID as backup — user can paste in any UPI app
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(upiId).catch(function(){});
+      }
     }
     
     function openPaymentModal() {

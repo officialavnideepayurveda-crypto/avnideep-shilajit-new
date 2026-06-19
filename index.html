@@ -38,9 +38,7 @@
 <link rel="preconnect" href="https://i.ytimg.com">
 <link rel="dns-prefetch" href="https://wa.me">
 <link rel="preconnect" href="https://wa.me">
-<link rel="dns-prefetch" href="https://www.googletagmanager.com">
 <link rel="dns-prefetch" href="https://connect.facebook.net">
-<link rel="preconnect" href="https://www.googletagmanager.com">
 <link rel="preconnect" href="https://connect.facebook.net" crossorigin>
 
 <link rel="manifest" href="manifest.webmanifest">
@@ -686,15 +684,7 @@ body.sb-on{padding-bottom:78px}
 }
 
 </style>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-HTH3FR9SF6"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-HTH3FR9SF6');
-</script>
-
+<script>window.dataLayer = window.dataLayer || [];</script>
 <!-- Meta Pixel Code -->
 <script>
 !function(f,b,e,v,n,t,s)
@@ -1667,6 +1657,7 @@ function initScroll(){
       var t = $('#'+b.dataset.scroll);
       if(!t) return;
       dataLayer.push({event:'InitiateCheckout', value:1250, currency:'INR'});
+      try{ if(typeof fbq === 'function') fbq('track', 'InitiateCheckout', {value:1250, currency:'INR', content_name:'6Pro Stamina Shilajit Capsules'}); }catch(e){}
       t.scrollIntoView({behavior:'smooth', block:'start'});
       setTimeout(function(){
         var n = $('#cName');
@@ -1743,6 +1734,7 @@ function initVideo(){
       b.style.aspectRatio = '16/9';
       b.appendChild(f);
       dataLayer.push({event:'ViewContent', content_name:'Doctor Video'});
+      try{ if(typeof fbq === 'function') fbq('track', 'ViewContent', {content_name:'Doctor Video', content_type:'video'}); }catch(e){}
     }
     b.addEventListener('click', load);
     b.addEventListener('keydown', function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();load()}});
@@ -2011,6 +2003,7 @@ function initForm(){
     btn.innerHTML = '<span>⏳ Processing... कृपया रुकें</span>';
 
     dataLayer.push({event:'Lead', value:payload.amount, currency:'INR'});
+      try{ if(typeof fbq === 'function') fbq('track', 'Lead', {value:payload.amount, currency:'INR', content_name:'6Pro Stamina Shilajit Capsules'}); }catch(e){}
 
     if(m === 'prepaid'){
       // Fire-and-forget send to backend so Supabase receives an initial record for prepaid orders
@@ -2058,6 +2051,7 @@ function initForm(){
       }
       showSuccess('prepaid_whatsapp', payload.orderId);
       dataLayer.push({event:'Purchase', value:payload.amount, currency:'INR', method:'whatsapp_fallback'});
+      try{ if(typeof fbq === 'function') fbq('track', 'Purchase', {value:Number(payload.amount) || 1250, currency:'INR', content_name:'6Pro Stamina Shilajit Capsules', content_type:'product'}); }catch(e){}
       setTimeout(function(){ window.open(waOrderUrl, '_blank', 'noopener'); }, 1000);
       form.reset();
       updatePay();
@@ -2066,12 +2060,14 @@ function initForm(){
       // COD flow: Show success when backend saved, otherwise use WhatsApp fallback
       if(apiSuccess){
         dataLayer.push({event:'Purchase', value:1250, currency:'INR'});
+        try{ if(typeof fbq === 'function') fbq('track', 'Purchase', {value:1250, currency:'INR', content_name:'6Pro Stamina Shilajit Capsules', content_type:'product'}); }catch(e){}
         window.location.href = '/thank-you?order_id=' + encodeURIComponent(payload.orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.name) + '&method=cod';
       } else {
         if(apiError){
           showErr(err, 'ऑर्डर backend पर सेव नहीं हुआ: ' + apiError + '। WhatsApp fallback भेजा जा रहा है।');
         }
         dataLayer.push({event:'Purchase', value:1250, currency:'INR', method:'whatsapp_fallback'});
+        try{ if(typeof fbq === 'function') fbq('track', 'Purchase', {value:1250, currency:'INR', content_name:'6Pro Stamina Shilajit Capsules', content_type:'product'}); }catch(e){}
         window.location.href = '/thank-you?order_id=' + encodeURIComponent(payload.orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.name) + '&method=cod_whatsapp&wa_url=' + encodeURIComponent(waOrderUrl);
         form.reset();
         updatePay();
