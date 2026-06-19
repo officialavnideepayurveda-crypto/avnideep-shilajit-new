@@ -1658,7 +1658,7 @@ function initScroll(){
       var t = $('#'+b.dataset.scroll);
       if(!t) return;
       dataLayer.push({event:'InitiateCheckout', value:1250, currency:'INR'});
-      try{ if(typeof fbq === 'function') fbq('track', 'InitiateCheckout', {value:1250, currency:'INR', content_name:'6Pro Vitality Shilajit Capsules'}); }catch(e){}
+      try{ if(typeof fbq === 'function') fbq('track', 'InitiateCheckout', {value:1250, currency:'INR', content_name:'AVN-6PRO-001'}); }catch(e){}
       t.scrollIntoView({behavior:'smooth', block:'start'});
       setTimeout(function(){
         var n = $('#cName');
@@ -2004,7 +2004,7 @@ function initForm(){
     btn.innerHTML = '<span>⏳ Processing... कृपया रुकें</span>';
 
     dataLayer.push({event:'Lead', value:payload.amount, currency:'INR'});
-      try{ if(typeof fbq === 'function') fbq('track', 'Lead', {value:payload.amount, currency:'INR', content_name:'6Pro Vitality Shilajit Capsules'}); }catch(e){}
+      try{ if(typeof fbq === 'function') fbq('track', 'Lead', {value:payload.amount, currency:'INR', content_name:'AVN-6PRO-001'}); }catch(e){}
 
     if(m === 'prepaid'){
       // Fire-and-forget send to backend so Supabase receives an initial record for prepaid orders

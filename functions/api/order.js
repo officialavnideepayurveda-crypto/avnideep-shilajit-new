@@ -565,7 +565,7 @@ async function sendFacebookCAPI(order, env, eventName = 'Purchase') {
           custom_data: {
             value: Number(order.amount) || 0,
             currency: 'INR',
-            content_name: String(order.product || 'Avnideep 6Pro Vitality Shilajit Capsules'),
+            content_name: 'AVN-6PRO-001',  // SKU used for Meta compliance,
             content_type: 'product',
             order_id: String(order.order_id || ''),
           },
