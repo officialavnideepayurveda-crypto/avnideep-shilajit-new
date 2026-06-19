@@ -784,6 +784,8 @@
       box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1);
     }
 
+    .form-label { display: block; font-size: 12px; font-weight: 600; color: #0f172a; margin-bottom: 6px; letter-spacing: 0.2px; }
+
     .form-input::placeholder {
       color: #94a3b8;
     }
@@ -1033,9 +1035,11 @@
             </div>
             
             <div class="form-group">
+              <label for="utr-input" class="form-label">UTR Number</label>
               <input id="utr-input" type="text" class="form-input" placeholder="12-digit UTR" maxlength="16" inputmode="numeric">
             </div>
             <div class="form-group">
+              <label for="cust-input" class="form-label">Your Name or Phone</label>
               <input id="cust-input" type="text" class="form-input" placeholder="Your name or phone">
             </div>
             <div id="error-msg" class="error-msg"></div>
