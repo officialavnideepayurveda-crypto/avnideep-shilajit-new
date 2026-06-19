@@ -16,8 +16,8 @@
     "NOTIFY_EMAIL": "support@avnideepayurveda.in",
     "SUPABASE_ANON_KEY": "sb_publishable_DBSk2EtFly50Cl12Wv22wA_ild2BF9x",
     "GOOGLE_SHEETS_URL": "https://script.google.com/macros/s/AKfycbwIQtmQROUYf0Mtbx5wfagLROAObzYFAPG3mL80RtQnTFYcEk1s9V7HNGAf0Wz5XyRP/exec",
-    "META_PIXEL_ID": "1715387275770711",
-    "META_ACCESS_TOKEN": "PLACEHOLDER_REPLACE_VIA_SECRET"
+    
+    
   },
   "kv_namespaces": [
     {
