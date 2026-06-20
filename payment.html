@@ -1031,19 +1031,27 @@
     const API_ENDPOINT = "./api/order";
 
     // Fire Purchase immediately on page load - order already created
-    try {
-      if (typeof fbq === 'function') {
-        fbq('track', 'Purchase', {
-          value: amount,
-          currency: 'INR',
-          content_name: 'AVN-6PRO-001',
-          order_id: orderId,
-          eventID: orderId
-        });
+    var purchaseTracked = false;
+    function trackFacebookPurchase() {
+      if (purchaseTracked) return;
+      try {
+        if (typeof fbq === 'function') {
+          fbq('track', 'Purchase', {
+            value: amount,
+            currency: 'INR',
+            content_name: 'AVN-6PRO-001',
+            order_id: orderId,
+            eventID: orderId
+          });
+          purchaseTracked = true;
+        }
+      } catch(e) {
+        console.warn('FB Pixel immediate error:', e);
       }
-    } catch(e) {
-      console.warn('FB Pixel immediate error:', e);
     }
+    trackFacebookPurchase();
+    window.addEventListener('load', trackFacebookPurchase);
+    setTimeout(trackFacebookPurchase, 1200);
 
     window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('success-order').textContent = orderId;

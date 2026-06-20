@@ -172,18 +172,28 @@
     var waUrl = params.get('wa_url') || '';
 
     // === FACEBOOK PIXEL PURCHASE EVENT ===
-    try {
-      if (typeof fbq === 'function') { fbq('track', 'Purchase', {
-        value: amount,
-        currency: 'INR',
-        content_name: 'AVN-6PRO-001',
-        order_id: orderId,
-        eventID: orderId
-      });
-      console.log('FB Pixel Purchase tracked: INR ' + amount); } else { setTimeout(function(){ if(typeof fbq === 'function') fbq('track','Purchase',{value:amount,currency:'INR',content_name:'AVN-6PRO-001',order_id:orderId,eventID:orderId}); }, 1000); }
-    } catch(e) {
-      console.warn('FB Pixel error:', e);
+    var purchaseTracked = false;
+    function trackFacebookPurchase() {
+      if (purchaseTracked) return;
+      try {
+        if (typeof fbq === 'function') {
+          fbq('track', 'Purchase', {
+            value: amount,
+            currency: 'INR',
+            content_name: 'AVN-6PRO-001',
+            order_id: orderId,
+            eventID: orderId
+          });
+          purchaseTracked = true;
+          console.log('FB Pixel Purchase tracked: INR ' + amount);
+        }
+      } catch (e) {
+        console.warn('FB Pixel error:', e);
+      }
     }
+    trackFacebookPurchase();
+    window.addEventListener('load', trackFacebookPurchase);
+    setTimeout(trackFacebookPurchase, 1200);
 
     // === GTM / dataLayer Purchase Event ===
     try {
