@@ -58,35 +58,6 @@ function normalizeOrder(body, ip) {
 }
 
 // ============================================================
-// RATE LIMITING (Cloudflare KV)
-// ============================================================
-async function checkRateLimit(env, key, limit = 8, windowSec = 60) {
-  if (!env.RATE_LIMIT_KV) return { allowed: true };
-  try {
-    const current = await env.RATE_LIMIT_KV.get(key);
-    const count = current ? parseInt(current, 10) : 0;
-    if (count >= limit) return { allowed: false, retryAfter: windowSec };
-    await env.RATE_LIMIT_KV.put(key, String(count + 1), { expirationTtl: windowSec });
-    return { allowed: true };
-  } catch (e) {
-    return { allowed: true };
-  }
-}
-
-async function checkDuplicate(env, phone) {
-  if (!env.RATE_LIMIT_KV) return false;
-  try {
-    const key = `dup:${phone}`;
-    const exists = await env.RATE_LIMIT_KV.get(key);
-    if (exists) return true;
-    await env.RATE_LIMIT_KV.put(key, "1", { expirationTtl: 60 });
-    return false;
-  } catch (e) {
-    return false;
-  }
-}
-
-// ============================================================
 // 1️⃣ TELEGRAM NOTIFICATION (Instant Lead Alert)
 // ============================================================
 async function sendTelegram(order, env) {
@@ -709,16 +680,7 @@ export async function onRequestPost({ request, env }) {
   const ip = request.headers.get("CF-Connecting-IP") || request.headers.get("X-Forwarded-For") || "unknown";
 
   try {
-    // Step 1: Rate limit per IP
-    const rl = await checkRateLimit(env, `rl:${ip}`, 8, 60);
-    if (!rl.allowed) {
-      return new Response(
-        JSON.stringify({ ok: false, error: "बहुत ज्यादा requests। कृपया 1 मिनट बाद try करें।" }),
-        { status: 429, headers: { ...jsonHeaders(env), "Retry-After": String(rl.retryAfter) } }
-      );
-    }
-
-    // Step 2: Parse JSON body
+    // Step 1: Parse JSON body
     let body;
     try {
       body = await request.json();
@@ -749,16 +711,8 @@ export async function onRequestPost({ request, env }) {
     }
 
 
-    // Step 4b: Rate limit per phone (1 order per 24 hours)
-    const phoneLimit = await checkRateLimit(env, `phone:${order.phone}`, 1, 86400);
-    if (!phoneLimit.allowed) {
-      return new Response(
-        JSON.stringify({ ok: false, error: "इस नंबर से पिछले 24 घंटे में पहले ही ऑर्डर किया जा चुका है। कृपया कल पुनः प्रयास करें।" }),
-        { status: 429, headers: { ...jsonHeaders(env), "Retry-After": String(phoneLimit.retryAfter) } }
-      );
-    }
     // Step 5: Duplicate detection (silent — still saves but marks as duplicate)
-    const isDup = await checkDuplicate(env, order.phone);
+    const isDup = false;
 
     // Step 6: 🚀 FIRE ALL 6 CHANNELS IN PARALLEL (Telegram + Supabase + Email + Sheets + CRM Lead + Facebook CAPI)
     // Promise.all() waits for ALL to complete before responding

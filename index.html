@@ -709,6 +709,22 @@ fbq('init', '1715387275770711');
 fbq('track', 'PageView');
 </script>
 <!-- End Meta Pixel Code -->
+<script>
+// === Duplicate Order Lock: Check localStorage ===
+(function(){
+  try{
+    var locked = localStorage.getItem('avn_order_placed');
+    if(locked){
+      document.addEventListener('DOMContentLoaded', function(){
+        var popup = document.getElementById('orderLockPopup');
+        var form = document.getElementById('oForm');
+        if(popup) popup.style.display = 'flex';
+        if(form) form.style.display = 'none';
+      });
+    }
+  } catch(e){}
+})();
+</script>
 </head>
 <body>
 <a href="#checkout" class="skip">Skip to order</a>
@@ -1206,7 +1222,21 @@ fbq('track', 'PageView');
         <div class="step"><span>3</span>Confirmed</div>
       </div>
 
-      <form id="oForm" novalidate autocomplete="on">
+      <!-- Duplicate Order Lock Popup -->
+<div id="orderLockPopup" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:99999;align-items:center;justify-content:center;backdrop-filter:blur(4px);">
+  <div style="background:#fff;border-radius:20px;padding:40px 32px;max-width:400px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);animation:fadeIn 0.3s ease;">
+    <div style="font-size:64px;line-height:1;margin-bottom:16px;">📋</div>
+    <h2 style="font-size:22px;font-weight:700;color:#1a1a2e;margin:0 0 12px 0;line-height:1.3;">ऑर्डर पहले से दर्ज है</h2>
+    <p style="font-size:15px;color:#555;line-height:1.6;margin:0 0 24px 0;">आपने इस डिवाइस से पहले ही ऑर्डर किया हुआ है। आपका पिछला ऑर्डर प्रोसेस में है। किसी सहायता के लिए हमसे संपर्क करें।</p>
+    <button onclick="document.getElementById('orderLockPopup').style.display='none'" style="background:#1a1a2e;color:#fff;border:none;padding:14px 48px;border-radius:50px;font-size:16px;font-weight:600;cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">ठीक है</button>
+    <p style="font-size:13px;color:#999;margin-top:16px;">सहायता के लिए: <a href="tel:+919876543210" style="color:#1a1a2e;text-decoration:underline;">हमसे संपर्क करें</a></p>
+  </div>
+</div>
+<style>
+@keyframes fadeIn{from{opacity:0;transform:scale(0.9)}to{opacity:1;transform:scale(1)}}
+</style>
+
+<form id="oForm" novalidate autocomplete="on">
         <div class="form-field">
           <label for="cName">पूरा नाम *</label>
           <input id="cName" name="name" type="text" placeholder="जैसे: Aaditya" minlength="2" autocomplete="name" required>
@@ -2043,6 +2073,7 @@ function initForm(){
       if(result && result.ok !== false){
         apiSuccess = true;
         try{ sessionStorage.setItem('avn_last_order', result.orderId || ''); }catch(e){}
+      try{ localStorage.setItem('avn_order_placed', String(Date.now())); }catch(e){}
       } else if(result && result.error){
         apiError = String(result.error);
       }
