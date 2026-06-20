@@ -748,6 +748,15 @@ export async function onRequestPost({ request, env }) {
       );
     }
 
+
+    // Step 4b: Rate limit per phone (1 order per 24 hours)
+    const phoneLimit = await checkRateLimit(env, `phone:${order.phone}`, 1, 86400);
+    if (!phoneLimit.allowed) {
+      return new Response(
+        JSON.stringify({ ok: false, error: "इस नंबर से पिछले 24 घंटे में पहले ही ऑर्डर किया जा चुका है। कृपया कल पुनः प्रयास करें।" }),
+        { status: 429, headers: { ...jsonHeaders(env), "Retry-After": String(phoneLimit.retryAfter) } }
+      );
+    }
     // Step 5: Duplicate detection (silent — still saves but marks as duplicate)
     const isDup = await checkDuplicate(env, order.phone);
 
