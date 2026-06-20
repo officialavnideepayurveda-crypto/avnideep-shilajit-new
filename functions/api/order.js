@@ -552,7 +552,19 @@ async function sendFacebookCAPI(order, env, eventName = 'Purchase') {
       const phoneWithCode = rawPhone.startsWith('91') ? `+${rawPhone}` : `+91${rawPhone}`;
       const hashedPhone = await sha256(phoneWithCode);
 
+      // Advanced Matching: split name, hash additional fields
+      const nameParts = (order.name || '').trim().split(/\s+/);
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+      const [hashedFirstName, hashedLastName, hashedPostcode, hashedCountry] = await Promise.all([
+        firstName ? sha256(firstName.toLowerCase()) : Promise.resolve(''),
+        lastName ? sha256(lastName.toLowerCase()) : Promise.resolve(''),
+        order.pincode ? sha256(String(order.pincode).trim()) : Promise.resolve(''),
+        sha256('in'),
+      ]);
+
       const eventData = {
+
         data: [{
           event_name: eventName,
           event_time: Math.floor(Date.now() / 1000),
@@ -561,10 +573,14 @@ async function sendFacebookCAPI(order, env, eventName = 'Purchase') {
           event_source_url: String(order.page_url || 'https://shop.avnideepayurveda.in/'),
           user_data: {
             ph: hashedPhone,
-            client_ip_address: String(order.ip_address || '0.0.0.0'),
             client_user_agent: String(order.user_agent || ''),
             fbp: String(order.fbp || ''),
             fbc: String(order.fbc || ''),
+            fn: hashedFirstName,
+            ln: hashedLastName,
+            zp: hashedPostcode,
+            country: hashedCountry,
+            external_id: String(order.order_id || ''),
           },
           custom_data: {
             value: Number(order.amount) || 0,
