@@ -22,11 +22,5 @@
       "binding": "RATE_LIMIT_KV",
       "id": "4ad07d2c9dea46d7975da1af3350a7a8"
     }
-  ],
-  "routes": [
-    {
-      "pattern": "shop.avnideepayurveda.in",
-      "custom_domain": true
-    }
   ]
 }
