@@ -52,6 +52,8 @@ function normalizeOrder(body, ip) {
     utm_source: String(body.utm_source || "").slice(0, 100),
     utm_medium: String(body.utm_medium || "").slice(0, 100),
     utm_campaign: String(body.utm_campaign || "").slice(0, 100),
+    fbp: String(body.fbp || "").slice(0, 100),
+    fbc: String(body.fbc || "").slice(0, 100),
   };
 }
 
@@ -561,6 +563,8 @@ async function sendFacebookCAPI(order, env, eventName = 'Purchase') {
             ph: hashedPhone,
             client_ip_address: String(order.ip_address || '0.0.0.0'),
             client_user_agent: String(order.user_agent || ''),
+            fbp: String(order.fbp || ''),
+            fbc: String(order.fbc || ''),
           },
           custom_data: {
             value: Number(order.amount) || 0,

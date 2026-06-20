@@ -1610,6 +1610,11 @@ function getUtmParams(){
     campaign: params.get('utm_campaign') || UTM_DEFAULTS.campaign
   };
 }
+
+function getCookie(name){
+  var match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+  return match ? decodeURIComponent(match[2]) : '';
+}
 function appendUtm(url){
   try{
     var u = new URL(url, window.location.origin);
@@ -1846,7 +1851,9 @@ function build(status){
     utm_medium: utm.medium,
     utm_campaign: utm.campaign,
     createdAt: new Date().toISOString(),
-    userAgent: navigator.userAgent || ''
+    userAgent: navigator.userAgent || '',
+    fbp: getCookie('_fbp') || '',
+    fbc: getCookie('_fbc') || ''
   };
 }
 
