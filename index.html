@@ -1776,8 +1776,8 @@ function initVideo(){
       b.innerHTML = '';
       b.style.aspectRatio = '16/9';
       b.appendChild(f);
-      dataLayer.push({event:'ViewContent', content_name:'Doctor Video'});
-      try{ if(typeof fbq === 'function') fbq('track', 'ViewContent', {content_name:'Doctor Video', content_type:'video'}); }catch(e){}
+      dataLayer.push({event:'ViewContent', content_name:'VIDEO_DOCTOR'});
+      try{ if(typeof fbq === 'function') fbq('track', 'ViewContent', {content_name:'VIDEO_DOCTOR', content_type:'video'}); }catch(e){}
     }
     b.addEventListener('click', load);
     b.addEventListener('keydown', function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();load()}});
