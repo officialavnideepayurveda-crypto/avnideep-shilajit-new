@@ -1030,8 +1030,10 @@
     const orderId = params.get('order_id') || "AVN-681164";
     const API_ENDPOINT = "./api/order";
 
-    // Fire Purchase immediately on page load - order already created
+    // Fire Purchase with sessionStorage dedup guard - order already created
     var purchaseTracked = false;
+    var sessionKey = "fb_purchase_" + orderId;
+    try { if (sessionStorage.getItem(sessionKey)) { purchaseTracked = true; } } catch(e){}
     function trackFacebookPurchase() {
       if (purchaseTracked) return;
       try {
@@ -1044,6 +1046,7 @@
             eventID: orderId
           });
           purchaseTracked = true;
+          try { sessionStorage.setItem(sessionKey, "1"); } catch(e){}
         }
       } catch(e) {
         console.warn('FB Pixel immediate error:', e);

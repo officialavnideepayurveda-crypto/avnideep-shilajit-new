@@ -171,8 +171,10 @@
     var method = params.get('method') || 'cod';
     var waUrl = params.get('wa_url') || '';
 
-    // === FACEBOOK PIXEL PURCHASE EVENT ===
+    // === FACEBOOK PIXEL PURCHASE EVENT (sessionStorage dedup) ===
     var purchaseTracked = false;
+    var sessionKey = "fb_purchase_" + orderId;
+    try { if (sessionStorage.getItem(sessionKey)) { purchaseTracked = true; } } catch(e){}
     function trackFacebookPurchase() {
       if (purchaseTracked) return;
       try {
@@ -185,6 +187,7 @@
             eventID: orderId
           });
           purchaseTracked = true;
+          try { sessionStorage.setItem(sessionKey, "1"); } catch(e){}
           console.log('FB Pixel Purchase tracked: INR ' + amount);
         }
       } catch (e) {
