@@ -484,6 +484,7 @@ async function sendFacebookCAPI(order, env, eventName = 'Purchase') {
           event_source_url: String(order.page_url || 'https://shop.avnideepayurveda.in/'),
           user_data: {
             ph: hashedPhone,
+            client_ip_address: String(order.ip_address || ''),
             client_user_agent: String(order.user_agent || ''),
             fbp: String(order.fbp || ''),
             fbc: String(order.fbc || ''),
