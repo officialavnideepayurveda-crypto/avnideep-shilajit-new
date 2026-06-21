@@ -196,11 +196,10 @@
     setTimeout(trackFacebookPurchase, 1200);
 
     // === GTM / dataLayer Purchase Event ===
-    try {
-      dataLayer.push({event:'Purchase', value:amount, currency:'INR', order_id:orderId});
-    } catch(e) {
-      console.warn('dataLayer error:', e);
-    }
+    // Disabled to prevent duplicate Purchase events being sent to Facebook
+    // The page sends an explicit fbq('track','Purchase') above.
+    // If you rely on GTM to send the Purchase event, re-enable and ensure
+    // the event carries a matching eventID to allow server-side deduplication.
 
     // Google Sheets save handled by index.html before redirect
 
