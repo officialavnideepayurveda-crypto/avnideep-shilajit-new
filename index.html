@@ -2078,7 +2078,7 @@ function initForm(){
         }).catch(function(e){ console.warn('background order save failed', e); });
       }catch(e){ console.warn('background order save error', e); }
 
-      window.location.href = 'payment.html?auto=1&order_id=' + encodeURIComponent(payload.orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.name) + '&phone=' + encodeURIComponent(payload.phone);
+      window.location.href = 'payment.html?order_id=' + encodeURIComponent(payload.orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.name) + '&phone=' + encodeURIComponent(payload.phone);
       return;
     }
 
@@ -2105,7 +2105,7 @@ function initForm(){
 
     if(m === 'prepaid'){
       if(apiSuccess){
-        window.location.href = 'payment.html?auto=1&order_id=' + encodeURIComponent(payload.orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.name) + '&phone=' + encodeURIComponent(payload.phone);
+        window.location.href = 'payment.html?order_id=' + encodeURIComponent(payload.orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.name) + '&phone=' + encodeURIComponent(payload.phone);
         return;
       }
       if(apiError){

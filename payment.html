@@ -1033,16 +1033,12 @@
     // Purchase Event: Handled server-side via CAPI (functions/api/order.js)
     // Client-side fbq Purchase removed to prevent double counting.
     
-    // Auto-open Razorpay if redirected from index.html with auto=1
-    var isAuto = params.get('auto') === '1';
     var custName = params.get('name') || '';
     var custPhone = params.get('phone') || '';
 
     window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('success-order').textContent = orderId;
       startTimer(900);
-
-
     });
     
     let timerInterval;
@@ -1073,119 +1069,8 @@
       }, 1000);
     }
 
-    // ===== AUTO-OPEN RAZORPAY (when redirected from index.html with auto=1) =====
-    if(isAuto) {
-      // Hide payment UI, show loading
-      var checkoutCard = document.querySelector('.checkout-card');
-      var merchantSidebar = document.querySelector('.merchant-sidebar');
-      if(checkoutCard) checkoutCard.style.display = 'none';
-      if(merchantSidebar) merchantSidebar.style.display = 'none';
-      
-      // Show loading state
-      var loadDiv = document.createElement('div');
-      loadDiv.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:40px;text-align:center;';
-      loadDiv.innerHTML = '<div style="width:48px;height:48px;border:3px solid rgba(255,255,255,.15);border-top-color:#ffd54f;border-radius:50%;animation:spin .7s linear infinite;margin-bottom:20px"></div>'
-        + '<p style="color:#a09080;font-size:16px">रेजरपा चेकआउट खुल रहा है...</p>'
-        + '<p style="color:#6a5a4a;font-size:13px;margin-top:8px">कृपया प्रतीक्षा करें...</p>'
-        + '<button id="rzpFallbackOpenButton" style="margin-top:24px;padding:12px 20px;font-size:15px;color:#1f2937;background:#f8fafc;border:0;border-radius:999px;cursor:pointer;box-shadow:0 8px 20px rgba(15,23,42,.08);">Checkout नहीं खुला? यहाँ क्लिक करें</button>';
-      document.body.insertBefore(loadDiv, document.body.firstChild);
-      
-      var fallbackButton = loadDiv.querySelector('#rzpFallbackOpenButton');
-      if(fallbackButton){
-        fallbackButton.addEventListener('click', function(){
-          if(!clickRazorpayButton()){
-            console.warn('Fallback button clicked but checkout button still not available.');
-            showPaymentUI();
-          }
-        });
-      }
-      
-      function showPaymentUI() {
-        if(checkoutCard) checkoutCard.style.display = '';
-        if(merchantSidebar) merchantSidebar.style.display = '';
-        if(loadDiv && loadDiv.parentNode) loadDiv.parentNode.removeChild(loadDiv);
-      }
-
-      function clickRazorpayButton() {
-        var selectors = [
-          '.razorpay-payment-button',
-          '.razorpay-container form button',
-          '.razorpay-container button',
-          'form button'
-        ];
-        for(var i = 0; i < selectors.length; i++) {
-          var btns = document.querySelectorAll(selectors[i]);
-          if(btns && btns.length > 0) {
-            btns[0].click();
-            return true;
-          }
-        }
-        return false;
-      }
-
-      var autoOpenAttempts = 0;
-      var rzpInterval = setInterval(function() {
-        autoOpenAttempts += 1;
-        var rzpBtns = document.querySelectorAll('.razorpay-payment-button, .razorpay-container form button, .razorpay-container button');
-        if(rzpBtns && rzpBtns.length > 0) {
-          clearInterval(rzpInterval);
-          setTimeout(function() {
-            if(!clickRazorpayButton()) {
-              console.warn('Razorpay button found but click failed.');
-              showPaymentUI();
-            }
-          }, 500);
-          return;
-        }
-        if(autoOpenAttempts >= 80) {
-          clearInterval(rzpInterval);
-          console.warn('Razorpay button not found after auto-open attempts. Showing payment UI.');
-          showPaymentUI();
-        }
-      }, 300);
-      
-      // After Razorpay modal closes, redirect to thank-you
-      var paid = false;
-      function goToThankYou() {
-        if(paid) return;
-        paid = true;
-        // Call PATCH API to update order status
-        try {
-          function getCookie(name){
-          var match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-          return match ? decodeURIComponent(match[2]) : '';
-        }
-        fetch(API_ENDPOINT, {
-            method: "PATCH",
-            headers: {"Content-Type":"application/json"},
-            body: JSON.stringify({
-              orderId: orderId,
-              utr: "auto_razorpay",
-              name: custName,
-              phone: custPhone,
-              amount: amount,
-              autoConfirm: true,
-              fbp: getCookie('_fbp') || '',
-              fbc: getCookie('_fbc') || ''
-            }),
-            keepalive: true
-          }).catch(function(e){ console.warn("PATCH error:", e); });
-        } catch(e){ console.warn("PATCH error:", e); }
-        setTimeout(function() {
-          window.location.href = '/thank-you?order_id=' + encodeURIComponent(orderId) 
-            + '&amount=' + encodeURIComponent(amount) 
-            + '&name=' + encodeURIComponent(custName) 
-            + '&phone=' + encodeURIComponent(custPhone) 
-            + '&method=prepaid';
-        }, 1500);
-      }
-      window.addEventListener('focus', goToThankYou);
-      document.addEventListener('visibilitychange', function() {
-        if(document.visibilityState === 'visible') goToThankYou();
-      });
-      // Fallback: if modal doesn't open, redirect after 60s
-      setTimeout(function() { if(!paid) goToThankYou(); }, 60000);
-    }
+    // Auto-open Razorpay is disabled. Payment UI will load normally and the customer must click the Razorpay button.
+    var isAuto = false;
   </script>
 </body>
 </html>
