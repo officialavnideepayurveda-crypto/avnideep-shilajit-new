@@ -693,6 +693,12 @@ body.sb-on{padding-bottom:78px}
   .sp-notif-img{width:34px;height:34px}
 }
 
+.call-btn-under { display:block; width:100%; padding:14px; margin-top:10px; background:linear-gradient(135deg,#25D366,#128C7E); color:#fff; text-align:center; border-radius:50px; font-size:16px; font-weight:700; text-decoration:none; transition:all .3s; box-shadow:0 4px 15px rgba(37,211,102,.3); }
+.call-btn-under:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(37,211,102,.4); }
+.call-btn-under span { margin-right:8px; }
+.sbar-actions { display:flex; gap:8px; align-items:center; }
+.sbar-call { display:inline-flex; align-items:center; gap:4px; padding:10px 16px; background:linear-gradient(135deg,#25D366,#128C7E); color:#fff; border-radius:50px; font-size:14px; font-weight:700; text-decoration:none; white-space:nowrap; transition:all .3s; box-shadow:0 2px 10px rgba(37,211,102,.3); flex-shrink:0; }
+.sbar-call:hover { transform:translateY(-1px); box-shadow:0 4px 15px rgba(37,211,102,.4); }
 </style>
 <script>window.dataLayer = window.dataLayer || [];</script>
 <!-- Meta Pixel Code -->
@@ -1234,6 +1240,12 @@ fbq('track', 'PageView');
 </div>
 <style>
 @keyframes fadeIn{from{opacity:0;transform:scale(0.9)}to{opacity:1;transform:scale(1)}}
+.call-btn-under { display:block; width:100%; padding:14px; margin-top:10px; background:linear-gradient(135deg,#25D366,#128C7E); color:#fff; text-align:center; border-radius:50px; font-size:16px; font-weight:700; text-decoration:none; transition:all .3s; box-shadow:0 4px 15px rgba(37,211,102,.3); }
+.call-btn-under:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(37,211,102,.4); }
+.call-btn-under span { margin-right:8px; }
+.sbar-actions { display:flex; gap:8px; align-items:center; }
+.sbar-call { display:inline-flex; align-items:center; gap:4px; padding:10px 16px; background:linear-gradient(135deg,#25D366,#128C7E); color:#fff; border-radius:50px; font-size:14px; font-weight:700; text-decoration:none; white-space:nowrap; transition:all .3s; box-shadow:0 2px 10px rgba(37,211,102,.3); flex-shrink:0; }
+.sbar-call:hover { transform:translateY(-1px); box-shadow:0 4px 15px rgba(37,211,102,.4); }
 </style>
 
 <form id="oForm" novalidate autocomplete="on">
@@ -1303,7 +1315,9 @@ fbq('track', 'PageView');
           <span>⚡ अभी COD Order करें - ₹1250</span>
           <small>🔒 Safe Checkout • No advance payment</small>
         </button>
-
+        <a class="call-btn-under" href="tel:+917060101043">
+          <span>📞</span> Call Now - +91 7060101043
+        </a>
 
         <div class="pay-logos">
           <span>UPI</span><span>VISA</span><span>Mastercard</span><span>RuPay</span><span>NetBanking</span>
@@ -1602,7 +1616,10 @@ fbq('track', 'PageView');
     <span>COD उपलब्ध</span>
   </div>
   
-  <button class="sbar-order" type="button" data-scroll="checkout">⚡ ऑर्डर करें</button>
+  <div class="sbar-actions">
+    <a class="sbar-call" href="tel:+917060101043">📞 Call</a>
+    <button class="sbar-order" type="button" data-scroll="checkout">⚡ ऑर्डर करें</button>
+  </div>
 </div>
 
 
