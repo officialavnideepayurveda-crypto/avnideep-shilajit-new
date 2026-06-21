@@ -1243,9 +1243,17 @@ fbq('track', 'PageView');
 .call-btn-under { display:block; width:100%; padding:14px; margin-top:10px; background:linear-gradient(135deg,#25D366,#128C7E); color:#fff; text-align:center; border-radius:50px; font-size:16px; font-weight:700; text-decoration:none; transition:all .3s; box-shadow:0 4px 15px rgba(37,211,102,.3); }
 .call-btn-under:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(37,211,102,.4); }
 .call-btn-under span { margin-right:8px; }
-.sbar-actions { display:flex; gap:8px; align-items:center; }
-.sbar-call { display:inline-flex; align-items:center; gap:4px; padding:10px 16px; background:linear-gradient(135deg,#25D366,#128C7E); color:#fff; border-radius:50px; font-size:14px; font-weight:700; text-decoration:none; white-space:nowrap; transition:all .3s; box-shadow:0 2px 10px rgba(37,211,102,.3); flex-shrink:0; }
-.sbar-call:hover { transform:translateY(-1px); box-shadow:0 4px 15px rgba(37,211,102,.4); }
+.sbar-actions { display:flex; gap:8px; align-items:center; justify-content:space-between; }
+/* More natural, authentic button visuals */
+.sbar-actions > * { min-width:92px; max-width:33%; flex:1 1 0; }
+.sbar-call, .sbar-pay, .sbar-order { display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:8px 12px; border-radius:999px; color:#fff; font-size:13px; font-weight:800; text-decoration:none; transition:transform .18s ease, box-shadow .18s ease, background .18s ease; }
+.sbar-call { background:linear-gradient(180deg,#1f8f5a,#0f6b3f); box-shadow:0 6px 18px rgba(15,111,66,0.18); border:1px solid rgba(255,255,255,0.03); }
+.sbar-pay { background:linear-gradient(180deg,#0f7f68,#0aa37f); box-shadow:0 6px 18px rgba(6,150,110,0.14); border:1px solid rgba(255,255,255,0.04); }
+.sbar-order { background:linear-gradient(180deg,#e76a1f,#d94b12); box-shadow:0 6px 18px rgba(215,90,25,0.14); border:1px solid rgba(255,255,255,0.03); }
+.sbar-call::after, .sbar-pay::after, .sbar-order::after{ content:''; display:block; position:relative; width:0; height:0; }
+.sbar-call:hover, .sbar-pay:hover, .sbar-order:hover { transform:translateY(-3px); box-shadow:0 10px 30px rgba(0,0,0,0.28); }
+.sbar-pay { letter-spacing:0.2px; }
+.sbar-pay svg{width:14px;height:14px;opacity:0.95}
 </style>
 
 <form id="oForm" novalidate autocomplete="on">
@@ -1617,8 +1625,9 @@ fbq('track', 'PageView');
   </div>
   
   <div class="sbar-actions">
-    <a class="sbar-call" href="tel:+917060101043">📞 Call</a>
-    <button class="sbar-order" type="button" data-scroll="checkout">⚡ ऑर्डर करें</button>
+    <a class="sbar-call" href="tel:+917060101043" aria-label="Call">📞 Call</a>
+    <a class="sbar-pay" href="payment.html?amount=999" aria-label="Pay ₹999">🔒 Pay ₹999</a>
+    <a class="sbar-order" href="#checkout" data-scroll="checkout" aria-label="Order">ऑर्डर करें</a>
   </div>
 </div>
 
