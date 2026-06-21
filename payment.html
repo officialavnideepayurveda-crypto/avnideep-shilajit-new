@@ -1105,7 +1105,11 @@
         paid = true;
         // Call PATCH API to update order status
         try {
-          fetch(API_ENDPOINT, {
+          function getCookie(name){
+          var match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+          return match ? decodeURIComponent(match[2]) : '';
+        }
+        fetch(API_ENDPOINT, {
             method: "PATCH",
             headers: {"Content-Type":"application/json"},
             body: JSON.stringify({
@@ -1114,7 +1118,9 @@
               name: custName,
               phone: custPhone,
               amount: amount,
-              autoConfirm: true
+              autoConfirm: true,
+              fbp: getCookie('_fbp') || '',
+              fbc: getCookie('_fbc') || ''
             }),
             keepalive: true
           }).catch(function(e){ console.warn("PATCH error:", e); });

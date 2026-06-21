@@ -484,7 +484,7 @@ async function sendFacebookCAPI(order, env, eventName = 'Purchase') {
           event_source_url: String(order.page_url || 'https://shop.avnideepayurveda.in/'),
           user_data: {
             ph: hashedPhone,
-            client_ip_address: String(order.ip_address || ''),
+            client_ip_address: (order.ip_address && order.ip_address !== 'unknown') ? String(order.ip_address) : '',
             client_user_agent: String(order.user_agent || ''),
             fbp: String(order.fbp || ''),
             fbc: String(order.fbc || ''),
@@ -659,7 +659,7 @@ export async function onRequestPost({ request, env }) {
     const allResults = await Promise.allSettled([
       saveSupabase(order, env),
       saveGoogleSheets(order, env),
-      sendFacebookCAPI(order, env, 'Purchase'),
+      sendFacebookCAPI(order, env, order.payment_method === 'prepaid' ? 'InitiateCheckout' : 'Purchase'),
     ]);
     const [supabase, sheets, facebookCapi] = allResults.map(r =>
       r.status === "fulfilled" ? r.value : { ok: false, skipped: false, error: String(r.reason?.message || r.reason || "Channel failed") }
@@ -803,6 +803,8 @@ export async function onRequestPatch({ request, env }) {
       created_at: new Date().toISOString(),
       ip_address: request.headers.get("CF-Connecting-IP") || "unknown",
       user_agent: "",
+      fbp: body.fbp || "",
+      fbc: body.fbc || "",
       utm_source: "",
       utm_medium: "",
       utm_campaign: "",
@@ -838,8 +840,8 @@ export async function onRequestPatch({ request, env }) {
     // Send payment confirmation email
     const emailResult = await sendEmail(confirmOrder, env);
     
-    // Facebook CAPI Purchase already sent in onRequestPost (initial order creation)
-    // Skipped here to prevent double-counting with POST handler CAPI event
+    // For prepaid: POST only sent InitiateCheckout, send Purchase on payment confirmation
+    const facebookCapiResult = await sendFacebookCAPI(confirmOrder, env, 'Purchase');
     
     return new Response(
       JSON.stringify({
@@ -849,7 +851,7 @@ export async function onRequestPatch({ request, env }) {
         channels: {
           telegram: telegramResult.ok || false,
           email: emailResult.ok || false,
-          facebook_capi: facebookResult.ok || false,
+          facebook_capi: facebookCapiResult.ok || false,
         },
       }),
       { status: 200, headers: jsonH }
