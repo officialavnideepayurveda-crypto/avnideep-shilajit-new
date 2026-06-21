@@ -171,38 +171,10 @@
     var method = params.get('method') || 'cod';
     var waUrl = params.get('wa_url') || '';
 
-    // === FACEBOOK PIXEL PURCHASE EVENT (sessionStorage dedup) ===
-    var purchaseTracked = false;
-    var sessionKey = "fb_purchase_" + orderId;
-    try { if (sessionStorage.getItem(sessionKey)) { purchaseTracked = true; } } catch(e){}
-    function trackFacebookPurchase() {
-      if (purchaseTracked) return;
-      try {
-        if (typeof fbq === 'function') {
-          fbq('track', 'Purchase', {
-            value: amount,
-            currency: 'INR',
-            content_name: 'AVN-6PRO-001',
-            order_id: orderId,
-            eventID: orderId
-          });
-          purchaseTracked = true;
-          try { sessionStorage.setItem(sessionKey, "1"); } catch(e){}
-          console.log('FB Pixel Purchase tracked: INR ' + amount);
-        }
-      } catch (e) {
-        console.warn('FB Pixel error:', e);
-      }
-    }
-    trackFacebookPurchase();
-    window.addEventListener('load', trackFacebookPurchase);
-    setTimeout(trackFacebookPurchase, 1200);
-
-    // === GTM / dataLayer Purchase Event ===
-    // Disabled to prevent duplicate Purchase events being sent to Facebook
-    // The page sends an explicit fbq('track','Purchase') above.
-    // If you rely on GTM to send the Purchase event, re-enable and ensure
-    // the event carries a matching eventID to allow server-side deduplication.
+    // === Purchase Event: Handled server-side via Facebook CAPI ===
+    // Server-side CAPI (functions/api/order.js -> sendFacebookCAPI) sends
+    // the Purchase event to Facebook with order_id as eventID for deduplication.
+    // This is more reliable than client-side fbq (no ad-blocker interference).
 
     // Google Sheets save handled by index.html before redirect
 
