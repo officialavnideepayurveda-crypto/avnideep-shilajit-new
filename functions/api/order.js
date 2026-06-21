@@ -651,8 +651,54 @@ export async function onRequestPost({ request, env }) {
       );
     }
 
-    // Step 5: Duplicate detection (silent — still saves but marks as duplicate)
-    const isDup = false;
+    // Step 5: Duplicate detection — check Supabase for existing order with same phone+amount in last 60s
+    // Prevents double counting when client retries after network timeout
+    let isDup = false;
+    let existingOrderId = null;
+    try {
+      const dupUrl = `${env.SUPABASE_URL}/rest/v1/orders?phone=eq.${encodeURIComponent(order.phone)}&order=created_at.desc&limit=1`;
+      const dupKey = env.SUPABASE_SERVICE_ROLE_KEY || env.SUPABASE_ANON_KEY || env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+      if (env.SUPABASE_URL && dupKey) {
+        const dupRes = await withTimeout(fetch(dupUrl, {
+          headers: {
+            "apikey": dupKey,
+            "Authorization": `Bearer ${dupKey}`,
+          },
+        }), 3000, 'supabase_dedup');
+        if (dupRes.ok) {
+          const existing = await dupRes.json();
+          if (Array.isArray(existing) && existing.length > 0) {
+            const last = existing[0];
+            const lastTime = new Date(last.created_at).getTime();
+            const now = Date.now();
+            // If same amount and within 60 seconds, it's a duplicate
+            if (String(last.amount) === String(order.amount) && (now - lastTime) < 60000) {
+              isDup = true;
+              existingOrderId = last.order_id;
+              console.log("DUPLICATE_DETECTED", { existing: last.order_id, new: order.order_id, phone: order.phone });
+            }
+          }
+        }
+      }
+    } catch (dupErr) {
+      // Dedup check failed silently — proceed with normal flow
+      console.warn("DEDUP_CHECK_FAILED", String(dupErr.message || dupErr));
+    }
+
+    // If duplicate detected, return existing order — skip processing entirely
+    if (isDup && existingOrderId) {
+      console.log("DUPLICATE_SKIPPED", { existing: existingOrderId, phone: order.phone });
+      return new Response(
+        JSON.stringify({
+          ok: true,
+          orderId: existingOrderId,
+          duplicate: true,
+          message: "Order already exists",
+          channels: { supabase: true, sheets: true, facebook_capi: true },
+        }),
+        { status: 200, headers: jsonHeaders(env) }
+      );
+    }
 
     // Step 6: 🚀 FIRE ALL CHANNELS — Supabase + Sheets + Facebook CAPI awaited (critical)
     // Telegram + Email fire-and-forget (just notifications, not business-critical)

@@ -2069,7 +2069,7 @@ function initForm(){
     var apiSuccess = false;
     var apiError = '';
     try{
-      var result = await sendOrder(payload, 1); // Only 1 retry to fail fast
+      var result = await sendOrder(payload, 0); // No retry - prevents duplicate order + double Purchase event
       if(result && result.ok !== false){
         apiSuccess = true;
         try{ sessionStorage.setItem('avn_last_order', result.orderId || ''); }catch(e){}
