@@ -1030,31 +1030,13 @@
     const orderId = params.get('order_id') || "AVN-681164";
     const API_ENDPOINT = "./api/order";
 
-    // Fire Purchase with sessionStorage dedup guard - order already created
-    var purchaseTracked = false;
-    var sessionKey = "fb_purchase_" + orderId;
-    try { if (sessionStorage.getItem(sessionKey)) { purchaseTracked = true; } } catch(e){}
-    function trackFacebookPurchase() {
-      if (purchaseTracked) return;
-      try {
-        if (typeof fbq === 'function') {
-          fbq('track', 'Purchase', {
-            value: amount,
-            currency: 'INR',
-            content_name: 'AVN-6PRO-001',
-            order_id: orderId,
-            eventID: orderId
-          });
-          purchaseTracked = true;
-          try { sessionStorage.setItem(sessionKey, "1"); } catch(e){}
-        }
-      } catch(e) {
-        console.warn('FB Pixel immediate error:', e);
-      }
-    }
-    trackFacebookPurchase();
-    window.addEventListener('load', trackFacebookPurchase);
-    setTimeout(trackFacebookPurchase, 1200);
+    // Purchase Event: Handled server-side via CAPI (functions/api/order.js)
+    // Client-side fbq Purchase removed to prevent double counting.
+    
+    // Auto-open Razorpay if redirected from index.html with auto=1
+    var isAuto = params.get('auto') === '1';
+    var custName = params.get('name') || '';
+    var custPhone = params.get('phone') || '';
 
     window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('success-order').textContent = orderId;
@@ -1090,14 +1072,68 @@
         updateTimer();
       }, 1000);
     }
-    
 
-    
-
-    
-
-    
-    
+    // ===== AUTO-OPEN RAZORPAY (when redirected from index.html with auto=1) =====
+    if(isAuto) {
+      // Hide payment UI, show loading
+      var checkoutCard = document.querySelector('.checkout-card');
+      var merchantSidebar = document.querySelector('.merchant-sidebar');
+      if(checkoutCard) checkoutCard.style.display = 'none';
+      if(merchantSidebar) merchantSidebar.style.display = 'none';
+      
+      // Show loading state
+      var loadDiv = document.createElement('div');
+      loadDiv.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:40px;text-align:center;';
+      loadDiv.innerHTML = '<div style="width:48px;height:48px;border:3px solid rgba(255,255,255,.15);border-top-color:#ffd54f;border-radius:50%;animation:spin .7s linear infinite;margin-bottom:20px"></div>'
+        + '<p style="color:#a09080;font-size:16px">रेजरपा चेकआउट खुल रहा है...</p>'
+        + '<p style="color:#6a5a4a;font-size:13px;margin-top:8px">कृपया प्रतीक्षा करें...</p>';
+      document.body.insertBefore(loadDiv, document.body.firstChild);
+      
+      // Wait for Razorpay button to render
+      var rzpInterval = setInterval(function() {
+        var rzpBtns = document.querySelectorAll('.razorpay-payment-button');
+        if(rzpBtns && rzpBtns.length > 0) {
+          clearInterval(rzpInterval);
+          setTimeout(function() { rzpBtns[0].click(); }, 500);
+        }
+      }, 300);
+      
+      // After Razorpay modal closes, redirect to thank-you
+      var paid = false;
+      function goToThankYou() {
+        if(paid) return;
+        paid = true;
+        // Call PATCH API to update order status
+        try {
+          fetch(API_ENDPOINT, {
+            method: "PATCH",
+            headers: {"Content-Type":"application/json"},
+            body: JSON.stringify({
+              orderId: orderId,
+              utr: "auto_razorpay",
+              name: custName,
+              phone: custPhone,
+              amount: amount,
+              autoConfirm: true
+            }),
+            keepalive: true
+          }).catch(function(e){ console.warn("PATCH error:", e); });
+        } catch(e){ console.warn("PATCH error:", e); }
+        setTimeout(function() {
+          window.location.href = '/thank-you?order_id=' + encodeURIComponent(orderId) 
+            + '&amount=' + encodeURIComponent(amount) 
+            + '&name=' + encodeURIComponent(custName) 
+            + '&phone=' + encodeURIComponent(custPhone) 
+            + '&method=prepaid';
+        }, 1500);
+      }
+      window.addEventListener('focus', goToThankYou);
+      document.addEventListener('visibilitychange', function() {
+        if(document.visibilityState === 'visible') goToThankYou();
+      });
+      // Fallback: if modal doesn't open, redirect after 60s
+      setTimeout(function() { if(!paid) goToThankYou(); }, 60000);
+    }
   </script>
 </body>
 </html>

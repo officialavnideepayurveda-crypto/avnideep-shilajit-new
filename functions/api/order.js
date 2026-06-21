@@ -777,9 +777,13 @@ export async function onRequestPatch({ request, env }) {
     const utr = String(body.utr || "").trim();
     const name = String(body.name || "").trim();
     const phone = String(body.phone || "").trim();
+    const autoConfirm = body.autoConfirm === true;
     
-    if (!orderId || !utr) {
-      return new Response(JSON.stringify({ ok: false, error: "orderId and utr are required" }), { status: 400, headers: jsonH });
+    if (!orderId) {
+      return new Response(JSON.stringify({ ok: false, error: "orderId is required" }), { status: 400, headers: jsonH });
+    }
+    if (!utr && !autoConfirm) {
+      return new Response(JSON.stringify({ ok: false, error: "utr is required" }), { status: 400, headers: jsonH });
     }
     
     // Build order object for notifications
@@ -834,8 +838,8 @@ export async function onRequestPatch({ request, env }) {
     // Send payment confirmation email
     const emailResult = await sendEmail(confirmOrder, env);
     
-    // Send payment confirmation to Facebook CAPI
-    const facebookResult = await sendFacebookCAPI(confirmOrder, env, 'Purchase');
+    // Facebook CAPI Purchase already sent in onRequestPost (initial order creation)
+    // Skipped here to prevent double-counting with POST handler CAPI event
     
     return new Response(
       JSON.stringify({
