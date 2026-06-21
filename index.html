@@ -2096,7 +2096,6 @@ function initForm(){
         showErr(err, 'Payment order backend पर सेव नहीं हुआ: ' + apiError + '। WhatsApp fallback भेजा जा रहा है।');
       }
       showSuccess('prepaid_whatsapp', payload.orderId);
-      dataLayer.push({event:'Purchase', value:payload.amount, currency:'INR', method:'whatsapp_fallback'});
 
       setTimeout(function(){ window.open(waOrderUrl, '_blank', 'noopener'); }, 1000);
       form.reset();
@@ -2105,15 +2104,11 @@ function initForm(){
     } else {
       // COD flow: Show success when backend saved, otherwise use WhatsApp fallback
       if(apiSuccess){
-        dataLayer.push({event:'Purchase', value:1250, currency:'INR'});
-  
         window.location.href = '/thank-you?order_id=' + encodeURIComponent(payload.orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.name) + '&method=cod';
       } else {
         if(apiError){
           showErr(err, 'ऑर्डर backend पर सेव नहीं हुआ: ' + apiError + '। WhatsApp fallback भेजा जा रहा है।');
         }
-        dataLayer.push({event:'Purchase', value:1250, currency:'INR', method:'whatsapp_fallback'});
-  
         window.location.href = '/thank-you?order_id=' + encodeURIComponent(payload.orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.name) + '&method=cod_whatsapp&wa_url=' + encodeURIComponent(waOrderUrl);
         form.reset();
         updatePay();
