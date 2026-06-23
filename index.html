@@ -1323,6 +1323,8 @@ document.addEventListener('DOMContentLoaded', function(){
         if(form) form.style.display = 'none';
       });
     }
+    // Expose globally for DOMContentLoaded handler
+    window.initCheckoutUI = initCheckoutUI;
   } catch(e){}
 })();
 </script>
