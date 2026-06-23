@@ -699,6 +699,411 @@ body.sb-on{padding-bottom:78px}
 .sbar-actions { display:flex; gap:8px; align-items:center; }
 .sbar-call { display:inline-flex; align-items:center; gap:4px; padding:10px 16px; background:linear-gradient(135deg,#25D366,#128C7E); color:#fff; border-radius:50px; font-size:14px; font-weight:700; text-decoration:none; white-space:nowrap; transition:all .3s; box-shadow:0 2px 10px rgba(37,211,102,.3); flex-shrink:0; }
 .sbar-call:hover { transform:translateY(-1px); box-shadow:0 4px 15px rgba(37,211,102,.4); }
+
+/* ============================================================
+   CHECKOUT REDESIGN CSS - Avnideep Premium Green + Gold
+   ============================================================ */
+
+/* --- Truecaller Container --- */
+.tc-container {
+  background: linear-gradient(180deg, #0a0606 0%, #1a0808 100%);
+  border-radius: 16px;
+  padding: 32px 20px;
+  margin: 0 auto 20px;
+  max-width: 500px;
+  border: 1px solid rgba(255,213,79,0.1);
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+}
+.tc-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 50px; padding: 6px 14px; font-size: 0.75rem;
+  color: rgba(255,255,255,0.7); margin-bottom: 20px;
+}
+.tc-heading {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 1.5rem; font-weight: 700; color: #ffd54f;
+  margin: 0 0 6px; line-height: 1.3;
+}
+.tc-subtext { font-size: 0.9rem; color: rgba(255,255,255,0.6); margin: 0 0 24px; }
+.tc-btn {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%; padding: 16px 20px; border: none; border-radius: 12px;
+  font-size: 1rem; font-weight: 700; cursor: pointer;
+  transition: all 0.3s ease; min-height: 54px;
+}
+.tc-btn-truecaller {
+  background: linear-gradient(135deg, #00BFFF 0%, #0099CC 100%);
+  color: #fff; box-shadow: 0 4px 16px rgba(0,191,255,0.3);
+}
+.tc-btn-truecaller:disabled { opacity: 0.7; cursor: not-allowed; background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.5); box-shadow: none; }
+.tc-btn-manual {
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.8); margin-top: 10px;
+}
+.tc-btn-manual:hover { background: rgba(255,255,255,0.05); color: #fff; }
+.tc-loader {
+  width: 18px; height: 18px;
+  border: 2px solid rgba(255,213,79,0.2); border-top-color: #ffd54f;
+  border-radius: 50%; animation: tspin 0.7s linear infinite; display: inline-block;
+}
+@keyframes tspin { to { transform: rotate(360deg); } }
+.tc-divider {
+  display: flex; align-items: center; gap: 12px; margin: 20px 0;
+}
+.tc-divider-line { flex: 1; height: 1px; background: rgba(255,255,255,0.04); }
+.tc-divider span { font-size: 0.78rem; color: rgba(255,255,255,0.4); white-space: nowrap; text-transform: uppercase; letter-spacing: 0.05em; }
+.tc-manual-row { text-align: left; }
+.tc-phone-wrap {
+  display: flex; align-items: center;
+  background: rgba(255,255,255,0.03); border: 2px solid rgba(255,255,255,0.08);
+  border-radius: 10px; overflow: hidden; transition: border-color 0.3s ease;
+}
+.tc-phone-wrap:focus-within { border-color: #ffd54f; background: rgba(255,255,255,0.04); }
+.tc-prefix {
+  padding: 13px 10px 13px 14px; font-size: 0.9rem; font-weight: 600;
+  color: rgba(255,255,255,0.6); background: rgba(0,0,0,0.3);
+  border-right: 1px solid rgba(255,255,255,0.08);
+}
+.tc-phone-wrap input {
+  flex: 1; background: transparent; border: none; outline: none;
+  padding: 13px 14px; font-size: 1rem; color: #fff; letter-spacing: 1px;
+}
+.tc-phone-wrap input::placeholder { color: rgba(255,255,255,0.3); }
+.tc-error { color: #FF5252; font-size: 0.8rem; display: block; margin-top: 6px; min-height: 1.2em; }
+.tc-trust-row {
+  display: flex; justify-content: center; gap: 16px; margin-top: 18px; flex-wrap: wrap;
+}
+.tc-trust-row span { font-size: 0.7rem; color: rgba(255,255,255,0.4); display: flex; align-items: center; gap: 4px; }
+.tc-hidden { display: none !important; }
+
+
+/* --- Checkout Section --- */
+.checkout-section {
+  padding: 0;
+  background: linear-gradient(180deg, #0a0606 0%, #1a0808 50%, #0a0606 100%);
+  position: relative; overflow: hidden;
+}
+.checkout-container {
+  max-width: 500px; margin: 0 auto; padding: 24px 16px 40px; position: relative; z-index: 1;
+}
+.checkout-badge {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  background: rgba(255,255,255,0.04); backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,213,79,0.2); border-radius: 50px;
+  padding: 8px 16px; margin-bottom: 20px; font-size: 0.8rem;
+  color: rgba(255,255,255,0.9); width: fit-content; margin-left: auto; margin-right: auto;
+}
+.badge-icon { font-size: 0.9rem; }
+.badge-divider { opacity: 0.4; }
+.checkout-heading {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 1.6rem; font-weight: 700; color: #ffd54f;
+  text-align: center; margin: 0 0 4px; line-height: 1.3;
+}
+.checkout-sub { text-align: center; color: rgba(255,255,255,0.7); font-size: 0.9rem; margin: 0 0 24px; }
+
+/* --- Progress Bar --- */
+.checkout-progress { margin-bottom: 28px; }
+.progress-steps { display: flex; align-items: center; justify-content: center; gap: 0; }
+.progress-step { display: flex; flex-direction: column; align-items: center; gap: 6px; position: relative; z-index: 2; }
+.step-circle {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: rgba(255,255,255,0.15); border: 2px solid rgba(255,255,255,0.3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.85rem; font-weight: 700; color: rgba(255,255,255,0.5);
+  transition: all 0.4s ease;
+}
+.progress-step.active .step-circle {
+  background: #ffd54f; border-color: #ffd54f; color: #1A1A1A;
+  box-shadow: 0 0 20px rgba(255,213,79,0.3); transform: scale(1.05);
+}
+.progress-step.completed .step-circle { background: #ffd54f; border-color: #ffd54f; color: #1A1A1A; }
+.step-label { font-size: 0.7rem; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 500; }
+.progress-step.active .step-label, .progress-step.completed .step-label { color: #ffd54f; }
+.progress-line { flex: 1; max-width: 60px; height: 2px; background: rgba(255,255,255,0.15); position: relative; margin: 0 4px; margin-bottom: 24px; }
+.progress-fill { height: 100%; background: #ffd54f; transition: width 0.5s ease; border-radius: 2px; }
+
+/* --- Steps --- */
+.checkout-step { display: none; animation: stepFadeIn 0.35s ease; }
+.checkout-step.active { display: block; }
+@keyframes stepFadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+.step-header { text-align: center; margin-bottom: 24px; }
+.step-header h3 { font-family: 'Playfair Display', Georgia, serif; font-size: 1.3rem; font-weight: 700; color: #fff; margin: 0 0 6px; }
+.step-header p { color: rgba(255,255,255,0.6); font-size: 0.85rem; margin: 0; }
+
+/* --- Phone Input --- */
+.phone-input-wrapper {
+  display: flex; align-items: center; background: rgba(255,255,255,0.05);
+  border: 2px solid rgba(255,255,255,0.15); border-radius: 12px; overflow: hidden;
+  transition: all 0.3s ease; margin-bottom: 16px;
+}
+.phone-input-wrapper:focus-within { border-color: #ffd54f; background: rgba(255,255,255,0.08); box-shadow: 0 0 0 4px rgba(255,213,79,0.08); }
+.phone-prefix { padding: 14px 12px 14px 16px; font-size: 1rem; font-weight: 600; color: rgba(255,255,255,0.7); background: rgba(0,0,0,0.2); border-right: 1px solid rgba(255,255,255,0.1); }
+.phone-input-wrapper input { flex: 1; background: transparent; border: none; outline: none; padding: 14px 16px; font-size: 1.15rem; font-weight: 600; color: #fff; letter-spacing: 2px; }
+.phone-input-wrapper input::placeholder { color: rgba(255,255,255,0.3); font-weight: 400; letter-spacing: 0; }
+
+/* --- Buttons --- */
+.step-btn {
+  width: 100%; padding: 16px; border: none; border-radius: 12px;
+  background: linear-gradient(135deg, #ff9800, #ff5722); color: #1A1A1A;
+  font-size: 1.05rem; font-weight: 700; cursor: pointer;
+  transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 54px;
+}
+.step-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(255,213,79,0.2); }
+.step-btn:active { transform: translateY(0); }
+.step-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+.btn-arrow { font-size: 1.2rem; transition: transform 0.3s ease; }
+.step-btn:hover .btn-arrow { transform: translateX(4px); }
+.step-btn-back {
+  background: transparent; border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.7);
+  padding: 14px 24px; border-radius: 10px; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: all 0.3s ease;
+}
+.step-btn-back:hover { border-color: rgba(255,255,255,0.4); color: #fff; background: rgba(255,255,255,0.05); }
+.step-actions { display: flex; gap: 12px; margin-top: 16px; }
+.step-actions .step-btn { flex: 1; }
+.step-actions .step-btn-back { flex: 0 0 auto; }
+.security-note { text-align: center; color: rgba(255,255,255,0.4); font-size: 0.75rem; margin-top: 12px; }
+
+/* --- Form Grid --- */
+.form-grid { display: flex; flex-wrap: wrap; gap: 14px; }
+.form-field { display: flex; flex-direction: column; gap: 6px; }
+.form-field.full { width: 100%; }
+.form-field.half { width: calc(50% - 7px); }
+.form-field label { font-size: 0.8rem; font-weight: 600; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 0.05em; }
+.required { color: #FF5252; }
+.form-field input, .form-field textarea {
+  background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.12);
+  border-radius: 10px; padding: 13px 14px; font-size: 0.95rem; color: #fff;
+  transition: all 0.3s ease; font-family: inherit; width: 100%; box-sizing: border-box;
+}
+.form-field input:focus, .form-field textarea:focus { border-color: #ffd54f; background: rgba(255,255,255,0.08); box-shadow: 0 0 0 4px rgba(255,213,79,0.08); outline: none; }
+.form-field input::placeholder, .form-field textarea::placeholder { color: rgba(255,255,255,0.3); }
+.form-field textarea { resize: vertical; min-height: 70px; }
+.delivery-estimate { background: rgba(255,213,79,0.08); border: 1px solid rgba(255,213,79,0.15); border-radius: 10px; padding: 13px 14px; display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: rgba(255,255,255,0.8); height: 20px; box-sizing: content-box; }
+
+/* --- Order Summary --- */
+.order-summary-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 20px; margin-bottom: 20px; }
+.summary-product { display: flex; gap: 14px; align-items: flex-start; }
+.summary-img { width: 56px; height: 56px; background: rgba(249,168,37,0.15); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; flex-shrink: 0; }
+.summary-info h4 { font-size: 0.95rem; font-weight: 600; color: #fff; margin: 0 0 3px; }
+.summary-info p { font-size: 0.8rem; color: rgba(255,255,255,0.5); margin: 0 0 4px; }
+.summary-qty { font-size: 0.75rem; color: rgba(255,255,255,0.4); }
+.summary-divider { height: 1px; background: rgba(255,255,255,0.05); margin: 14px 0; }
+.summary-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; font-size: 0.88rem; color: rgba(255,255,255,0.7); }
+.summary-row.discount { color: #ffd54f; }
+.summary-row.total { font-size: 1.1rem; font-weight: 700; color: #fff; padding: 6px 0; }
+.mrp { text-decoration: line-through; color: rgba(255,255,255,0.4); }
+.discount-amt { font-weight: 600; }
+.free-delivery { color: #ffd54f; font-weight: 600; }
+.final-price { color: #ffd54f; font-size: 1.3rem; font-weight: 800; }
+.summary-saved { text-align: center; margin-top: 12px; padding: 8px; background: rgba(255,213,79,0.08); border-radius: 8px; font-size: 0.8rem; font-weight: 600; color: #ffd54f; }
+
+/* --- Payment --- */
+.payment-section { margin-bottom: 20px; }
+.payment-section h4 { font-size: 0.85rem; font-weight: 600; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 12px; }
+.payment-grid { display: flex; gap: 10px; }
+.payment-card { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 10px; background: rgba(255,255,255,0.03); border: 2px solid rgba(255,255,255,0.1); border-radius: 12px; cursor: pointer; transition: all 0.3s ease; position: relative; text-align: center; }
+.payment-card.selected { border-color: #ffd54f; background: rgba(255,213,79,0.08); }
+.payment-card:hover { border-color: rgba(255,213,79,0.3); background: rgba(249,168,37,0.06); }
+.pay-icon { font-size: 1.5rem; }
+.pay-label { font-size: 0.8rem; font-weight: 600; color: #fff; }
+.pay-badge { position: absolute; top: -8px; right: 8px; background: #ffd54f; color: #1A1A1A; font-size: 0.6rem; font-weight: 800; padding: 2px 8px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.05em; }
+.pay-discount { font-size: 0.7rem; color: #ffd54f; font-weight: 500; }
+
+/* --- Trust Badges --- */
+.checkout-trust { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px; }
+.trust-item { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: rgba(255,255,255,0.6); padding: 8px 10px; background: rgba(255,255,255,0.03); border-radius: 8px; }
+
+/* --- Place Order Button --- */
+.submit-area { text-align: center; }
+.place-order-btn {
+  width: 100%; padding: 18px; border: none; border-radius: 12px;
+  background: linear-gradient(135deg, #ff9800 0%, #ff5722 100%); color: #1A1A1A;
+  cursor: pointer; transition: all 0.3s ease; position: relative; overflow: hidden;
+}
+.place-order-btn::after {
+  content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+  background: linear-gradient(45deg, transparent, rgba(255,255,255,0.15), transparent);
+  transform: rotate(45deg) translateX(-100%); animation: shine 3s infinite;
+}
+@keyframes shine {
+  0% { transform: rotate(45deg) translateX(-100%); }
+  20% { transform: rotate(45deg) translateX(100%); }
+  100% { transform: rotate(45deg) translateX(100%); }
+}
+.place-order-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(255,213,79,0.2); }
+.place-order-btn:active { transform: translateY(0); }
+.place-order-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none !important; }
+.btn-text { display: block; font-size: 1.05rem; font-weight: 800; letter-spacing: 0.05em; }
+.btn-sub-text { display: block; font-size: 0.75rem; font-weight: 500; opacity: 0.8; margin-top: 2px; }
+
+/* --- Form Error --- */
+.form-error { margin-top: 10px; padding: 10px; border-radius: 8px; font-size: 0.85rem; font-weight: 500; display: none; }
+.form-error.show { display: block; background: rgba(255,82,82,0.15); border: 1px solid rgba(255,82,82,0.3); color: #FF5252; }
+
+/* --- Input Error State --- */
+.form-field input.error, .form-field textarea.error, .phone-input-wrapper.error { border-color: #FF5252 !important; box-shadow: 0 0 0 4px rgba(255,82,82,0.1) !important; }
+
+/* --- Loading State --- */
+.step-btn.loading, .place-order-btn.loading { position: relative; color: transparent !important; }
+.step-btn.loading::after, .place-order-btn.loading::after {
+  content: ''; position: absolute; top: 50%; left: 50%; width: 24px; height: 24px;
+  margin: -12px 0 0 -12px; border: 3px solid rgba(255,255,255,0.3);
+  border-top-color: #1A1A1A; border-radius: 50%; animation: lspin 0.6s linear infinite;
+}
+@keyframes lspin { to { transform: rotate(360deg); } }
+
+/* ============================================================
+   STICKY BOTTOM ORDER BAR
+   ============================================================ */
+.sticky-order-bar {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999;
+  background: linear-gradient(180deg, rgba(13,59,15,0.97) 0%, rgba(27,94,32,0.99) 100%);
+  backdrop-filter: blur(16px); border-top: 1px solid rgba(249,168,37,0.25);
+  padding: 12px 16px; padding-bottom: max(12px, env(safe-area-inset-bottom));
+  transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 0 -4px 30px rgba(0,0,0,0.3);
+}
+.sticky-order-bar.visible { transform: translateY(0); }
+.sticky-inner { display: flex; align-items: center; justify-content: space-between; max-width: 500px; margin: 0 auto; gap: 12px; }
+.sticky-left { display: flex; flex-direction: column; gap: 2px; flex-shrink: 0; }
+.sticky-price { display: flex; align-items: center; gap: 8px; }
+.sticky-current { font-size: 1.3rem; font-weight: 800; color: #ffd54f; }
+.sticky-mrp { font-size: 0.85rem; color: rgba(255,255,255,0.4); text-decoration: line-through; }
+.sticky-badge { background: #b71c1c; color: #fff; font-size: 0.6rem; font-weight: 800; padding: 2px 7px; border-radius: 4px; letter-spacing: 0.03em; }
+.sticky-urgency { display: flex; align-items: center; gap: 5px; }
+.urgency-dot { width: 6px; height: 6px; border-radius: 50%; background: #FF5252; animation: pulse 1.5s infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+.urgency-text { font-size: 0.7rem; color: rgba(255,255,255,0.5); }
+.sticky-order-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 1px;
+  padding: 12px 28px; border: none; border-radius: 10px;
+  background: linear-gradient(135deg, #ff9800, #ff5722); color: #1A1A1A;
+  cursor: pointer; transition: all 0.3s ease; position: relative; overflow: hidden;
+  animation: ctaPulse 2s infinite; white-space: nowrap;
+}
+@keyframes ctaPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(255,213,79,0.3); } 50% { box-shadow: 0 0 0 8px rgba(249,168,37,0); } }
+.sticky-order-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(255,213,79,0.2); }
+.sticky-order-btn:active { transform: scale(0.97); }
+.sticky-btn-text { font-size: 0.95rem; font-weight: 800; letter-spacing: 0.05em; }
+.sticky-btn-sub { font-size: 0.65rem; font-weight: 500; opacity: 0.8; }
+
+/* --- Mobile --- */
+@media (max-width: 480px) {
+  .checkout-container { padding: 20px 14px 32px; }
+  .checkout-heading { font-size: 1.3rem; }
+  .step-header h3 { font-size: 1.15rem; }
+  .form-field.half { width: 100%; }
+  .payment-grid { flex-direction: column; gap: 8px; }
+  .payment-card { flex-direction: row; padding: 12px 14px; }
+  .checkout-trust { grid-template-columns: 1fr 1fr; gap: 6px; }
+  .sticky-inner { gap: 8px; }
+  .sticky-current { font-size: 1.1rem; }
+  .sticky-order-btn { padding: 10px 20px; }
+  .sticky-btn-text { font-size: 0.85rem; }
+}
+@media (min-width: 768px) {
+  .checkout-container { padding: 32px 24px 48px; }
+  .checkout-heading { font-size: 1.8rem; }
+}
+
+.tc-welcome-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); z-index: 99999;
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+}
+.tc-welcome-modal {
+  background: linear-gradient(180deg, #0a0606 0%, #1a0808 100%);
+  border: 1px solid rgba(255,213,79,0.1); border-radius: 20px;
+  padding: 40px 32px; text-align: center; max-width: 320px; width: 100%;
+  animation: wmFadeIn 0.4s ease;
+}
+@keyframes wmFadeIn { from { opacity: 0; transform: scale(0.9) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+.tc-welcome-icon { font-size: 3rem; margin-bottom: 12px; }
+.tc-welcome-title { font-family: 'Playfair Display', Georgia, serif; font-size: 1.5rem; font-weight: 700; color: #FFD54F; margin: 0 0 6px; }
+.tc-welcome-sub { color: rgba(255,255,255,0.6); font-size: 0.9rem; margin: 0 0 20px; }
+.tc-welcome-loader { display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 0.85rem; color: rgba(255,255,255,0.5); }
+.tc-welcome-spinner { width: 18px; height: 18px; border: 2px solid rgba(255,213,79,0.2); border-top-color: #F9A825; border-radius: 50%; animation: wspin 0.7s linear infinite; display: inline-block; }
+@keyframes wspin { to { transform: rotate(360deg); } }
+
+/* --- Urgency Timer --- */
+.urgent-timer {
+  text-align: center;
+  margin: 16px 0 24px;
+  padding: 12px 16px;
+  background: rgba(255,82,82,0.05);
+  border: 1px solid rgba(255,82,82,0.2);
+  border-radius: 12px;
+}
+.urgent-timer-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.urgent-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #FF8A80;
+  letter-spacing: 0.03em;
+}
+.urgent-digits {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.urgent-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.urgent-num {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #FF5252;
+  font-variant-numeric: tabular-nums;
+  min-width: 40px;
+}
+.urgent-unit {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.5);
+  letter-spacing: 0.05em;
+}
+.urgent-colon {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: rgba(255,82,82,0.6);
+  margin: 0 2px;
+  margin-bottom: 16px;
+}
+@media (max-width: 480px) {
+  .urgent-num { font-size: 1.3rem; min-width: 34px; }
+  .urgent-timer { padding: 10px 12px; margin: 12px 0 20px; }
+}
+@keyframes urgentPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+.urgent-colon {
+  animation: urgentPulse 1s infinite;
+}
+
+.urgent-hint { font-size: 0.72rem; color: rgba(255,130,130,0.6); margin-top: 6px; }
+
+.progress-step.completed .step-circle::after {
+  content: '\2713';
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1;
+}
+.progress-step.completed .step-circle span {
+  display: none;
+}
 </style>
 <script>window.dataLayer = window.dataLayer || [];</script>
 <!-- Meta Pixel Code -->
@@ -721,7 +1126,197 @@ fbq('track', 'PageView');
   try{
     var locked = localStorage.getItem('avn_order_placed');
     if(locked){
-      document.addEventListener('DOMContentLoaded', function(){
+      
+// ============================================================
+// initCheckoutUI - checkout interactions (uses existing sendOrder for retry logic)
+// ============================================================
+function initCheckoutUI() {
+  var pinInput = document.getElementById('cPin');
+
+  // Disable old form handlers to prevent conflicts
+  if (typeof window.__oldFormHandler === 'undefined') {
+    window.__oldFormHandler = true;
+  }
+
+  if (pinInput) {
+    pinInput.addEventListener('input', function() {
+      this.value = this.value.replace(/\D/g, '').slice(0, 6);
+    });
+  }
+
+  // Pincode delivery ETA
+  pinInput.addEventListener('blur', function() {
+    var pin = this.value.replace(/\D/g, '');
+    if (pin.length === 6) {
+      var etaEl = document.querySelector('.delivery-estimate span:last-child');
+      if (etaEl) etaEl.textContent = '3-5 working days';
+    }
+  });
+
+  // Sticky bar
+  var stickyBar = document.getElementById('stickyBar');
+  var checkoutSection = document.getElementById('checkout');
+  function checkStickyBar() {
+    if (!checkoutSection || !stickyBar) return;
+    var isMobile = window.innerWidth < 768;
+    if (isMobile) {
+      stickyBar.classList.add('visible');
+    } else {
+      var rect = checkoutSection.getBoundingClientRect();
+      if (rect.bottom < 0 || rect.top < window.innerHeight) {
+        stickyBar.classList.add('visible');
+      } else {
+        stickyBar.classList.remove('visible');
+      }
+    }
+  }
+  window.addEventListener('scroll', checkStickyBar, { passive: true });
+  window.addEventListener('resize', checkStickyBar);
+  checkStickyBar();
+
+  var stickyBtn = document.getElementById('stickyOrderBtn');
+  if (stickyBtn && checkoutSection) {
+    stickyBtn.addEventListener('click', function() {
+      checkoutSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+
+  // Payment selection
+  document.querySelectorAll('.payment-card').forEach(function(card) {
+    card.addEventListener('click', function() {
+      document.querySelectorAll('.payment-card').forEach(function(c) { c.classList.remove('selected'); });
+      this.classList.add('selected');
+      var radio = this.querySelector('input[type="radio"]');
+      if (radio) radio.checked = true;
+      var btnText = document.querySelector('.btn-text');
+      var btnSub = document.querySelector('.btn-sub-text');
+      if (btnText && btnSub) {
+        if (radio && radio.value === 'prepaid') {
+          btnText.textContent = 'PAY \u20b9999';
+          btnSub.textContent = 'Pay Online \u2022 Save \u20b9251';
+        } else {
+          btnText.textContent = 'PLACE ORDER';
+          btnSub.textContent = 'Pay \u20b91,250 on Delivery';
+        }
+      }
+    });
+  });
+
+  // Enter key navigation
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      var activeStep = document.querySelector('.checkout-step.active');
+      if (activeStep) {
+        var step = parseInt(activeStep.dataset.step);
+        if (step < 3) { e.preventDefault(); goToStep(step + 1); }
+      }
+    }
+  });
+
+  // Form submission - uses existing sendOrder() for retry logic with timeout
+  var form = document.getElementById('oForm');
+  var submitBtn = document.getElementById('oBtn');
+  if (!form) return;
+
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    if (!validateStep(3)) return;
+    if (!submitBtn) return;
+    submitBtn.classList.add('loading');
+    submitBtn.disabled = true;
+
+    var paymentMethod = document.querySelector('input[name="paymentMethod"]:checked')?.value || 'cod';
+    var amount = paymentMethod === 'prepaid' ? 999 : 1250;
+
+    var payload = {
+      orderId: 'AVN-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7).toUpperCase(),
+      name: (document.getElementById('cName').value || '').trim(),
+      phone: (document.getElementById('tcPhoneInput').value || '').replace(/\D/g, ''),
+      pincode: (document.getElementById('cPin').value || '').replace(/\D/g, ''),
+      address: (document.getElementById('cAddr').value || '').trim(),
+      paymentMethod: paymentMethod,
+      amount: amount,
+      product: 'Avnideep 6Pro Vitality Shilajit Capsules',
+      status: paymentMethod === 'prepaid' ? 'prepaid_initiated' : 'cod_order',
+      pageUrl: window.location.href,
+      createdAt: new Date().toISOString()
+    };
+
+    // Facebook Lead event
+    try { if (typeof fbq === 'function') fbq('track', 'Lead', { content_name: 'AVN-6PRO-001', value: amount, currency: 'INR' }); } catch(e) {}
+    try { if (typeof dataLayer !== 'undefined') dataLayer.push({event:'Lead'}); } catch(e) {}
+
+    // UTM params
+    var utmParams = typeof getUtmParams === 'function' ? getUtmParams() : {source:'facebook', medium:'cpc', campaign:'avnideep_6pro'};
+    payload.utm_source = utmParams.source;
+    payload.utm_medium = utmParams.medium;
+    payload.utm_campaign = utmParams.campaign;
+    try {
+      var fbp = document.cookie.split('; ').find(function(r) { return r.startsWith('_fbp='); });
+      var fbc = document.cookie.split('; ').find(function(r) { return r.startsWith('_fbc='); });
+      payload.fbp = fbp ? fbp.split('=')[1] : '';
+      payload.fbc = fbc ? fbc.split('=')[1] : '';
+    } catch(e) {}
+
+    // Double-submission prevention
+    var submitKey = 'order_submitted_' + payload.phone;
+    if (localStorage.getItem(submitKey)) {
+      var errEl = document.getElementById('fErr');
+      if (errEl) {
+        errEl.innerHTML = 'Warning: Order already submitted. <a href="https://wa.me/917060101043" target="_blank" style="color:#25D366;font-weight:700;text-decoration:none">Contact us on WhatsApp</a>';
+        errEl.classList.add('show');
+      }
+      submitBtn.classList.remove('loading');
+      submitBtn.disabled = false;
+      return;
+    }
+    localStorage.setItem(submitKey, Date.now().toString());
+
+    // Facebook InitiateCheckout
+    try { if (typeof fbq === 'function') fbq('track', 'InitiateCheckout', { content_name: 'AVN-6PRO-001', content_type: 'product', value: amount, currency: 'INR' }); } catch(e) {}
+
+    if (paymentMethod === 'prepaid') {
+      sessionStorage.setItem('orderPayload', JSON.stringify(payload));
+      // Fire-and-forget save
+      try {
+        var keepaliveRes = await fetch('/api/order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          keepalive: true
+        });
+      } catch(e) {}
+      window.location.href = '/payment.html?amount=999&order_id=' + payload.orderId + '&name=' + encodeURIComponent(payload.name) + '&phone=' + payload.phone;
+    } else {
+      // COD: Use existing sendOrder() with retry logic
+      try {
+        var result = await sendOrder(payload, 2);
+        if (result.ok || result.duplicate) {
+          var orderId = result.orderId || payload.orderId;
+          sessionStorage.setItem('orderId', orderId);
+          sessionStorage.setItem('orderName', payload.name);
+          sessionStorage.setItem('orderAmount', '1250');
+          sessionStorage.setItem('orderMethod', 'cod');
+          try { if (typeof fbq === 'function') fbq('track', 'Purchase', { value: 1250, currency: 'INR', content_name: 'AVN-6PRO-001' }); } catch(e) {}
+          window.location.href = '/thank-you.html?order_id=' + orderId + '&name=' + encodeURIComponent(payload.name) + '&amount=1250&method=cod';
+        } else {
+          throw new Error(result.error || 'Order failed');
+        }
+      } catch(err) {
+        submitBtn.classList.remove('loading');
+        submitBtn.disabled = false;
+        var errEl = document.getElementById('fErr');
+        if (errEl) {
+          errEl.innerHTML = 'Warning: ' + (err.message || 'Something went wrong') + '<br><a href="https://wa.me/917060101043?text=I want to order Avnideep Shilajit" target="_blank" style="color:#25D366;font-weight:700;text-decoration:none">Click here to order via WhatsApp</a>';
+          errEl.classList.add('show');
+        }
+      }
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+        if (document.querySelector('.checkout-section')) return;
         var popup = document.getElementById('orderLockPopup');
         var form = document.getElementById('oForm');
         if(popup) popup.style.display = 'flex';
@@ -731,6 +1326,7 @@ fbq('track', 'PageView');
   } catch(e){}
 })();
 </script>
+  <script>window.TRUECALLER_CLIENT_ID = "lb7qy5af48217614f406c8469d17e58a6c451";</script>
 </head>
 <body>
 <a href="#checkout" class="skip">Skip to order</a>
@@ -813,9 +1409,9 @@ fbq('track', 'PageView');
       <div class="kicker">⏰ Limited Offer</div>
       <h3>Offer खत्म होने में बाकी:</h3>
       <div class="timer" id="timer">
-        <div class="timer-cell"><strong id="th">04</strong><span>घंटे</span></div>
-        <div class="timer-cell"><strong id="tm">45</strong><span>मिनट</span></div>
-        <div class="timer-cell"><strong id="ts">00</strong><span>सेकंड</span></div>
+        <div class="timer-cell"><strong id="th-old">04</strong><span>घंटे</span></div>
+        <div class="timer-cell"><strong id="tm-old">45</strong><span>मिनट</span></div>
+        <div class="timer-cell"><strong id="ts-old">00</strong><span>सेकंड</span></div>
       </div>
     </div>
   </section>
@@ -1209,141 +1805,210 @@ fbq('track', 'PageView');
     <p>पूर्णतः प्राकृतिक • आयुर्वेदिक • clinically tested</p>
   </div>
 
-  <section id="checkout">
-    <div class="checkout">
+  
+  <section id="checkout" class="checkout-section">
 
-      <div class="checkout-urgent">
-        ⏰ <strong id="coTimer">04:45:00</strong> में offer खत्म! जल्दी करें
+    <div class="checkout-container">
+
+      <!-- Premium Badge -->
+      <div class="checkout-badge">
+        <span class="badge-icon">🔒</span>
+        <span>Secure Checkout</span>
+        <span class="badge-divider">•</span>
+        <span>⚡ 2 min delivery</span>
       </div>
 
-      <div class="text-center">
-        <span class="badge-secure">🔒 100% Secure Checkout</span>
-        <h2>अभी अपना Order Confirm करें</h2>
-        <p class="sub">✅ केवल 30 सेकंड में Order Place होगा</p>
-      </div>
+      <!-- Heading -->
+      <h2 class="checkout-heading">Complete Your Order</h2>
+      <p class="checkout-sub">You're just 3 steps away from transformation</p>
 
-      <div class="step-bar">
-        <div class="step active"><span>1</span>Details</div>
-        <div class="step active"><span>2</span>Payment</div>
-        <div class="step"><span>3</span>Confirmed</div>
-      </div>
-
-      <!-- Duplicate Order Lock Popup -->
-<div id="orderLockPopup" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:99999;align-items:center;justify-content:center;backdrop-filter:blur(4px);">
-  <div style="background:#fff;border-radius:20px;padding:40px 32px;max-width:400px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);animation:fadeIn 0.3s ease;">
-    <div style="font-size:64px;line-height:1;margin-bottom:16px;">📋</div>
-    <h2 style="font-size:22px;font-weight:700;color:#1a1a2e;margin:0 0 12px 0;line-height:1.3;">ऑर्डर पहले से दर्ज है</h2>
-    <p style="font-size:15px;color:#555;line-height:1.6;margin:0 0 24px 0;">आपने इस डिवाइस से पहले ही ऑर्डर किया हुआ है। आपका पिछला ऑर्डर प्रोसेस में है। किसी सहायता के लिए हमसे संपर्क करें।</p>
-    <button onclick="document.getElementById('orderLockPopup').style.display='none'" style="background:#1a1a2e;color:#fff;border:none;padding:14px 48px;border-radius:50px;font-size:16px;font-weight:600;cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">ठीक है</button>
-    <p style="font-size:13px;color:#999;margin-top:16px;">सहायता के लिए: <a href="tel:+919876543210" style="color:#1a1a2e;text-decoration:underline;">हमसे संपर्क करें</a></p>
-  </div>
-</div>
-<style>
-@keyframes fadeIn{from{opacity:0;transform:scale(0.9)}to{opacity:1;transform:scale(1)}}
-.call-btn-under { display:block; width:100%; padding:14px; margin-top:10px; background:linear-gradient(135deg,#25D366,#128C7E); color:#fff; text-align:center; border-radius:50px; font-size:16px; font-weight:700; text-decoration:none; transition:all .3s; box-shadow:0 4px 15px rgba(37,211,102,.3); }
-.call-btn-under:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(37,211,102,.4); }
-.call-btn-under span { margin-right:8px; }
-.sbar-actions { display:flex; gap:8px; align-items:center; justify-content:space-between; }
-/* More natural, authentic button visuals */
-.sbar-actions > * { min-width:120px; max-width:50%; flex:1 1 0; }
-.sbar-call, .sbar-order { display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:10px 14px; border-radius:999px; color:#fff; font-size:14px; font-weight:800; text-decoration:none; transition:transform .18s ease, box-shadow .18s ease, background .18s ease; }
-.sbar-call { background:linear-gradient(180deg,#1f8f5a,#0f6b3f); box-shadow:0 6px 18px rgba(15,111,66,0.18); border:1px solid rgba(255,255,255,0.03); }
-.sbar-order { background:linear-gradient(180deg,#e76a1f,#d94b12); box-shadow:0 6px 18px rgba(215,90,25,0.14); border:1px solid rgba(255,255,255,0.03); }
-.sbar-call:hover, .sbar-pay:hover, .sbar-order:hover { transform:translateY(-3px); box-shadow:0 10px 30px rgba(0,0,0,0.28); }
-.sbar-pay { letter-spacing:0.2px; }
-.sbar-pay .pay-icon svg{width:16px;height:16px;opacity:0.98;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.18));}
-.sbar-pay .pay-text{display:inline-block;vertical-align:middle}
-</style>
-
-<form id="oForm" novalidate autocomplete="on">
-        <div class="form-field">
-          <label for="cName">पूरा नाम *</label>
-          <input id="cName" name="name" type="text" placeholder="जैसे: Aaditya" minlength="2" autocomplete="name" required>
-          <span class="field-check" data-for="cName">✓</span>
-        </div>
-        <div class="row2">
-          <div class="form-field">
-            <label for="cPhone">📱 मोबाइल नंबर *</label>
-            <input id="cPhone" name="phone" type="tel" placeholder="9876543210" inputmode="numeric" autocomplete="tel" pattern="[6-9][0-9]{9}" maxlength="10" required>
-            <span class="field-check" data-for="cPhone">✓</span>
-          </div>
-          <div class="form-field">
-            <label for="cPin">📍 पिन कोड *</label>
-            <input id="cPin" name="pincode" type="text" placeholder="110001" inputmode="numeric" autocomplete="postal-code" pattern="[0-9]{6}" maxlength="6" required>
-            <span class="field-check" data-for="cPin">✓</span>
-            <small class="delivery-eta" id="dEta" hidden>🚚 Delivery in <strong>3-5 days</strong></small>
+      <!-- URGENCY TIMER -->
+      <div class="urgent-timer">
+        <div class="urgent-timer-inner">
+          <span class="urgent-label">⏰ Offer ends in</span>
+          <div class="urgent-digits">
+            <div class="urgent-block">
+              <span class="urgent-num" id="th">04</span>
+              <span class="urgent-unit">Hours</span>
+            </div>
+            <span class="urgent-colon">:</span>
+            <div class="urgent-block">
+              <span class="urgent-num" id="tm">45</span>
+              <span class="urgent-unit">Mins</span>
+            </div>
+            <span class="urgent-colon">:</span>
+            <div class="urgent-block">
+              <span class="urgent-num" id="ts">00</span>
+              <span class="urgent-unit">Secs</span>
+            </div>
           </div>
         </div>
-        <div class="form-field">
-          <label for="cAddr">🏠 पूरा पता *</label>
-          <textarea id="cAddr" name="address" rows="2" placeholder="House no, Street, Landmark, City, State" minlength="10" autocomplete="street-address" required></textarea>
-          <span class="field-check" data-for="cAddr">✓</span>
+      </div>
+          <p class="urgent-hint">🔥 Limited stock — Order within the next few minutes</p>
+        </div>
+      </div>
+
+      <!-- PROGRESS BAR -->
+      <div class="checkout-progress">
+        <div class="progress-steps">
+          <div class="progress-step active" data-step="1">
+            <div class="step-circle"><span>1</span></div>
+            <span class="step-label">Phone</span>
+          </div>
+          <div class="progress-line"><div class="progress-fill" style="width:0%"></div></div>
+          <div class="progress-step" data-step="2">
+            <div class="step-circle"><span>2</span></div>
+            <span class="step-label">Details</span>
+          </div>
+          <div class="progress-line"><div class="progress-fill" style="width:0%"></div></div>
+          <div class="progress-step" data-step="3">
+            <div class="step-circle"><span>3</span></div>
+            <span class="step-label">Pay</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- FORM -->
+      <form id="oForm" novalidate autocomplete="on">
+
+        <!-- STEP 1: Verify (Truecaller + Phone) -->
+        <div class="checkout-step active" data-step="1">
+          <!-- Truecaller Login Section -->
+          <div class="tc-container" id="tcContainer" style="background:transparent;padding:0;margin-bottom:0;border:none;">
+            <div class="tc-badge"><span>🔒</span><span>100% Secure Verification</span></div>
+            <h3 class="tc-heading">Welcome to Avnideep</h3>
+            <p class="tc-subtext">Verify instantly to place your order</p>
+
+            <!-- Truecaller Button (Android only) -->
+            <button class="tc-btn tc-btn-truecaller" id="tcBtn" style="display:none">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="12" fill="#00BFFF"/><path d="M7 9C7 5.5 9.5 3 13 3C16.5 3 19 5.5 19 9C19 12.5 16.5 15 13 15C9.5 15 7 12.5 7 9Z" fill="white" opacity="0.3"/><path d="M10 11C10 9.5 11.5 8 13 8C14.5 8 16 9.5 16 11" stroke="white" strokeWidth="1.5" strokeLinecap="round"/><circle cx="13" cy="18" r="3" fill="#00BFFF" stroke="white" strokeWidth="1.5"/><line x1="13" y1="16.5" x2="13" y2="19.5" stroke="white" strokeWidth="1.5" strokeLinecap="round"/><line x1="11.5" y1="18" x2="14.5" y2="18" stroke="white" strokeWidth="1.5" strokeLinecap="round"/></svg>
+              <span id="tcBtnText">Continue with Truecaller</span>
+              <span class="tc-loader" id="tcLoader" style="display:none"></span>
+            </button>
+
+            <div class="tc-divider" id="tcDivider" style="display:none">
+              <div class="tc-divider-line"></div>
+              <span>or enter manually</span>
+              <div class="tc-divider-line"></div>
+            </div>
+
+            <!-- Manual phone input -->
+            <div class="tc-manual-row">
+              <div class="tc-phone-wrap">
+                <span class="tc-prefix">+91</span>
+                <input type="tel" id="tcPhoneInput" inputmode="numeric" maxlength="10" placeholder="Enter your 10-digit mobile number" autocomplete="tel-national">
+              </div>
+              <small class="tc-error" id="tcError"></small>
+              <button class="tc-btn tc-btn-manual" id="tcManualBtn">Continue →</button>
+            </div>
+
+            <div class="tc-trust-row">
+              <span>🔒 End-to-end encrypted</span>
+              <span>⚡ 1-tap verification</span>
+              <span>🌿 100% Ayurvedic</span>
+            </div>
+          </div>
         </div>
 
-        <div class="pay-label">💳 Payment Method चुनें:</div>
-        <div class="pay-grid" role="radiogroup" aria-label="Payment method">
-          <label class="pay-card recommended">
-            <input type="radio" name="pay" value="prepaid">
-            <div class="pay-top">
-              <div>
-                <strong>⚡ Prepaid Online <span class="save-badge">SAVE ₹251</span></strong>
-                <small>UPI / Card / NetBanking • Fast Delivery</small>
-              </div>
-              <div class="pay-prices">
-                <b>₹999</b>
-                <small style="text-decoration:line-through;color:#888">₹1250</small>
+        <!-- STEP 2: Name + Address + Pincode -->
+        <div class="checkout-step" data-step="2">
+          <div class="step-header">
+            <h3>Delivery Details</h3>
+            <p>Where should we send your order?</p>
+          </div>
+          <div class="form-grid">
+            <div class="form-field full">
+              <label for="cName">Full Name <span class="required">*</span></label>
+              <input type="text" id="cName" name="name" placeholder="Enter your full name" autocomplete="name" required>
+            </div>
+            <div class="form-field half">
+              <label for="cPin">Pincode <span class="required">*</span></label>
+              <input type="tel" id="cPin" name="pincode" inputmode="numeric" pattern="\d{6}" maxlength="6" placeholder="6-digit pincode" autocomplete="postal-code" required>
+            </div>
+            <div class="form-field half">
+              <label>Delivery</label>
+              <div class="delivery-estimate"><span class="delivery-truck">🚚</span><span>5-7 working days</span></div>
+            </div>
+            <div class="form-field full">
+              <label for="cAddr">Full Address <span class="required">*</span></label>
+              <textarea id="cAddr" name="address" rows="2" placeholder="House / Flat No., Street, Area, City, State" autocomplete="street-address" required></textarea>
+            </div>
+          </div>
+          <div class="step-actions">
+            <button type="button" class="step-btn-back" onclick="goToStep(1)">← Back</button>
+            <button type="button" class="step-btn" id="step2Btn" onclick="goToStep(3)">Continue <span class="btn-arrow">→</span></button>
+          </div>
+        </div>
+
+        <!-- STEP 3: Order Summary + Payment -->
+        <div class="checkout-step" data-step="3">
+          <div class="step-header">
+            <h3>Order Summary</h3>
+            <p>Review your order before placing</p>
+          </div>
+
+          <!-- Order Summary Card -->
+          <div class="order-summary-card">
+            <div class="summary-product">
+              <div class="summary-img"><span>🌿</span></div>
+              <div class="summary-info">
+                <h4>Avnideep 6Pro Vitality Shilajit</h4>
+                <p>60 Capsules • Ayurvedic</p>
+                <span class="summary-qty">Qty: 1</span>
               </div>
             </div>
-          </label>
-          <label class="pay-card selected">
-            <input type="radio" name="pay" value="cod" checked>
-            <div class="pay-top">
-              <div>
-                <strong>💵 Cash on Delivery</strong>
-                <small>घर पहुंचने पर भुगतान करें (No advance)</small>
-              </div>
-              <b>₹1250</b>
+            <div class="summary-divider"></div>
+            <div class="summary-row"><span>MRP</span><span class="mrp">₹2,499</span></div>
+            <div class="summary-row discount"><span>Discount (50% OFF)</span><span class="discount-amt">-₹1,249</span></div>
+            <div class="summary-row"><span>Delivery</span><span class="free-delivery">FREE 🚚</span></div>
+            <div class="summary-divider"></div>
+            <div class="summary-row total"><span>Total</span><span class="final-price">₹1,250</span></div>
+            <div class="summary-saved">You save ₹1,249! 🔥</div>
+          </div>
+
+          <!-- Payment Selection -->
+          <div class="payment-section">
+            <h4>Payment Method</h4>
+            <div class="payment-grid">
+              <label class="payment-card selected" id="payCod">
+                <input type="radio" name="paymentMethod" value="cod" checked hidden>
+                <span class="pay-icon">💵</span>
+                <span class="pay-label">Cash on Delivery</span>
+                <span class="pay-badge">POPULAR</span>
+              </label>
+              <label class="payment-card" id="payPrepaid">
+                <input type="radio" name="paymentMethod" value="prepaid" hidden>
+                <span class="pay-icon">💳</span>
+                <span class="pay-label">Pay Online</span>
+                <span class="pay-discount">Save ₹251</span>
+              </label>
             </div>
-          </label>
+          </div>
+
+          <!-- Trust Badges -->
+          <div class="checkout-trust">
+            <div class="trust-item"><span>✅</span><span>COD Available</span></div>
+            <div class="trust-item"><span>🔄</span><span>10-Day Returns</span></div>
+            <div class="trust-item"><span>🌿</span><span>100% Authentic</span></div>
+            <div class="trust-item"><span>🔒</span><span>Secure Payment</span></div>
+          </div>
+
+          <!-- Submit Area -->
+          <div class="submit-area">
+            <button type="submit" class="place-order-btn" id="oBtn">
+              <span class="btn-text">PLACE ORDER</span>
+              <span class="btn-sub-text">Pay ₹1,250 on Delivery</span>
+            </button>
+            <div id="fErr" class="form-error"></div>
+          </div>
+
+          <button type="button" class="step-btn-back" onclick="goToStep(2)">← Edit Details</button>
         </div>
 
-        <div class="summary">
-          <div class="s-row"><span>Avnideep 6Pro (1 Pack)</span><b id="sAmt">₹1250</b></div>
-          <div class="s-row"><span>🚚 Delivery</span><b class="green">FREE</b></div>
-          <div class="s-row"><span>🎁 Doctor Consultation</span><b class="green">FREE</b></div>
-          <div class="s-row" id="sSave" hidden><span>⚡ Prepaid Discount</span><b class="green">- ₹251</b></div>
-          <div class="s-row s-total"><span>कुल राशि</span><b id="sTot">₹1250</b></div>
-          <div class="s-savings">🎉 आप बचा रहे हैं: <strong id="sSaveAmt">₹1250</strong> + ₹650 bonuses!</div>
-        </div>
-
-        <div class="form-err" id="fErr" role="alert"></div>
-
-        <button class="cta-order" id="oBtn" type="submit">
-          <span>⚡ अभी COD Order करें - ₹1250</span>
-          <small>🔒 Safe Checkout • No advance payment</small>
-        </button>
-        <a class="call-btn-under" href="tel:+917060101043">
-          <span>📞</span> Call Now - +91 7060101043
-        </a>
-
-        <div class="pay-logos">
-          <span>UPI</span><span>VISA</span><span>Mastercard</span><span>RuPay</span><span>NetBanking</span>
-        </div>
-
-        <div class="secure-foot">
-          <span>🔒 256-bit SSL</span>
-          <span>🛡️ Privacy Protected</span>
-          <span>✅ 12,000+ Verified Orders</span>
-        </div>
-
-        <div class="below-cta-trust">
-          <div>✅ <strong>10-Day Money Back</strong> Guarantee</div>
-          <div>✅ Express Delivery (3-5 days)</div>
-          <div>✅ कोई Hidden Charges नहीं</div>
-        </div>
       </form>
     </div>
   </section>
+
 
   <section>
     <div class="guarantee">
@@ -1654,7 +2319,7 @@ var body = document.body;
 var WA_URL = "https://wa.me/917060101043?text=Hello%20I%20want%20to%20order%20Avnideep%206Pro";
 var submitting = false;
 var UTM_DEFAULTS = {source:'facebook', medium:'cpc', campaign:'avnideep_6pro'};
-var GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbwIQtmQROUYf0Mtbx5wfagLROAObzYFAPG3mL80RtQnTFYcEk1s9V7HNGAf0Wz5XyRP/exec";
+// Google Sheets handled by backend (/api/order)
 
 function getUtmParams(){
   var params = new URLSearchParams(window.location.search);
@@ -1800,8 +2465,8 @@ function initVideo(){
       b.innerHTML = '';
       b.style.aspectRatio = '16/9';
       b.appendChild(f);
-      dataLayer.push({event:'ViewContent', content_name:'VIDEO_DOCTOR'});
-      try{ if(typeof fbq === 'function') fbq('track', 'ViewContent', {content_name:'VIDEO_DOCTOR', content_type:'video'}); }catch(e){}
+      dataLayer.push({event:'ViewContent', content_name:'Avnideep 6Pro Vitality Shilajit'});
+      try{ if(typeof fbq === 'function') fbq('track', 'ViewContent', {content_name:'Avnideep 6Pro Vitality Shilajit', content_type:'product'}); }catch(e){}
     }
     b.addEventListener('click', load);
     b.addEventListener('keydown', function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();load()}});
@@ -1928,40 +2593,7 @@ function fetchT(url, opt, ms){
     .finally(function(){clearTimeout(t)});
 }
 
-// Send order to Google Sheets as additional storage
-async function sendToGoogleSheets(payload) {
-  try {
-    var params = new URLSearchParams();
-    params.append('order_id', payload.orderId || '');
-    params.append('name', payload.name || '');
-    params.append('phone', payload.phone || '');
-    params.append('pincode', payload.pincode || '');
-    params.append('address', payload.address || '');
-    params.append('payment_method', (payload.paymentMethod || 'cod').toUpperCase());
-    params.append('amount', String(payload.amount || 0));
-    params.append('product', payload.product || 'Avnideep 6Pro Vitality Shilajit Capsules');
-    params.append('status', payload.status || 'cod_order');
-    params.append('page_url', payload.pageUrl || '');
-    params.append('created_at', payload.createdAt || new Date().toISOString());
-    var utm = getUtmParams();
-    params.append('utm_source', utm.source);
-    params.append('utm_medium', utm.medium);
-    params.append('utm_campaign', utm.campaign);
-    params.append('ist_time', new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }));
 
-    var r = await fetch(GOOGLE_SHEETS_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: params.toString()
-    });
-    console.log('Google Sheets save attempted');
-    return true;
-  } catch(e) {
-    console.warn('Google Sheets save failed:', e);
-    return false;
-  }
-}
 
 async function sendOrder(payload, retries){
   retries = retries || 2;
@@ -2202,7 +2834,7 @@ function initFieldCheck(){
   });
 }
 function initCheckoutTimer(){
-  var ct = $('#coTimer');
+  var ct = document.getElementById('th-old');
   if(!ct) return;
   function upd(){
     var h = $('#th') ? $('#th').textContent : '04';
@@ -2302,12 +2934,18 @@ function setupVisibility(){
   });
 }
 function init(){
-  setupVisibility();
+  if (!document.querySelector('.checkout-section')) { setupVisibility(); }
   // Critical (immediate)
   initScroll();
-  initPay();
-  initForm();
-  initFaq();
+  // Check if new 3-step checkout is present - skip old form handlers
+  var isNewCheckout = document.querySelector(".checkout-section") !== null;
+  if (!isNewCheckout) {
+    initPay();
+    initForm();
+    initSticky();
+  } else {
+    initFaq();
+  }
   initReviews();
   initSuccessModal();
 
@@ -2456,7 +3094,266 @@ function initSocialProof(){
   idle(function(){ initSocialProof(); }, { timeout: 3000 });
 })();
 
-</script>
+</script><script>// ============================================================
+// NEW CHECKOUT JS - 3-Step Flow + Truecaller + Sticky Bar
+// ============================================================
+
+// --- Step Navigation ---
+let currentStep = 1;
+const totalSteps = 3;
+
+
+function markStepComplete(step) {
+  var steps = document.querySelectorAll('.progress-step');
+  steps.forEach(function(el) {
+    var s = parseInt(el.dataset.step);
+    if (s === step) {
+      el.classList.add('completed');
+      el.classList.remove('active');
+    }
+  });
+}
+
+function goToStep(step) {
+  if (step > currentStep) {
+    if (!validateStep(currentStep)) return;
+  }
+  document.querySelectorAll('.checkout-step').forEach(el => el.classList.remove('active'));
+  const target = document.querySelector('.checkout-step[data-step="' + step + '"]');
+  if (target) target.classList.add('active');
+
+  document.querySelectorAll('.progress-step').forEach(el => {
+    const s = parseInt(el.dataset.step);
+    el.classList.remove('active', 'completed');
+    if (s === step) el.classList.add('active');
+    else if (s < step) el.classList.add('completed');
+  });
+
+  const progressLines = document.querySelectorAll('.progress-line .progress-fill');
+  progressLines.forEach((line, index) => {
+    const lineNum = index + 1;
+    if (step > lineNum) line.style.width = '100%';
+    else if (step === lineNum) line.style.width = '50%';
+    else line.style.width = '0%';
+  });
+
+  currentStep = step;
+  setTimeout(() => {
+    const firstInput = document.querySelector('.checkout-step[data-step="' + step + '"] input, .checkout-step[data-step="' + step + '"] textarea');
+    if (firstInput && step !== 1) firstInput.focus();
+  }, 350);
+  document.getElementById('checkout').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function validateStep(step) {
+  clearErrors();
+  if (step === 1) {
+    // Step 1 is always valid - Truecaller or manual handles phone validation
+    return true;
+  }
+  if (step === 2) {
+    let valid = true;
+    const name = (document.getElementById('cName').value || '').trim();
+    if (!name || name.length < 3) { showError('cName', 'Please enter your full name'); valid = false; }
+    const pin = (document.getElementById('cPin').value || '').replace(/\D/g, '');
+    if (!pin || pin.length !== 6) { showError('cPin', 'Please enter a valid 6-digit pincode'); valid = false; }
+    const addr = (document.getElementById('cAddr').value || '').trim();
+    if (!addr || addr.length < 10) { showError('cAddr', 'Please enter your complete address'); valid = false; }
+    return valid;
+  }
+  return true;
+}
+
+function showError(fieldId, message) {
+  const field = document.getElementById(fieldId);
+  if (field) {
+    field.classList.add('error');
+    field.focus();
+    const errEl = document.getElementById('fErr');
+    if (errEl) { errEl.textContent = message; errEl.classList.add('show'); }
+  }
+}
+
+function clearErrors() {
+  document.querySelectorAll('.error').forEach(el => el.classList.remove('error'));
+  const errEl = document.getElementById('fErr');
+  if (errEl) { errEl.classList.remove('show'); errEl.textContent = ''; }
+}
+
+// ============================================================
+// TRUECALLER LOGIC (Vanilla JS - converted from React)
+// ============================================================
+function initTruecaller() {
+  var isAndroid = /android/.test(navigator.userAgent.toLowerCase());
+  var isChrome = /chrome/.test(navigator.userAgent.toLowerCase());
+  var isMobile = /mobile/.test(navigator.userAgent.toLowerCase());
+  var isAvailable = isAndroid && isChrome && isMobile;
+
+  var tcContainer = document.getElementById('tcContainer');
+  var tcBtn = document.getElementById('tcBtn');
+  var tcDivider = document.getElementById('tcDivider');
+  var tcPhoneInput = document.getElementById('tcPhoneInput');
+  var tcManualBtn = document.getElementById('tcManualBtn');
+  var tcError = document.getElementById('tcError');
+  var tcLoader = document.getElementById('tcLoader');
+  var tcBtnText = document.getElementById('tcBtnText');
+
+  if (isAvailable) {
+    tcBtn.style.display = 'flex';
+    tcDivider.style.display = 'flex';
+  }
+
+  // Check localStorage for previously verified user
+  var savedUser = null;
+  try {
+    var saved = localStorage.getItem('truecaller_user');
+    if (saved) savedUser = JSON.parse(saved);
+  } catch(e) {}
+
+  if (savedUser && savedUser.phone) {
+    // Already verified - auto-fill and skip to step 2
+    document.getElementById('tcPhoneInput').value = savedUser.phone;
+    if (savedUser.name) document.getElementById('cName').value = savedUser.name;
+    // Hide Truecaller container
+    if (tcContainer) tcContainer.classList.add('tc-hidden');
+    goToStep(2);
+    showWelcome(savedUser.name || 'there');
+    return;
+  }
+
+  // Truecaller button click
+  tcBtn.addEventListener('click', function() {
+    tcBtn.disabled = true;
+    tcBtnText.textContent = 'Verifying...';
+    tcLoader.style.display = 'inline-block';
+    tcError.textContent = '';
+
+    if (typeof window.TruecallerSDK !== 'undefined') {
+      // Get client ID from data attribute or env
+      var clientId = window.TRUECALLER_CLIENT_ID || '';
+      window.TruecallerSDK.verify({
+        appKey: clientId,
+        success: function(response) {
+          handleTruecallerResponse(response);
+        },
+        error: function(err) {
+          tcBtn.disabled = false;
+          tcBtnText.textContent = 'Try Again';
+          tcLoader.style.display = 'none';
+          tcError.textContent = err?.message || 'Verification failed';
+        }
+      });
+    } else {
+      // SDK not loaded - simulate for development
+      setTimeout(function() {
+        // Try loading SDK dynamically
+        loadTruecallerSDK(function() {
+          if (typeof window.TruecallerSDK !== 'undefined') {
+            window.TruecallerSDK.verify({
+              appKey: window.TRUECALLER_CLIENT_ID || '',
+              success: function(response) { handleTruecallerResponse(response); },
+              error: function(err) {
+                tcBtn.disabled = false;
+                tcBtnText.textContent = 'Continue with Truecaller';
+                tcLoader.style.display = 'none';
+                tcError.textContent = 'Please enter manually';
+              }
+            });
+          } else {
+            tcBtn.disabled = false;
+            tcBtnText.textContent = 'Continue with Truecaller';
+            tcLoader.style.display = 'none';
+            tcError.textContent = 'Truecaller unavailable. Enter manually.';
+          }
+        });
+      }, 2000);
+    }
+  });
+
+  function handleTruecallerResponse(response) {
+    if (!response || response.status !== 'verified') {
+      tcBtn.disabled = false;
+      tcBtnText.textContent = 'Continue with Truecaller';
+      tcLoader.style.display = 'none';
+      tcError.textContent = 'Verification failed. Please enter manually.';
+      return;
+    }
+    var payload = response.payload || {};
+    var name = payload.name || '';
+    var phone = (payload.phone || '').replace(/\D/g, '').slice(-10);
+    if (!phone || phone.length < 10) {
+      tcBtn.disabled = false;
+      tcBtnText.textContent = 'Continue with Truecaller';
+      tcLoader.style.display = 'none';
+      tcError.textContent = 'Could not get phone number. Enter manually.';
+      return;
+    }
+    var data = { name: name, phone: phone, source: 'truecaller', verifiedAt: new Date().toISOString() };
+    try { localStorage.setItem('truecaller_user', JSON.stringify(data)); } catch(e) {}
+    document.getElementById('tcPhoneInput').value = phone;
+    if (name) document.getElementById('cName').value = name;
+    if (tcContainer) tcContainer.classList.add('tc-hidden');
+    showWelcome(name || 'there');
+    // Save lead to API
+    saveTruecallerLead(data);
+    goToStep(2);
+  }
+
+  function loadTruecallerSDK(callback) {
+    var script = document.createElement('script');
+    script.src = 'https://sdk.truecaller.com/v2/web-sdk.js';
+    script.setAttribute('data-appkey', window.TRUECALLER_CLIENT_ID || '');
+    script.setAttribute('data-callback', 'onTruecallerResponse');
+    script.async = true;
+    window.onTruecallerResponse = function(response) {
+      handleTruecallerResponse(response);
+    };
+    script.onload = function() { if (callback) callback(); };
+    script.onerror = function() { if (callback) callback(); };
+    document.body.appendChild(script);
+  }
+  window.handleTruecallerResponse = handleTruecallerResponse;
+
+  // Manual phone entry
+  tcPhoneInput.addEventListener('input', function() {
+    this.value = this.value.replace(/\D/g, '').slice(0, 10);
+    tcError.textContent = '';
+  });
+  tcManualBtn.addEventListener('click', function() {
+    var phone = tcPhoneInput.value.replace(/\D/g, '');
+    if (!phone || phone.length !== 10 || !/^[6-9]/.test(phone)) {
+      tcError.textContent = 'Please enter a valid 10-digit mobile number';
+      return;
+    }
+    var data = { name: '', phone: phone, source: 'manual', verifiedAt: new Date().toISOString() };
+    document.getElementById('tcPhoneInput').value = phone;
+    if (tcContainer) tcContainer.classList.add('tc-hidden');
+    saveTruecallerLead({ name: '', phone: phone, source: 'manual' });
+    goToStep(2);
+  });
+  tcPhoneInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') tcManualBtn.click();
+  });
+}
+
+function saveTruecallerLead(data) {
+  // Fire-and-forget: save lead to /api/leads
+  var body = JSON.stringify({ name: data.name || '', phone: data.phone, source: data.source || 'truecaller' });
+  fetch('/api/leads', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: body }).catch(function(e) {});
+}
+
+function showWelcome(name) {
+  var firstName = name.split(' ')[0] || 'there';
+  var overlay = document.createElement('div');
+  overlay.className = 'tc-welcome-overlay';
+  overlay.innerHTML = '<div class="tc-welcome-modal"><div class="tc-welcome-icon">✅</div><h3 class="tc-welcome-title">Welcome ' + firstName + ' 👋</h3><p class="tc-welcome-sub">Your details have been verified</p><div class="tc-welcome-loader"><div class="tc-welcome-spinner"></div><span>Redirecting to checkout...</span></div></div>';
+  document.body.appendChild(overlay);
+  setTimeout(function() {
+    overlay.remove();
+    document.getElementById('checkout').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 2000);
+}
+
 
   <div style="max-width:600px;margin:0 auto;padding:20px 16px;text-align:center">
     <p style="font-size:11px;color:#999;line-height:1.6;margin-bottom:14px"><strong>अस्वीकरण:</strong> इस सेक्शन में प्रदर्शित कुछ चित्र एवं समीक्षाएं AI द्वारा निर्मित या उदाहरणात्मक हैं। इनका उद्देश्य केवल जानकारी प्रदान करना है। वास्तविक परिणाम व्यक्ति अनुसार अलग-अलग हो सकते हैं।</p>
@@ -2475,6 +3372,29 @@ function initSocialProof(){
   </div>
 </div>
 
+
+<!-- ===== STICKY BOTTOM ORDER BAR ===== -->
+<div class="sticky-order-bar" id="stickyBar">
+  <div class="sticky-inner">
+    <div class="sticky-left">
+      <div class="sticky-price">
+        <span class="sticky-current">₹1,250</span>
+        <span class="sticky-mrp">₹2,499</span>
+        <span class="sticky-badge">50% OFF</span>
+      </div>
+      <div class="sticky-urgency">
+        <span class="urgency-dot"></span>
+        <span class="urgency-text">Only few left</span>
+      </div>
+    </div>
+    <div class="sticky-right">
+      <button class="sticky-order-btn" id="stickyOrderBtn">
+        <span class="sticky-btn-text">ORDER NOW</span>
+        <span class="sticky-btn-sub">⚡ Free Delivery</span>
+      </button>
+    </div>
+  </div>
+</div></script><script>document.addEventListener('DOMContentLoaded',function(){try{initCheckoutUI()}catch(e){}try{initTruecaller()}catch(e){}});</script>
 </body>
 </html>
 

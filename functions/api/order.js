@@ -1,6 +1,6 @@
 // ============================================================
-// AVNIDEEP ORDER API v4 - HIGH CONCURRENCY OPTIMIZED
-// 4 channels: Telegram + Supabase + Gmail + Google Sheets
+// AVNIDEEP ORDER API v5 - EDGE OPTIMIZED
+// Storage: D1 (primary) + Google Sheets (backup) + Telegram + Email
 // Handles 1000+ concurrent users on Cloudflare free tier
 // ============================================================
 
@@ -123,72 +123,58 @@ async function sendTelegram(order, env) {
 }
 
 // ============================================================
-// 2️⃣ SUPABASE DATABASE (Permanent Storage)
-// Tries service_role first, falls back to anon key if RLS blocks
+// 2️⃣ D1 DATABASE (Primary Storage - Cloudflare Edge)
+// Fast SQLite at the edge - no external API calls needed
 // ============================================================
-async function saveSupabase(order, env) {
-  const orderedData = {
-    order_id: order.order_id,
-    name: order.name,
-    phone: order.phone,
-    pincode: order.pincode,
-    address: order.address,
-    payment_method: order.payment_method,
-    amount: order.amount,
-    product: order.product,
-    status: order.status,
-    page_url: order.page_url,
-    created_at: order.created_at,
-    ip_address: order.ip_address,
-    user_agent: order.user_agent,
-    utm_source: order.utm_source,
-    utm_medium: order.utm_medium,
-    utm_campaign: order.utm_campaign,
-  };
-
-  // Try all available keys in order: service_role (best) → anon (fallback)
-  const keysToTry = [
-    { key: env.SUPABASE_SERVICE_ROLE_KEY, name: 'service_role' },
-    { key: env.SUPABASE_ANON_KEY || env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY, name: 'anon' },
-  ].filter(k => k.key);
-
-  if (!env.SUPABASE_URL || !keysToTry.length) {
-    return { skipped: true, reason: "supabase_credentials_missing" };
+async function saveToD1(order, env) {
+  if (!env.DB) {
+    return { skipped: true, reason: "d1_not_configured" };
   }
 
-  let lastError = null;
-  for (const { key, name } of keysToTry) {
-    try {
-      const url = `${env.SUPABASE_URL}/rest/v1/orders`;
-      const res = await withTimeout(fetch(url, {
-        method: "POST",
-        headers: {
-          "apikey": key,
-          "Authorization": `Bearer ${key}`,
-          "Content-Type": "application/json",
-          "Prefer": "return=minimal",
-        },
-        body: JSON.stringify(orderedData),
-      }), 5000, `supabase_${name}`);
+  try {
+    const query = await env.DB.prepare(
+      `INSERT INTO orders (
+        order_id, name, phone, pincode, address, 
+        payment_method, amount, product, status, page_url,
+        created_at, ip_address, user_agent, 
+        utm_source, utm_medium, utm_campaign,
+        utr, payment_note, fbp, fbc
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    ).bind(
+      order.order_id,
+      order.name,
+      order.phone,
+      order.pincode,
+      order.address,
+      order.payment_method,
+      order.amount,
+      order.product,
+      order.status,
+      order.page_url,
+      order.created_at,
+      order.ip_address,
+      order.user_agent,
+      order.utm_source,
+      order.utm_medium,
+      order.utm_campaign,
+      order.utr || '',
+      order.payment_note || '',
+      order.fbp || '',
+      order.fbc || ''
+    ).run();
 
-      if (res.ok) {
-        return { ok: true, status: res.status, key_used: name };
-      }
-
-      const errText = await res.text().catch(() => "");
-      lastError = { ok: false, status: res.status, key_used: name, error: errText.slice(0, 200) };
-      
-      // If it's NOT an RLS error, don't bother trying other keys
-      if (errText.indexOf('42501') === -1 && errText.indexOf('row-level security') === -1 && errText.indexOf('violates') === -1) {
-        return lastError;
-      }
-      // RLS error — try next key (anon with proper RLS policy should work)
-    } catch (err) {
-      lastError = { ok: false, key_used: name, error: String(err.message || err) };
+    if (query.success) {
+      return { ok: true, status: 200, message: "Order saved to D1" };
     }
+    return { ok: false, error: "D1 insert failed" };
+  } catch (err) {
+    // Handle duplicate order_id gracefully (return success if already exists)
+    if (String(err.message || err).indexOf("UNIQUE constraint") >= 0) {
+      console.log("D1_DUPLICATE_ORDER_ID", { order_id: order.order_id });
+      return { ok: true, status: 200, note: "duplicate_order_id" };
+    }
+    return { ok: false, error: String(err.message || err) };
   }
-
-  return lastError || { ok: false, error: "All auth keys failed" };
 }
 
 // ============================================================
@@ -432,12 +418,6 @@ async function sendEmail(order, env) {
 }
 
 // ============================================================
-// 5️⃣ LEADS TABLE - CRM SYNC
-// Also saves to the leads table so CRM can pick it up
-// Runs alongside saveSupabase - does NOT affect existing orders
-// ============================================================
-
-// ============================================================
 // 🔷 FACEBOOK CONVERSION API (Server-Side Events)
 // Sends Purchase events to Facebook for better ad optimization
 // ============================================================
@@ -542,69 +522,111 @@ async function saveGoogleSheets(order, env) {
     return { skipped: true, reason: "sheets_url_missing" };
   }
 
-  try {
-    // Google Apps Script web apps return 302 after POST.
-    // We follow the redirect (default) to read the ACTUAL JSON response body.
-    // This way we can detect if the Apps Script returned an error.
-    const res = await withTimeout(fetch(env.GOOGLE_SHEETS_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        order_id: order.order_id,
-        name: order.name,
-        phone: order.phone,
-        pincode: order.pincode,
-        address: order.address,
-        payment_method: order.payment_method.toUpperCase(),
-        amount: String(order.amount),
-        product: order.product,
-        status: order.status,
-        page_url: order.page_url,
-        ip_address: order.ip_address,
-        created_at: order.created_at,
-        utm_source: order.utm_source,
-        utm_medium: order.utm_medium,
-        utm_campaign: order.utm_campaign,
-        ist_time: new Date(order.created_at).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }),
-      }).toString(),
-    }), 6000, "google_sheets");
-
-    // Read the actual response body from the redirected page
-    const bodyText = await res.text().catch(() => "");
-    
-    // Try to parse as JSON (Google Apps Script ContentService returns raw JSON)
-    let jsonBody;
-    try {
-      jsonBody = JSON.parse(bodyText);
-    } catch (parseErr) {
-      // If it's not JSON (maybe HTML), success depends on status
-      jsonBody = null;
-    }
-    
-    // If we got valid JSON and it says ok: true, data saved successfully!
-    if (jsonBody && jsonBody.ok === true) {
-      return { ok: true, status: res.status, message: jsonBody.message };
-    }
-    
-    // If we got valid JSON but it says ok: false, Apps Script had an error
-    if (jsonBody && jsonBody.ok === false) {
-      return { ok: false, status: res.status, error: jsonBody.error || "Sheets API error" };
-    }
-    
-    // Fallback: if status is in 200-399 range but no JSON, still count as success
-    // (This handles older or non-standard responses)
-    const errBody = bodyText.slice(0, 500);
-    if (res.status >= 200 && res.status < 400) {
-      if (errBody.toLowerCase().indexOf("not found") !== -1 || errBody.toLowerCase().indexOf("error") !== -1) {
-        return { ok: false, status: res.status, error: errBody.slice(0, 200) };
-      }
-      return { ok: true, status: res.status, note: "non_json_response" };
-    }
-    
-    return { ok: false, status: res.status, error: errBody };
-  } catch (err) {
-    return { ok: false, error: String(err.message || err) };
+  // Build the request body once
+  function buildSheetsBody() {
+    return new URLSearchParams({
+      order_id: order.order_id,
+      name: order.name,
+      phone: order.phone,
+      pincode: order.pincode,
+      address: order.address,
+      payment_method: order.payment_method.toUpperCase(),
+      amount: String(order.amount),
+      product: order.product,
+      status: order.status,
+      page_url: order.page_url,
+      ip_address: order.ip_address,
+      created_at: order.created_at,
+      utm_source: order.utm_source,
+      utm_medium: order.utm_medium,
+      utm_campaign: order.utm_campaign,
+      ist_time: new Date(order.created_at).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }),
+    }).toString();
   }
+
+  // Retry up to 3 times with exponential backoff
+  const MAX_RETRIES = 3;
+  let lastError = null;
+
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      // Google Apps Script web apps return 302 after POST.
+      // We follow the redirect (default) to read the ACTUAL JSON response body.
+      const res = await withTimeout(fetch(env.GOOGLE_SHEETS_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: buildSheetsBody(),
+      }), 6000, "google_sheets");
+
+      // Read the actual response body from the redirected page
+      const bodyText = await res.text().catch(() => "");
+      
+      // Try to parse as JSON (Google Apps Script ContentService returns raw JSON)
+      let jsonBody;
+      try {
+        jsonBody = JSON.parse(bodyText);
+      } catch (parseErr) {
+        jsonBody = null;
+      }
+      
+      // If we got valid JSON and it says ok: true, data saved successfully!
+      if (jsonBody && jsonBody.ok === true) {
+        return { ok: true, status: res.status, message: jsonBody.message, attempt };
+      }
+      
+      // If we got valid JSON but it says ok: false, Apps Script had an error
+      if (jsonBody && jsonBody.ok === false) {
+        // If it's a quota error, retry after a delay
+        const errMsg = (jsonBody.error || "").toLowerCase();
+        if (errMsg.indexOf("quota") !== -1 || errMsg.indexOf("timeout") !== -1 || errMsg.indexOf("limit") !== -1) {
+          lastError = { ok: false, status: res.status, error: jsonBody.error, attempt };
+          if (attempt < MAX_RETRIES) {
+            const delay = attempt * 2000; // 2s, 4s, 6s backoff
+            console.log("GOOGLE_SHEETS_RETRY", { attempt, delay, error: jsonBody.error });
+            await new Promise(r => setTimeout(r, delay));
+            continue;
+          }
+        }
+        return { ok: false, status: res.status, error: jsonBody.error || "Sheets API error", attempt };
+      }
+      
+      // Fallback: if status is in 200-399 range but no JSON, still count as success
+      const errBody = bodyText.slice(0, 500);
+      if (res.status >= 200 && res.status < 400) {
+        if (errBody.toLowerCase().indexOf("not found") !== -1 || errBody.toLowerCase().indexOf("error") !== -1) {
+          lastError = { ok: false, status: res.status, error: errBody.slice(0, 200), attempt };
+          if (attempt < MAX_RETRIES) {
+            const delay = attempt * 2000;
+            console.log("GOOGLE_SHEETS_RETRY", { attempt, delay, error: errBody.slice(0, 100) });
+            await new Promise(r => setTimeout(r, delay));
+            continue;
+          }
+          return lastError;
+        }
+        return { ok: true, status: res.status, note: "non_json_response", attempt };
+      }
+      
+      // Status >= 400 — retry with backoff
+      lastError = { ok: false, status: res.status, error: bodyText.slice(0, 200), attempt };
+      if (attempt < MAX_RETRIES) {
+        const delay = attempt * 2000;
+        console.log("GOOGLE_SHEETS_RETRY", { attempt, delay, status: res.status });
+        await new Promise(r => setTimeout(r, delay));
+        continue;
+      }
+      return lastError;
+    } catch (err) {
+      lastError = { ok: false, error: String(err.message || err), attempt };
+      if (attempt < MAX_RETRIES) {
+        const delay = attempt * 2000;
+        console.log("GOOGLE_SHEETS_RETRY_ERR", { attempt, delay, error: String(err.message || err) });
+        await new Promise(r => setTimeout(r, delay));
+        continue;
+      }
+    }
+  }
+
+  return lastError || { ok: false, error: "All retry attempts failed" };
 }
 
 // ============================================================
@@ -619,6 +641,85 @@ export async function onRequestOptions({ env }) {
 // ============================================================
 export async function onRequestPost({ request, env }) {
   const ip = request.headers.get("CF-Connecting-IP") || request.headers.get("X-Forwarded-For") || "unknown";
+
+  // ============================================================
+  // RATE LIMITING - Smart bot protection
+  // 30/IP/min threshold. Phone bypass: known phones skip IP limit.
+  // Duplicate detection below handles refresh+resubmit gracefully.
+  // ============================================================
+  if (env.RATE_LIMIT_KV) {
+    const now = Date.now();
+    const WINDOW_MS = 60000;
+    const MAX_REQUESTS = 30;  // 30/IP/min - enough for shared IPs
+
+    try {
+      // PHONE BYPASS: Check if this phone was seen before (handles refreshes)
+      let phoneBypass = false;
+      let seenPhone = null;
+      try {
+        const clonedReq = request.clone();
+        const bodyPreview = await clonedReq.json().catch(() => null);
+        if (bodyPreview && bodyPreview.phone) {
+          const rawPhone = String(bodyPreview.phone).replace(/[^0-9]/g, '');
+          if (rawPhone.length >= 10) {
+            seenPhone = rawPhone.slice(-10);
+            const phoneKey = `seen_phone:${seenPhone}`;
+            const phoneSeen = await env.RATE_LIMIT_KV.get(phoneKey).catch(() => null);
+            if (phoneSeen === '1') {
+              phoneBypass = true;
+            }
+          }
+        }
+      } catch (e) {}
+
+      if (phoneBypass && seenPhone) {
+        // Known phone - extend expiry and skip IP rate limiting
+        await env.RATE_LIMIT_KV.put(`seen_phone:${seenPhone}`, '1', { expirationTtl: 3600 }).catch(() => {});
+        // Also add current timestamp so they don't get stuck if they switch IPs
+        const rateKey = `rate_limit:${ip}`;
+        const nowRecord = await env.RATE_LIMIT_KV.get(rateKey, { type: 'json' }).catch(() => null);
+        if (nowRecord && Array.isArray(nowRecord.timestamps)) {
+          nowRecord.timestamps = nowRecord.timestamps.filter(t => (now - t) < WINDOW_MS);
+          nowRecord.timestamps.push(now);
+          await env.RATE_LIMIT_KV.put(rateKey, JSON.stringify(nowRecord), { expirationTtl: 120 }).catch(() => {});
+        }
+      } else {
+        // IP-based rate limiting for unknown visitors
+        const rateKey = `rate_limit:${ip}`;
+        const record = await env.RATE_LIMIT_KV.get(rateKey, { type: 'json' });
+        
+        if (record && Array.isArray(record.timestamps)) {
+          record.timestamps = record.timestamps.filter(t => (now - t) < WINDOW_MS);
+          
+          if (record.timestamps.length >= MAX_REQUESTS) {
+            console.log("RATE_LIMIT_EXCEEDED", { ip, count: record.timestamps.length });
+            return new Response(
+              JSON.stringify({ 
+                ok: false, 
+                error: "Too many requests. WhatsApp par order karein: https://wa.me/917060101043",
+                retry_after: 60,
+                whatsapp: "https://wa.me/917060101043?text=Mujhe order karna hai"
+              }),
+              { status: 429, headers: jsonHeaders(env) }
+            );
+          }
+          
+          record.timestamps.push(now);
+          record.count = record.timestamps.length;
+          await env.RATE_LIMIT_KV.put(rateKey, JSON.stringify(record), { expirationTtl: 120 });
+        } else {
+          await env.RATE_LIMIT_KV.put(rateKey, JSON.stringify({ count: 1, timestamps: [now] }), { expirationTtl: 120 });
+        }
+        
+        // Mark this phone for future bypass (next request won't be rate limited)
+        if (seenPhone) {
+          await env.RATE_LIMIT_KV.put(`seen_phone:${seenPhone}`, '1', { expirationTtl: 3600 }).catch(() => {});
+        }
+      }
+    } catch (rateErr) {
+      console.warn("RATE_LIMIT_CHECK_FAILED", String(rateErr.message || rateErr));
+    }
+
 
   try {
     // Step 1: Parse JSON body
@@ -651,32 +752,24 @@ export async function onRequestPost({ request, env }) {
       );
     }
 
-    // Step 5: Duplicate detection — check Supabase for existing order with same phone+amount in last 60s
+    // Step 5: Duplicate detection — check D1 for existing order with same phone+amount in last 60s
     // Prevents double counting when client retries after network timeout
     let isDup = false;
     let existingOrderId = null;
     try {
-      const dupUrl = `${env.SUPABASE_URL}/rest/v1/orders?phone=eq.${encodeURIComponent(order.phone)}&order=created_at.desc&limit=1`;
-      const dupKey = env.SUPABASE_SERVICE_ROLE_KEY || env.SUPABASE_ANON_KEY || env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-      if (env.SUPABASE_URL && dupKey) {
-        const dupRes = await withTimeout(fetch(dupUrl, {
-          headers: {
-            "apikey": dupKey,
-            "Authorization": `Bearer ${dupKey}`,
-          },
-        }), 3000, 'supabase_dedup');
-        if (dupRes.ok) {
-          const existing = await dupRes.json();
-          if (Array.isArray(existing) && existing.length > 0) {
-            const last = existing[0];
-            const lastTime = new Date(last.created_at).getTime();
-            const now = Date.now();
-            // If same amount and within 60 seconds, it's a duplicate
-            if (String(last.amount) === String(order.amount) && (now - lastTime) < 60000) {
-              isDup = true;
-              existingOrderId = last.order_id;
-              console.log("DUPLICATE_DETECTED", { existing: last.order_id, new: order.order_id, phone: order.phone });
-            }
+      if (env.DB) {
+        const dupResult = await env.DB.prepare(
+          `SELECT order_id, amount, created_at FROM orders WHERE phone = ? ORDER BY created_at DESC LIMIT 1`
+        ).bind(order.phone).first();
+        
+        if (dupResult) {
+          const lastTime = new Date(dupResult.created_at).getTime();
+          const now = Date.now();
+          // If same amount and within 60 seconds, it's a duplicate
+          if (String(dupResult.amount) === String(order.amount) && (now - lastTime) < 60000) {
+            isDup = true;
+            existingOrderId = dupResult.order_id;
+            console.log("DUPLICATE_DETECTED", { existing: dupResult.order_id, new: order.order_id, phone: order.phone });
           }
         }
       }
@@ -703,11 +796,11 @@ export async function onRequestPost({ request, env }) {
     // Step 6: 🚀 FIRE ALL CHANNELS — Supabase + Sheets + Facebook CAPI awaited (critical)
     // Telegram + Email fire-and-forget (just notifications, not business-critical)
     const allResults = await Promise.allSettled([
-      saveSupabase(order, env),
+      saveToD1(order, env),
       saveGoogleSheets(order, env),
       sendFacebookCAPI(order, env, order.payment_method === 'prepaid' ? 'InitiateCheckout' : 'Purchase'),
     ]);
-    const [supabase, sheets, facebookCapi] = allResults.map(r =>
+    const [d1result, sheets, facebookCapi] = allResults.map(r =>
       r.status === "fulfilled" ? r.value : { ok: false, skipped: false, error: String(r.reason?.message || r.reason || "Channel failed") }
     );
 
@@ -726,13 +819,13 @@ export async function onRequestPost({ request, env }) {
       payment: order.payment_method,
       amount: order.amount,
       duplicate: isDup,
-      channels: { supabase, sheets, facebook_capi: facebookCapi },
+      channels: { d1: d1result, sheets, facebook_capi: facebookCapi },
     }));
 
     // Step 8: Success only if at least one channel worked
-    // Only critical channels (Supabase + Google Sheets) determine order success
-    const successCount = [supabase, sheets, facebookCapi].filter((c) => c.ok).length;
-    const skippedCount = [supabase, sheets].filter((c) => c.skipped).length;
+    // Critical channels: D1 + Google Sheets determine order success
+    const successCount = [d1result, sheets, facebookCapi].filter((c) => c.ok).length;
+    const skippedCount = [d1result, sheets].filter((c) => c.skipped).length;
     const allChannelsSkipped = skippedCount === 2;
 
     if (successCount === 0) {
@@ -743,7 +836,7 @@ export async function onRequestPost({ request, env }) {
       return new Response(
         JSON.stringify({
           ok: false,        error: errorMessage,
-        debug: { supabase, sheets, facebook_capi: facebookCapi },
+        debug: { d1: d1result, sheets, facebook_capi: facebookCapi },
       }),
         { status: 500, headers: jsonHeaders(env) }
       );
@@ -755,11 +848,11 @@ export async function onRequestPost({ request, env }) {
         orderId: order.order_id,
         duplicate: isDup,
         channels: {
-          supabase: supabase.ok || supabase.skipped || false,
+          d1: d1result.ok || d1result.skipped || false,
           sheets: sheets.ok || sheets.skipped || false,
           facebook_capi: facebookCapi.ok || facebookCapi.skipped || false,
         },
-        debug: { supabase, sheets },
+        debug: { d1: d1result, sheets },
       }),
       { status: 200, headers: jsonHeaders(env) }
     );
@@ -784,7 +877,7 @@ export async function onRequestGet({ env }) {
       version: "v3",
       env_check: {
         telegram: !!env.TELEGRAM_BOT_TOKEN && !!env.TELEGRAM_CHAT_ID,
-        supabase: !!env.SUPABASE_URL && (!!env.SUPABASE_SERVICE_ROLE_KEY || !!env.SUPABASE_ANON_KEY || !!env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY),
+        d1: !!env.DB,
         email_provider: !!env.NOTIFY_EMAIL ? (
           env.BREVO_API_KEY ? "brevo (300/day FREE)" :
           env.MAILERSEND_API_KEY ? "mailersend (3000/mo FREE)" :
@@ -856,28 +949,17 @@ export async function onRequestPatch({ request, env }) {
       utm_campaign: "",
     };
     
-    // Update Supabase order with UTR if Supabase configured
-    const keysToTry = [
-      env.SUPABASE_SERVICE_ROLE_KEY,
-      env.SUPABASE_ANON_KEY || env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
-    ].filter(k => k);
-
-    for (const key of keysToTry) {
-      try {
-        const patchRes = await withTimeout(fetch(`${env.SUPABASE_URL}/rest/v1/orders?order_id=eq.${encodeURIComponent(orderId)}`, {
-          method: "PATCH",
-          headers: {
-            "apikey": key,
-            "Authorization": `Bearer ${key}`,
-            "Content-Type": "application/json",
-            "Prefer": "return=minimal",
-          },
-          body: JSON.stringify({ utr: utr, status: "payment_received" }),
-        }), 5000, "supabase_patch");
-        if (patchRes.ok) break; // Success with this key
-      } catch (e) {
-        console.warn("Supabase PATCH failed with key:", e);
+    // Update D1 order with UTR if D1 configured
+    let d1UpdateOk = false;
+    try {
+      if (env.DB) {
+        const updateRes = await env.DB.prepare(
+          `UPDATE orders SET utr = ?, status = ? WHERE order_id = ?`
+        ).bind(utr, "payment_received", orderId).run();
+        d1UpdateOk = updateRes.success;
       }
+    } catch (e) {
+      console.warn("D1_PATCH_FAILED", String(e.message || e));
     }
     
     // Send UTR receipt to Telegram

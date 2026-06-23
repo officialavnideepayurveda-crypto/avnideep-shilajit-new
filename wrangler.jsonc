@@ -13,15 +13,20 @@
   ],
   "vars": {
     "ALLOWED_ORIGIN": "https://shop.avnideepayurveda.in",
-    "SUPABASE_URL": "https://vigahmdtvojcnlofdxen.supabase.co",
     "NOTIFY_EMAIL": "support@avnideepayurveda.in",
-    "SUPABASE_ANON_KEY": "sb_publishable_DBSk2EtFly50Cl12Wv22wA_ild2BF9x",
     "GOOGLE_SHEETS_URL": "https://script.google.com/macros/s/AKfycbwIQtmQROUYf0Mtbx5wfagLROAObzYFAPG3mL80RtQnTFYcEk1s9V7HNGAf0Wz5XyRP/exec"
   },
   "kv_namespaces": [
     {
       "binding": "RATE_LIMIT_KV",
       "id": "4ad07d2c9dea46d7975da1af3350a7a8"
+    }
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "avnideep-orders",
+      "database_id": "206a16cc-c347-45d1-9168-e34a7511491d"
     }
   ]
 }
