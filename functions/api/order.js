@@ -865,7 +865,7 @@ export async function onRequestPost({ request, env }) {
   }
 }
 
-// ============================================================
+// ============================================================}
 // HEALTH CHECK ENDPOINT (GET /api/order)
 // Visit this URL to verify all credentials are set
 // ============================================================
