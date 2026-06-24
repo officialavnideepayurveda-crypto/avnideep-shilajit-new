@@ -53,7 +53,7 @@ function normalizeOrder(body, ip) {
     utm_medium: String(body.utm_medium || "").slice(0, 100),
     utm_campaign: String(body.utm_campaign || "").slice(0, 100),
     fbp: String(body.fbp || "").slice(0, 100),
-    fbc: String(body.fbc || "").slice(0, 100),
+    fbc: String(body.fbc || ""),
   };
 }
 
@@ -490,7 +490,7 @@ async function sendFacebookCAPI(order, env, eventName = 'Purchase') {
           event_source_url: String(order.page_url || 'https://shop.avnideepayurveda.in/'),
           user_data: {
             ph: hashedPhone,
-            client_ip_address: (order.ip_address && order.ip_address !== 'unknown') ? String(order.ip_address) : '',
+            client_ip_address: (order.ip_address && order.ip_address !== 'unknown') ? String(order.ip_address) : '0.0.0.0',
             client_user_agent: String(order.user_agent || ''),
             fbp: String(order.fbp || ''),
             fbc: String(order.fbc || ''),

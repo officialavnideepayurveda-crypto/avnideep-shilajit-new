@@ -1257,6 +1257,9 @@ function initCheckoutUI() {
       var fbc = document.cookie.split('; ').find(function(r) { return r.startsWith('_fbc='); });
       payload.fbp = fbp ? fbp.split('=')[1] : '';
       payload.fbc = fbc ? fbc.split('=')[1] : '';
+      // Also capture fbclid from URL as fallback
+      var fbclidParam = new URLSearchParams(window.location.search).get('fbclid');
+      if (!payload.fbc \&\& fbclidParam) { payload.fbc = 'fb.1.' + Date.now() + '.' + fbclidParam; }
     } catch(e) {}
 
     // Double-submission prevention
