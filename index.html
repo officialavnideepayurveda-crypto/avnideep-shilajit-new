@@ -1260,10 +1260,11 @@ function initCheckoutUI() {
 
     // Double-submission prevention
     var submitKey = 'order_submitted_' + payload.phone;
-    if (localStorage.getItem(submitKey)) {
+    var prevTime = localStorage.getItem(submitKey);
+    if (prevTime && (Date.now() - parseInt(prevTime) < 300000)) {
       var errEl = document.getElementById('fErr');
       if (errEl) {
-        errEl.innerHTML = 'Warning: Order already submitted. <a href="https://wa.me/917060101043" target="_blank" style="color:#25D366;font-weight:700;text-decoration:none">Contact us on WhatsApp</a>';
+        errEl.innerHTML = '26a0Fe0f Already ordered from this phone. Please wait 5 minutes or <a href="https://wa.me/917060101043" target="_blank" style="color:#25D366;font-weight:700;text-decoration:none">Contact us on WhatsApp</a>';
         errEl.classList.add('show');
       }
       submitBtn.classList.remove('loading');
@@ -3214,63 +3215,69 @@ function initTruecaller() {
   } catch(e) {}
 
   if (savedUser && savedUser.phone) {
-    // Already verified - auto-fill and skip to step 2
     document.getElementById('tcPhoneInput').value = savedUser.phone;
     if (savedUser.name) document.getElementById('cName').value = savedUser.name;
-    // Hide Truecaller container
     if (tcContainer) tcContainer.classList.add('tc-hidden');
     goToStep(2);
     showWelcome(savedUser.name || 'there');
     return;
   }
 
-  // Truecaller button click
+  // Check URL params for return from Truecaller deep link
+  var urlParams = new URLSearchParams(window.location.search);
+  var tcStatus = urlParams.get('tc_status');
+  var tcName = urlParams.get('tc_name') || '';
+  var tcPhone = urlParams.get('tc_phone') || '';
+
+  if (tcStatus === 'verified' && tcPhone) {
+    var verifiedData = { name: tcName, phone: tcPhone, source: 'truecaller', verifiedAt: new Date().toISOString() };
+    try { localStorage.setItem('truecaller_user', JSON.stringify(verifiedData)); } catch(e) {}
+    document.getElementById('tcPhoneInput').value = tcPhone;
+    if (tcName) document.getElementById('cName').value = tcName;
+    if (tcContainer) tcContainer.classList.add('tc-hidden');
+    try { window.history.replaceState({}, '', window.location.pathname); } catch(e) {}
+    saveTruecallerLead(verifiedData);
+    goToStep(2);
+    showWelcome(tcName || 'there');
+    return;
+  }
+
+  // Truecaller button click - Deep Link approach
   tcBtn.addEventListener('click', function() {
     tcBtn.disabled = true;
-    tcBtnText.textContent = 'Verifying...';
+    tcBtnText.textContent = 'Opening Truecaller...';
     tcLoader.style.display = 'inline-block';
     tcError.textContent = '';
 
-    if (typeof window.TruecallerSDK !== 'undefined') {
-      // Get client ID from data attribute or env
-      var clientId = window.TRUECALLER_CLIENT_ID || '';
-      window.TruecallerSDK.verify({
-        appKey: clientId,
-        success: function(response) {
-          handleTruecallerResponse(response);
-        },
-        error: function(err) {
-          tcBtn.disabled = false;
-          tcBtnText.textContent = 'Try Again';
-          tcLoader.style.display = 'none';
-          tcError.textContent = err?.message || 'Verification failed';
-        }
-      });
-    } else {
-      // SDK not loaded - simulate for development
-      setTimeout(function() {
-        // Try loading SDK dynamically
-        loadTruecallerSDK(function() {
-          if (typeof window.TruecallerSDK !== 'undefined') {
-            window.TruecallerSDK.verify({
-              appKey: window.TRUECALLER_CLIENT_ID || '',
-              success: function(response) { handleTruecallerResponse(response); },
-              error: function(err) {
-                tcBtn.disabled = false;
-                tcBtnText.textContent = 'Continue with Truecaller';
-                tcLoader.style.display = 'none';
-                tcError.textContent = 'Please enter manually';
-              }
-            });
-          } else {
-            tcBtn.disabled = false;
-            tcBtnText.textContent = 'Continue with Truecaller';
-            tcLoader.style.display = 'none';
-            tcError.textContent = 'Truecaller unavailable. Enter manually.';
-          }
-        });
-      }, 2000);
-    }
+    var nonce = Date.now().toString(36) + Math.random().toString(36).substr(2, 10);
+    var clientId = window.TRUECALLER_CLIENT_ID || '';
+    var redirectUri = encodeURIComponent(window.location.href.split('?')[0]);
+
+    // Deep link to open Truecaller app
+    var deepLink = 'truecallersdk://truesdk/web_verify?' +
+      'type=btmsheet' +
+      '&partnerKey=' + clientId +
+      '&partnerName=Avnideep' +
+      '&requestNonce=' + nonce +
+      '&redirectUri=' + redirectUri +
+      '&lang=en';
+
+    var appOpened = false;
+    var fallbackTimer = setTimeout(function() {
+      if (!appOpened) {
+        tcBtn.disabled = false;
+        tcBtnText.textContent = 'Continue with Truecaller';
+        tcLoader.style.display = 'none';
+        tcError.textContent = 'Truecaller app not found. Please enter manually.';
+      }
+    }, 800);
+
+    window.addEventListener('blur', function() {
+      appOpened = true;
+      clearTimeout(fallbackTimer);
+    }, { once: true });
+
+    window.location.href = deepLink;
   });
 
   function handleTruecallerResponse(response) {
@@ -3302,20 +3309,7 @@ function initTruecaller() {
     goToStep(2);
   }
 
-  function loadTruecallerSDK(callback) {
-    var script = document.createElement('script');
-    script.src = 'https://sdk.truecaller.com/v2/web-sdk.js';
-    script.setAttribute('data-appkey', window.TRUECALLER_CLIENT_ID || '');
-    script.setAttribute('data-callback', 'onTruecallerResponse');
-    script.async = true;
-    window.onTruecallerResponse = function(response) {
-      handleTruecallerResponse(response);
-    };
-    script.onload = function() { if (callback) callback(); };
-    script.onerror = function() { if (callback) callback(); };
-    document.body.appendChild(script);
-  }
-  window.handleTruecallerResponse = handleTruecallerResponse;
+
 
   // Manual phone entry
   tcPhoneInput.addEventListener('input', function() {
