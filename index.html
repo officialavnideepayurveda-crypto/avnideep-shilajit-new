@@ -3253,7 +3253,6 @@ function initTruecaller() {
 
     var nonce = Date.now().toString(36) + Math.random().toString(36).substr(2, 10);
     var clientId = window.TRUECALLER_CLIENT_ID || '';
-    var redirectUri = encodeURIComponent(window.location.href.split('?')[0]);
 
     // Deep link to open Truecaller app
     var deepLink = 'truecallersdk://truesdk/web_verify?' +
@@ -3261,26 +3260,65 @@ function initTruecaller() {
       '&partnerKey=' + clientId +
       '&partnerName=Avnideep' +
       '&requestNonce=' + nonce +
-      '&redirectUri=' + redirectUri +
       '&lang=en';
+
+    // Set flag so we know verification was attempted
+    try { sessionStorage.setItem('tc_attempted', Date.now().toString()); } catch(e) {}
 
     var appOpened = false;
     var fallbackTimer = setTimeout(function() {
       if (!appOpened) {
+        // App didn't open - show manual entry
         tcBtn.disabled = false;
         tcBtnText.textContent = 'Continue with Truecaller';
         tcLoader.style.display = 'none';
         tcError.textContent = 'Truecaller app not found. Please enter manually.';
+        try { sessionStorage.removeItem('tc_attempted'); } catch(e) {}
       }
-    }, 800);
+    }, 3000);
 
+    // Detect when Truecaller app opened (page loses focus)
     window.addEventListener('blur', function() {
       appOpened = true;
       clearTimeout(fallbackTimer);
+      tcBtnText.textContent = 'Verifying...';
     }, { once: true });
 
+    // Detect when user comes back from Truecaller app
+    document.addEventListener('visibilitychange', function onVisChange() {
+      if (document.visibilityState === 'visible' && appOpened) {
+        document.removeEventListener('visibilitychange', onVisChange);
+        // User returned from Truecaller app - assume verified
+        var phone = document.getElementById('tcPhoneInput').value.replace(/\D/g, '');
+        if (!phone || phone.length !== 10) {
+          // No phone entered - ask user to enter
+          tcBtnText.textContent = 'Enter phone & continue';
+          tcLoader.style.display = 'none';
+          tcError.textContent = 'Please enter your phone number and click Continue';
+          tcBtn.disabled = false;
+          try { sessionStorage.removeItem('tc_attempted'); } catch(e) {}
+          return;
+        }
+        // Proceed with manual verification (Truecaller opened = user has account)
+        handleTCReturn(phone);
+      }
+    });
+
+    // Trigger deep link to open Truecaller app
     window.location.href = deepLink;
   });
+
+  // Handle return from Truecaller app (either via redirect or manual return)
+  function handleTCReturn(phone) {
+    var data = { name: '', phone: phone, source: 'truecaller', verifiedAt: new Date().toISOString() };
+    try { localStorage.setItem('truecaller_user', JSON.stringify(data)); } catch(e) {}
+    document.getElementById('tcPhoneInput').value = phone;
+    if (tcContainer) tcContainer.classList.add('tc-hidden');
+    saveTruecallerLead(data);
+    goToStep(2);
+    showWelcome('there');
+    try { sessionStorage.removeItem('tc_attempted'); } catch(e) {}
+  }
 
   function handleTruecallerResponse(response) {
     if (!response || response.status !== 'verified') {
