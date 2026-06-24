@@ -24,6 +24,7 @@ gtag('js', new Date());
 gtag('config', 'G-HTH3FR9SF6');
 </script>
 <!-- End Google Analytics -->
+<meta name="description" content="Buy Avnideep 6Pro Vitality Shilajit Capsules - 100% Ayurvedic with 14 herbs. Free doctor consultation, COD available, 10-day delivery. Official Ayurvedic product.">
 
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Avnideep Ayurveda">
@@ -1296,10 +1297,10 @@ function initCheckoutUI() {
           var orderId = result.orderId || payload.orderId;
           sessionStorage.setItem('orderId', orderId);
           sessionStorage.setItem('orderName', payload.name);
-          sessionStorage.setItem('orderAmount', '1250');
+          sessionStorage.setItem('orderAmount', String(amount));
           sessionStorage.setItem('orderMethod', 'cod');
-          try { if (typeof fbq === 'function') fbq('track', 'Purchase', { value: 1250, currency: 'INR', content_name: 'AVN-6PRO-001' }); } catch(e) {}
-          window.location.href = '/thank-you.html?order_id=' + orderId + '&name=' + encodeURIComponent(payload.name) + '&amount=1250&method=cod';
+          try { if (typeof fbq === 'function') fbq('track', 'Purchase', { value: amount, currency: 'INR', content_name: 'AVN-6PRO-001', content_type: 'product', order_id: orderId, eventID: orderId }); } catch(e) {}
+          window.location.href = '/thank-you.html?order_id=' + orderId + '&name=' + encodeURIComponent(payload.name) + '&amount=' + amount + '&method=cod';
         } else {
           throw new Error(result.error || 'Order failed');
         }
@@ -2391,8 +2392,8 @@ function initScroll(){
       e.preventDefault();
       var t = $('#'+b.dataset.scroll);
       if(!t) return;
-      dataLayer.push({event:'InitiateCheckout', value:1250, currency:'INR'});
-      try{ if(typeof fbq === 'function') fbq('track', 'InitiateCheckout', {value:1250, currency:'INR', content_name:'AVN-6PRO-001'}); }catch(e){}
+      dataLayer.push({event:'InitiateCheckout', value:payload.amount, currency:'INR'});
+      try{ if(typeof fbq === 'function') fbq('track', 'InitiateCheckout', {value:payload.amount, currency:'INR', content_name:'AVN-6PRO-001'}); }catch(e){}
       t.scrollIntoView({behavior:'smooth', block:'start'});
       setTimeout(function(){
         var n = $('#cName');
@@ -2757,7 +2758,7 @@ function initForm(){
         showErr(err, 'Payment order backend पर सेव नहीं हुआ: ' + apiError + '। WhatsApp fallback भेजा जा रहा है।');
       }
       showSuccess('prepaid_whatsapp', payload.orderId);
-      try{ fbq('track', 'Purchase', {value:payload.amount, currency:'INR', content_name:'AVN-6PRO-001', content_type:'product', order_id:payload.orderId, method:'whatsapp_fallback'}); }catch(e){}
+      try{ fbq('track', 'Purchase', {value:payload.amount, currency:'INR', content_name:'AVN-6PRO-001', content_type:'product', order_id:payload.orderId, eventID:payload.orderId, method:'whatsapp_fallback'}); }catch(e){}
 
       setTimeout(function(){ window.open(waOrderUrl, '_blank', 'noopener'); }, 1000);
       form.reset();
@@ -2766,13 +2767,13 @@ function initForm(){
     } else {
       // COD flow: Show success when backend saved, otherwise use WhatsApp fallback
       if(apiSuccess){
-        try{ fbq('track', 'Purchase', {value:1250, currency:'INR', content_name:'AVN-6PRO-001', content_type:'product', order_id:payload.orderId}); }catch(e){}
+        try{ fbq('track', 'Purchase', {value:payload.amount, currency:'INR', content_name:'AVN-6PRO-001', content_type:'product', order_id:payload.orderId, eventID:payload.orderId}); }catch(e){}
         window.location.href = '/thank-you?order_id=' + encodeURIComponent(payload.orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.name) + '&method=cod';
       } else {
         if(apiError){
           showErr(err, 'ऑर्डर backend पर सेव नहीं हुआ: ' + apiError + '। WhatsApp fallback भेजा जा रहा है।');
         }
-        try{ fbq('track', 'Purchase', {value:1250, currency:'INR', content_name:'AVN-6PRO-001', content_type:'product', order_id:payload.orderId, method:'whatsapp_fallback'}); }catch(e){}
+        try{ fbq('track', 'Purchase', {value:payload.amount, currency:'INR', content_name:'AVN-6PRO-001', content_type:'product', order_id:payload.orderId, eventID:payload.orderId, method:'whatsapp_fallback'}); }catch(e){}
         window.location.href = '/thank-you?order_id=' + encodeURIComponent(payload.orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.name) + '&method=cod_whatsapp&wa_url=' + encodeURIComponent(waOrderUrl);
         form.reset();
         updatePay();

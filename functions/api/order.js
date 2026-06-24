@@ -669,6 +669,28 @@ export async function onRequestPost({ request, env }) {
   const ip = request.headers.get("CF-Connecting-IP") || request.headers.get("X-Forwarded-For") || "unknown";
 
   // ============================================================
+  // CSRF/ORIGIN CHECK - Prevent external form submissions
+  // ============================================================
+  try {
+    const origin = request.headers.get("Origin") || request.headers.get("Referer") || "";
+    const allowedHosts = ["shop.avnideepayurveda.in", "localhost", "127.0.0.1"];
+    if (origin) {
+      const originHost = new URL(origin).hostname.toLowerCase();
+      const allowed = allowedHosts.some(h => originHost === h || originHost.endsWith("." + h));
+      if (!allowed) {
+        console.warn("CSRF_BLOCKED", { origin, ip });
+        return new Response(
+          JSON.stringify({ ok: false, error: "Access denied" }),
+          { status: 403, headers: jsonHeaders(env) }
+        );
+      }
+    }
+  } catch (e) {
+    // If origin parsing fails, allow request to proceed
+    console.warn("ORIGIN_CHECK_FAILED", String(e));
+  }
+
+  // ============================================================
   // RATE LIMITING - Smart bot protection
   // 30/IP/min threshold. Phone bypass: known phones skip IP limit.
   // Duplicate detection below handles refresh+resubmit gracefully.
