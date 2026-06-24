@@ -1257,9 +1257,6 @@ function initCheckoutUI() {
       var fbc = document.cookie.split('; ').find(function(r) { return r.startsWith('_fbc='); });
       payload.fbp = fbp ? fbp.split('=')[1] : '';
       payload.fbc = fbc ? fbc.split('=')[1] : '';
-      // Also capture fbclid from URL as fallback
-      var fbclidParam = new URLSearchParams(window.location.search).get('fbclid');
-      if (!payload.fbc \&\& fbclidParam) { payload.fbc = 'fb.1.' + Date.now() + '.' + fbclidParam; }
     } catch(e) {}
 
     // Double-submission prevention
@@ -3250,6 +3247,20 @@ function initTruecaller() {
 
   // Truecaller button click - Deep Link approach
   tcBtn.addEventListener('click', function() {
+    // Check if we're in return mode (user came back from app, needs to enter phone)
+    if (window.__tcReturnMode) {
+      var phone = document.getElementById('tcPhoneInput').value.replace(/\D/g, '');
+      if (phone && phone.length === 10) {
+        tcBtn.disabled = true;
+        tcBtnText.textContent = 'Verifying...';
+        tcLoader.style.display = 'inline-block';
+        window.__tcReturnMode = false;
+        handleTCReturn(phone);
+      } else {
+        tcError.textContent = 'Please enter a valid 10-digit phone number';
+      }
+      return;
+    }
     tcBtn.disabled = true;
     tcBtnText.textContent = 'Opening Truecaller...';
     tcLoader.style.display = 'inline-block';
@@ -3296,10 +3307,12 @@ function initTruecaller() {
         var phone = document.getElementById('tcPhoneInput').value.replace(/\D/g, '');
         if (!phone || phone.length !== 10) {
           // No phone entered - ask user to enter
-          tcBtnText.textContent = 'Enter phone & continue';
+          tcBtnText.textContent = 'Continue with phone';
           tcLoader.style.display = 'none';
-          tcError.textContent = 'Please enter your phone number and click Continue';
+          tcError.textContent = 'Enter your 10-digit number and tap Continue';
           tcBtn.disabled = false;
+          // Set flag so button click calls handleTCReturn instead of deep link
+          window.__tcReturnMode = true;
           try { sessionStorage.removeItem('tc_attempted'); } catch(e) {}
           return;
         }
@@ -3317,6 +3330,9 @@ function initTruecaller() {
     var data = { name: '', phone: phone, source: 'truecaller', verifiedAt: new Date().toISOString() };
     try { localStorage.setItem('truecaller_user', JSON.stringify(data)); } catch(e) {}
     document.getElementById('tcPhoneInput').value = phone;
+    tcBtn.disabled = false;
+    tcLoader.style.display = 'none';
+    tcBtnText.textContent = 'Verified';
     if (tcContainer) tcContainer.classList.add('tc-hidden');
     saveTruecallerLead(data);
     goToStep(2);
