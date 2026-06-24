@@ -1,0 +1,42 @@
+Script 0: lines 19-19, 0 chars
+  Tag: <script async src="https://www.googletagmanager.com/gtag/js?
+
+Script 1: lines 20-25, 149 chars
+  Tag: <script>
+window.dataLayer = window.dataLayer || [];
+functi
+
+Script 2: lines 59-59, 880 chars
+  Tag: <script type="application/ld+json">{"@context":"https://sche
+
+Script 3: lines 60-60, 1285 chars
+  Tag: <script type="application/ld+json">{"@context":"https://sche
+
+Script 4: lines 1108-1108, 42 chars
+  Tag: <script>window.dataLayer = window.dataLayer || [];</script>
+
+Script 5: lines 1110-1121, 456 chars
+  Tag: <script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq
+
+Script 6: lines 1123-1328, 8683 chars
+  Tag: <script>
+// === Duplicate Order Lock: Check localStorage ==
+
+Script 7: lines 1329-1329, 70 chars
+  Tag: <script>window.TRUECALLER_CLIENT_ID = "lb7qy5af48217614f406c
+
+Script 8: lines 2313-3097, 28090 chars
+  Tag: <script>
+(function(){
+"use strict";
+var $ = function(s,c)
+
+Script 9: lines 3097-3359, 10557 chars
+  Tag: <script>
+// ================================================
+
+Script 10: lines 3399-3399, 121 chars
+  Tag: <script>document.addEventListener('DOMContentLoaded',functio
+
