@@ -2628,6 +2628,8 @@ async function sendOrder(payload, retries){
   }
   throw new Error(lastErr || 'Order submit failed');
 }
+window.sendOrder = sendOrder;
+window.fetchT = fetchT;
 
 function initForm(){
   var form = $('#oForm'), err = $('#fErr'), btn = $('#oBtn');
