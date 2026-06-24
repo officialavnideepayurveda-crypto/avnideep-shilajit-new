@@ -23,6 +23,13 @@
       "id": "4ad07d2c9dea46d7975da1af3350a7a8"
     }
   ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "avnideep-orders",
+      "database_id": "206a16cc-c347-45d1-9168-e34a7511491d"
+    }
+  ],
   "routes": [
     {
       "pattern": "shop.avnideepayurveda.in",
