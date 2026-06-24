@@ -132,6 +132,32 @@ async function saveToD1(order, env) {
   }
 
   try {
+    // Auto-create orders table if not exists (handles first run after deploy)
+    await env.DB.exec(
+      `CREATE TABLE IF NOT EXISTS orders (
+        order_id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        phone TEXT NOT NULL,
+        pincode TEXT DEFAULT '',
+        address TEXT DEFAULT '',
+        payment_method TEXT DEFAULT 'cod',
+        amount REAL DEFAULT 0,
+        product TEXT DEFAULT 'Avnideep 6Pro Vitality Shilajit Capsules',
+        status TEXT DEFAULT 'cod_order',
+        page_url TEXT DEFAULT '',
+        utr TEXT DEFAULT '',
+        payment_note TEXT DEFAULT '',
+        created_at TEXT DEFAULT (datetime('now')),
+        ip_address TEXT DEFAULT '',
+        user_agent TEXT DEFAULT '',
+        utm_source TEXT DEFAULT '',
+        utm_medium TEXT DEFAULT '',
+        utm_campaign TEXT DEFAULT '',
+        fbp TEXT DEFAULT '',
+        fbc TEXT DEFAULT ''
+      )`
+    );
+
     const query = await env.DB.prepare(
       `INSERT INTO orders (
         order_id, name, phone, pincode, address, 
