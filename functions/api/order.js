@@ -21,7 +21,7 @@ async function withTimeout(promise, ms = 5000, name = "request") {
   ]);
 }
 
-const REQUIRED = ["name", "phone", "address", "paymentMethod", "amount"];
+const REQUIRED = ["name", "phone", "paymentMethod", "amount"];
 
 // ============================================================
 // HELPERS
@@ -52,6 +52,7 @@ function normalizeOrder(body, ip) {
     utm_source: String(body.utm_source || "").slice(0, 100),
     utm_medium: String(body.utm_medium || "").slice(0, 100),
     utm_campaign: String(body.utm_campaign || "").slice(0, 100),
+    source: String(body.source || "").trim().slice(0, 50),
     fbp: String(body.fbp || "").slice(0, 100),
     fbc: String(body.fbc || ""),
   };
@@ -145,6 +146,7 @@ async function saveToD1(order, env) {
           amount REAL DEFAULT 0,
           product TEXT DEFAULT 'Avnideep 6Pro Vitality Shilajit Capsules',
           status TEXT DEFAULT 'cod_order',
+          source TEXT DEFAULT '',
           page_url TEXT DEFAULT '',
           utr TEXT DEFAULT '',
           payment_note TEXT DEFAULT '',
@@ -158,6 +160,14 @@ async function saveToD1(order, env) {
           fbc TEXT DEFAULT ''
         )`
       ).run();
+      try {
+        await env.DB.prepare(`ALTER TABLE orders ADD COLUMN source TEXT DEFAULT ''`).run();
+      } catch (alterErr) {
+        // ignore if column already exists or if D1 does not support alter in this context
+        if (String(alterErr.message || alterErr).indexOf('duplicate column name') < 0 && String(alterErr.message || alterErr).indexOf('already exists') < 0) {
+          console.log("D1_ALTER_COLUMN_FAILED", String(alterErr.message || alterErr).slice(0, 100));
+        }
+      }
     } catch (tableErr) {
       console.log("D1_TABLE_CREATE_SKIPPED", String(tableErr.message || tableErr).slice(0, 100));
     }
@@ -165,11 +175,11 @@ async function saveToD1(order, env) {
     const query = await env.DB.prepare(
       `INSERT INTO orders (
         order_id, name, phone, pincode, address, 
-        payment_method, amount, product, status, page_url,
+        payment_method, amount, product, status, source, page_url,
         created_at, ip_address, user_agent, 
         utm_source, utm_medium, utm_campaign,
         utr, payment_note, fbp, fbc
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).bind(
       order.order_id,
       order.name,
@@ -180,6 +190,7 @@ async function saveToD1(order, env) {
       order.amount,
       order.product,
       order.status,
+      order.source || '',
       order.page_url,
       order.created_at,
       order.ip_address,
@@ -250,10 +261,10 @@ function buildEmailHtml(order) {
             &nbsp;•&nbsp;
             <a href="https://wa.me/91${escHtml(order.phone)}?text=Hi%20${encodeURIComponent(order.name)}%2C%20your%20order%20${escHtml(order.order_id)}%20is%20being%20processed." style="color:#25D366;font-weight:700;font-size:13px;text-decoration:none">💬 WhatsApp</a>
           </td></tr>
-      <tr><td style="color:#666;font-weight:600;font-size:13px;border-bottom:1px solid #eee">📍 Pincode</td>
-          <td style="color:#222;font-weight:600;font-size:14px;border-bottom:1px solid #eee">${escHtml(order.pincode)}</td></tr>
-      <tr><td style="color:#666;font-weight:600;font-size:13px;border-bottom:1px solid #eee;vertical-align:top">🏠 Address</td>
-          <td style="color:#222;font-size:13px;line-height:1.5;border-bottom:1px solid #eee">${escHtml(order.address)}</td></tr>
+      ${order.pincode ? `<tr><td style="color:#666;font-weight:600;font-size:13px;border-bottom:1px solid #eee">📍 Pincode</td>
+          <td style="color:#222;font-weight:600;font-size:14px;border-bottom:1px solid #eee">${escHtml(order.pincode)}</td></tr>` : ''}
+      ${order.address ? `<tr><td style="color:#666;font-weight:600;font-size:13px;border-bottom:1px solid #eee;vertical-align:top">🏠 Address</td>
+          <td style="color:#222;font-size:13px;line-height:1.5;border-bottom:1px solid #eee">${escHtml(order.address)}</td></tr>` : ''}
       <tr><td style="color:#666;font-weight:600;font-size:13px;border-bottom:1px solid #eee">📦 Product</td>
           <td style="color:#222;font-size:13px;border-bottom:1px solid #eee">${escHtml(order.product)}</td></tr>
       ${order.utr ? `<tr><td style="color:#666;font-weight:600;font-size:13px;border-bottom:1px solid #eee">🔎 UTR</td><td style="color:#222;font-weight:700;font-size:14px;border-bottom:1px solid #eee">${escHtml(order.utr)}</td></tr>` : ''}
@@ -286,9 +297,9 @@ Time: ${istTime}
 
 Name: ${order.name}
 Phone: ${order.phone}
-Pincode: ${order.pincode}
-Address: ${order.address}
-
+${order.pincode ? `Pincode: ${order.pincode}
+` : ''}${order.address ? `Address: ${order.address}
+` : ''}
 Payment: ${order.payment_method.toUpperCase()}
 Amount: Rs.${order.amount}
 Product: ${order.product}
@@ -477,10 +488,9 @@ async function sendFacebookCAPI(order, env, eventName = 'Purchase') {
       const nameParts = (order.name || '').trim().split(/\s+/);
       const firstName = nameParts[0] || '';
       const lastName = nameParts.slice(1).join(' ') || '';
-      const [hashedFirstName, hashedLastName, hashedPostcode, hashedCountry] = await Promise.all([
+      const [hashedFirstName, hashedLastName, hashedCountry] = await Promise.all([
         firstName ? sha256(firstName.toLowerCase()) : Promise.resolve(''),
         lastName ? sha256(lastName.toLowerCase()) : Promise.resolve(''),
-        order.pincode ? sha256(String(order.pincode).trim()) : Promise.resolve(''),
         sha256('in'),
       ]);
 
@@ -500,7 +510,6 @@ async function sendFacebookCAPI(order, env, eventName = 'Purchase') {
             fbc: String(order.fbc || ''),
             fn: hashedFirstName,
             ln: hashedLastName,
-            zp: hashedPostcode,
             country: hashedCountry,
             external_id: String(order.order_id || ''),
           },
@@ -570,6 +579,7 @@ async function saveGoogleSheets(order, env) {
       utm_source: order.utm_source,
       utm_medium: order.utm_medium,
       utm_campaign: order.utm_campaign,
+      source: order.source || '',
       ist_time: new Date(order.created_at).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }),
     }).toString();
   }
