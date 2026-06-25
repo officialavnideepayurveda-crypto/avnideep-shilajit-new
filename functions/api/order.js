@@ -767,6 +767,7 @@ export async function onRequestPost({ request, env }) {
     } catch (rateErr) {
       console.warn("RATE_LIMIT_CHECK_FAILED", String(rateErr.message || rateErr));
     }
+}
 
 
   try {
@@ -911,7 +912,6 @@ export async function onRequestPost({ request, env }) {
       { status: 500, headers: jsonHeaders(env) }
     );
   }
-}
 }
 
 // ============================================================
