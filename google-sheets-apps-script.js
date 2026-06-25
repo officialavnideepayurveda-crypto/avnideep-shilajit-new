@@ -87,6 +87,7 @@ function doPost(e) {
       "Amount": data.amount ? Number(data.amount) : 0,
       "Product": data.product || "Avnideep 6Pro Stamina Shilajit Capsules",
       "Status": data.status || "cod_order",
+      "Source": data.source || "",
       "Page URL": data.page_url || "",
       "IP Address": data.ip_address || "",
       "Called?": "",
@@ -127,7 +128,7 @@ function getOrCreateSheet() {
   sheet = ss.insertSheet(SHEET_NAME);
   const headers = [
     "Timestamp (IST)", "Order ID", "Name", "Phone", "Pincode", "Address",
-    "Payment", "Amount", "Product", "Status", "Page URL",
+    "Payment", "Amount", "Product", "Status", "Source", "Page URL",
     "IP Address", "Called?", "UTM Source", "UTM Medium", "UTM Campaign"
   ];
 
