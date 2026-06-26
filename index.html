@@ -1826,7 +1826,7 @@ function updatePay(){
   });
 }
 function getPhoneValue(){
-  var phone = $('#cPhone');
+  var phone = $('#tcPhoneInput');
   if(!phone) return '';
   return phone.value.replace(/[^0-9]/g,'').slice(0,10);
 }
@@ -2036,7 +2036,7 @@ function launchConfetti(amount){
 function buildReward(){
   var info = window.__rewardInfo || null;
   if(!info){
-    var phone = document.getElementById("rewardPhoneInput")?.value || document.getElementById("cPhone")?.value || "";
+    var phone = document.getElementById("rewardPhoneInput")?.value || document.getElementById("tcPhoneInput")?.value || "";
     if(phone){
       try{ var saved = localStorage.getItem("avn_reward_spin:" + phone); if(saved){ var parsed = JSON.parse(saved); info = { rewardId: parsed.rewardId || "", rewardAmount: parsed.rewardAmount || 0, rewardLabel: parsed.rewardLabel || "" }; } }catch(e){}
     }
@@ -2049,12 +2049,14 @@ function buildReward(){
 function build(status){
   var m = getPay();
   var utm = getUtmParams();
+  var nameVal = $('#cName') ? $('#cName').value.trim() : '';
+  var phoneVal = $('#tcPhoneInput') ? $('#tcPhoneInput').value.trim() : '';
   var data = {
     orderId: 'AVN-'+Date.now()+'-'+Math.random().toString(36).slice(2,6),
-    name: $('#cName').value.trim(),
-    phone: $('#cPhone').value.trim(),
-    pincode: $('#cPin').value.trim(),
-    address: $('#cAddr').value.trim(),
+    name: nameVal,
+    phone: phoneVal,
+    pincode: '',
+    address: '',
     paymentMethod: m,
     amount: m==='prepaid'?999:1250,
     product: 'Avnideep 6Pro Vitality Shilajit Capsules',
@@ -2078,7 +2080,7 @@ function build(status){
   return data;
 }function validate(p){
   if(p.name.length < 2){ $('#cName').focus(); return 'पूरा नाम दर्ज करें।'; }
-  if(!/^[6-9]\d{9}$/.test(p.phone)){ $('#cPhone').focus(); return 'सही 10 अंकों का मोबाइल नंबर दर्ज करें।'; }
+  if(!/^[6-9]\d{9}$/.test(p.phone)){ $('#tcPhoneInput').focus(); return 'सही 10 अंकों का मोबाइल नंबर दर्ज करें।'; }
   return '';
 }
 function initPay(){
@@ -2209,7 +2211,7 @@ async function sendOrder(payload, retries){
 
 function initForm(){
   var form = $('#oForm'), err = $('#fErr'), btn = $('#oBtn');
-  var phone = $('#cPhone');
+  var phone = $('#tcPhoneInput');
   if(!form) return;
 
   // Input sanitization
