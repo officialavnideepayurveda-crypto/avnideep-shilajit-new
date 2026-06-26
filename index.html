@@ -1764,6 +1764,28 @@ function getPay(){
   var c = $('input[name="pay"]:checked');
   return c ? c.value : 'cod';
 }
+function updatePay(){
+  var m = getPay();
+  var amt = m === 'prepaid' ? 999 : 1250;
+  $('#sAmt').textContent = '₹' + amt;
+  $('#sTot').textContent = '₹' + amt;
+  $('#sSave').hidden = m !== 'prepaid';
+  var btn = $('#oBtn');
+  if(btn){
+    var mainText = m === 'prepaid' ? '⚡ अभी Pay करें - ₹999' : '⚡ अभी Order करें - ₹1250';
+    var subText = m === 'prepaid' ? '🔒 Secure Online Payment' : '🔒 No advance payment • COD';
+    btn.innerHTML = '<span>' + mainText + '</span><small>' + subText + '</small>';
+  }
+  var sv = $('#sSaveAmt');
+  if(sv){
+    var total = m === 'prepaid' ? 1501 : 1250;
+    sv.textContent = '₹' + total;
+  }
+  $$('.pay-card').forEach(function(c){
+    var i = $('input[name="pay"]', c);
+    c.classList.toggle('selected', !!(i && i.checked));
+  });
+}
 function getPhoneValue(){
   var phone = $('#cPhone');
   if(!phone) return '';
@@ -1954,32 +1976,6 @@ function closeSuccess(){
     var clean = window.location.origin + window.location.pathname;
     window.history.replaceState({}, document.title, clean);
   }
-}
-
-function build(status){
-  var m = getPay();
-  var utm = getUtmParams();
-  return {
-    orderId: 'AVN-'+Date.now()+'-'+Math.random().toString(36).slice(2,6),
-    name: $('#cName').value.trim(),
-    phone: $('#cPhone').value.trim(),
-    paymentMethod: m,
-    amount: m==='prepaid'?999:1250,
-    product: 'Avnideep 6Pro Vitality Shilajit Capsules',
-    status: status,
-    pageUrl: window.location.href,
-    utm_source: utm.source,
-    utm_medium: utm.medium,
-    utm_campaign: utm.campaign,
-    createdAt: new Date().toISOString(),
-    userAgent: navigator.userAgent || ''
-  };
-}
-
-function validate(p){
-  if(p.name.length < 2){ $('#cName').focus(); return 'पूरा नाम दर्ज करें।'; }
-  if(!/^[6-9]\d{9}$/.test(p.phone)){ $('#cPhone').focus(); return 'सही 10 अंकों का मोबाइल नंबर दर्ज करें।'; }
-  return '';
 }
 
 // Fetch with timeout & retry for high-load resilience
