@@ -291,6 +291,17 @@ section{padding:24px 16px}
 .guarantee p{font-size:14px;color:#ddd;line-height:1.55}
 
 .checkout{background:linear-gradient(180deg,#3a0808,#1a0303);padding:28px 18px;border-radius:22px;margin:24px 0}
+.reward-wheel{background:linear-gradient(180deg,rgba(255,213,79,.1),rgba(255,87,34,.08));border:1px solid rgba(255,213,79,.25);border-radius:20px;padding:18px 16px;margin-bottom:18px;box-shadow:0 18px 40px rgba(0,0,0,.25)}
+.reward-header{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.reward-header span{font-size:30px}
+.reward-header div strong{display:block;font-size:16px;color:#fff;font-weight:900;line-height:1.25}
+.reward-header div p{margin-top:6px;font-size:13px;color:#fff;opacity:.88}
+.reward-body{display:grid;gap:12px}
+.reward-prize{background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:16px;text-align:center;font-size:16px;font-weight:800;color:#fff;min-height:58px;display:grid;place-items:center}
+.reward-spin-btn{width:100%;padding:16px 18px;background:linear-gradient(135deg,#ff9800,#ff5722);color:#fff;border-radius:14px;font-size:16px;font-weight:900;cursor:pointer;transition:transform .2s,box-shadow .2s;box-shadow:0 12px 30px rgba(255,87,34,.3)}
+.reward-spin-btn:hover{transform:translateY(-1px)}
+.reward-spin-btn:disabled{opacity:.6;cursor:not-allowed;transform:none;box-shadow:none}
+.reward-note{font-size:13px;color:#fee9be;line-height:1.5;text-align:center}
 .checkout .badge-secure{display:inline-flex;align-items:center;gap:6px;background:rgba(0,230,118,.15);border:1px solid #00e676;color:#00e676;padding:5px 12px;border-radius:50px;font-size:11px;font-weight:800;margin-bottom:10px}
 .checkout h2{font-size:24px;color:#fff;font-weight:900;margin-bottom:6px}
 .checkout .sub{font-size:13px;color:#ffd54f;font-weight:600;margin-bottom:18px}
@@ -385,6 +396,8 @@ section{padding:24px 16px}
 .sbar-info{flex-shrink:0}
 .sbar-info p{margin:0;font-size:17px;font-weight:900;color:#ffd54f;line-height:1}
 .sbar-info span{display:inline-block;font-size:9.5px;font-weight:800;background:#00e676;color:#000;padding:2px 6px;border-radius:6px;margin-top:3px;text-transform:uppercase;letter-spacing:.5px}
+
+.sbar-call{flex-shrink:0;background:#0f9d58;color:#fff;padding:11px 16px;border-radius:50px;font-size:13px;font-weight:900;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 4px 12px rgba(15,157,88,.35)}
 
 .sbar-order{flex:1;background:linear-gradient(135deg,#ff9800,#ff5722);color:#fff;padding:12px;border-radius:50px;font-size:14px;font-weight:900;text-align:center;box-shadow:0 4px 15px rgba(255,87,34,.5);animation:pulse 1.8s infinite;display:flex;align-items:center;justify-content:center;gap:5px}
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
@@ -1181,6 +1194,21 @@ fbq('track', 'PageView');
   <section id="checkout">
     <div class="checkout">
 
+      <div class="reward-wheel" id="rewardWheel">
+        <div class="reward-header">
+          <span>🎉</span>
+          <div>
+            <strong>आज ही Spin करें और पाइए प्रीमियम इनाम</strong>
+            <p>हर मोबाइल पर एक बार ही मौका। delivery के बाद claim करें।</p>
+          </div>
+        </div>
+        <div class="reward-body">
+          <div class="reward-prize" id="rewardPrize">अब Spin करें</div>
+          <button type="button" class="reward-spin-btn" id="rewardSpinBtn">Spin करें</button>
+          <div class="reward-note" id="rewardNote">इनाम cashback या free delivery नहीं है। यह एक प्रीमियम बोनस है।</div>
+        </div>
+      </div>
+
       <div class="checkout-urgent">
         ⏰ <strong id="coTimer">04:45:00</strong> में offer खत्म! जल्दी करें
       </div>
@@ -1552,6 +1580,7 @@ fbq('track', 'PageView');
     <span>COD उपलब्ध</span>
   </div>
   
+  <a class="sbar-call" href="tel:+917060101043">📞 कॉल करें</a>
   <button class="sbar-order" type="button" data-scroll="checkout">⚡ ऑर्डर करें</button>
 </div>
 
@@ -1735,28 +1764,144 @@ function getPay(){
   var c = $('input[name="pay"]:checked');
   return c ? c.value : 'cod';
 }
-function updatePay(){
-  var m = getPay();
-  var amt = m==='prepaid' ? 999 : 1250;
-  $('#sAmt').textContent = '₹'+amt;
-  $('#sTot').textContent = '₹'+amt;
-  $('#sSave').hidden = m!=='prepaid';
-  var btn = $('#oBtn');
+function getPhoneValue(){
+  var phone = $('#cPhone');
+  if(!phone) return '';
+  return phone.value.replace(/[^0-9]/g,'').slice(0,10);
+}
+function getRewardKey(phone){
+  return phone ? 'avn_reward_spin:' + phone : 'avn_reward_spin';
+}
+function buildReward(){
+  var prizeText = 'इनाम unlocked नहीं है';
+  var reward = { rewardId: '', rewardAmount: 0 };
+  try{
+    var phone = getPhoneValue();
+    var saved = localStorage.getItem(getRewardKey(phone));
+    if(!saved && phone){
+      saved = localStorage.getItem('avn_reward_spin');
+    }
+    if(saved){
+      var parsed = JSON.parse(saved);
+      if(parsed && parsed.rewardId){
+        if(!parsed.phone || !phone || parsed.phone === phone){
+          reward = parsed;
+          prizeText = parsed.rewardText || parsed.rewardLabel || 'आपका इनाम: ' + (parsed.rewardAmount ? '₹'+parsed.rewardAmount : 'विशेष उपहार');
+        }
+      }
+    }
+  }catch(e){ }
+  return { reward: reward, label: prizeText };
+}
+function setRewardState(state){
+  var prize = $('#rewardPrize');
+  var note = $('#rewardNote');
+  if(!prize || !note) return;
+  prize.textContent = state.label || 'अब Spin करें';
+  note.textContent = state.note || 'हर मोबाइल पर एक बार Spin। delivery के बाद आपका Reward claim करें।';
+  var btn = $('#rewardSpinBtn');
   if(btn){
-    var mainText = m==='prepaid' ? '⚡ अभी Pay करें - ₹999' : '⚡ अभी Order करें - ₹1250';
-    var subText = m==='prepaid' ? '🔒 Secure Online Payment' : '🔒 No advance payment • COD';
-    btn.innerHTML = '<span>'+mainText+'</span><small>'+subText+'</small>';
+    btn.disabled = !!state.spun;
+    btn.textContent = state.spun ? 'पहले ही Spin किया गया' : 'Spin करें';
   }
-  // Savings line
-  var sv = $('#sSaveAmt');
-  if(sv){
-    var total = m === 'prepaid' ? 1501 : 1250;
-    sv.textContent = '₹' + total;
+}
+function initRewardWheel(){
+  var btn = $('#rewardSpinBtn');
+  var prize = $('#rewardPrize');
+  var note = $('#rewardNote');
+  if(!btn || !prize || !note) return;
+
+  var outcomes = [
+    { id: 'REW-PLUSH', label: 'फ्री Premium Gift Box', amount: 0, note: 'Delivery के बाद claim करें।' },
+    { id: 'REW-DOCTOR', label: 'Free Doctor Consultation', amount: 0, note: 'Delivery के बाद claim करें।' },
+    { id: 'REW-CASH200', label: '₹200 Future Cashback Voucher', amount: 200, note: 'डिलीवरी के बाद आपके phone पर भेजेगा।' },
+    { id: 'REW-WELLNESS', label: 'Free Wellness Guide Pack', amount: 0, note: 'Delivery के बाद claim करें।' },
+    { id: 'REW-VIP', label: 'VIP Priority Support', amount: 0, note: 'Delivery के बाद अपनाएं।' },
+    { id: 'REW-SUPPLEMENT', label: 'Free Supplement Sample', amount: 0, note: 'Delivery के बाद claim करें।' }
+  ];
+
+  function getSaved(){
+    try{
+      var phone = getPhoneValue();
+      var stored = phone ? localStorage.getItem(getRewardKey(phone)) : null;
+      if(!stored){
+        stored = localStorage.getItem('avn_reward_spin');
+      }
+      return stored ? JSON.parse(stored) : null;
+    }catch(e){ return null; }
   }
-  $$('.pay-card').forEach(function(c){
-    var i = $('input[name="pay"]', c);
-    c.classList.toggle('selected', !!(i && i.checked));
+  function saveReward(data){
+    try{
+      var phone = getPhoneValue();
+      data.phone = phone || data.phone || '';
+      var key = getRewardKey(phone || data.phone);
+      localStorage.setItem(key, JSON.stringify(data));
+      try{ localStorage.setItem('avn_reward_spin', JSON.stringify(data)); }catch(e){}
+    }catch(e){}
+  }
+  function hasSpun(){
+    var saved = getSaved();
+    return saved && saved.rewardId;
+  }
+  function updateUI(){
+    var saved = getSaved();
+    if(saved && saved.rewardId){
+      setRewardState({
+        label: saved.rewardText || saved.rewardLabel || 'आपका इनाम: ' + (saved.rewardAmount ? '₹'+saved.rewardAmount : 'विशेष उपहार'),
+        note: saved.note || 'Delivery के बाद claim करें।',
+        spun: true
+      });
+    } else {
+      setRewardState({ label: 'अब Spin करें', note: 'हर मोबाइल पर केवल 1 spin। delivery के बाद claim करें।', spun: false });
+    }
+  }
+
+  btn.addEventListener('click', function(){
+    if(hasSpun()) return;
+
+    var winners = outcomes.slice();
+    var index = Math.floor(Math.random()*winners.length);
+    var chosen = winners[index];
+    var rewardId = chosen.id + '-' + Date.now() + '-' + Math.random().toString(36).slice(2,5);
+    var reward = {
+      rewardId: rewardId,
+      rewardAmount: chosen.amount || 0,
+      rewardLabel: chosen.label,
+      rewardText: 'आपका इनाम: ' + chosen.label,
+      note: chosen.note || 'Delivery के बाद claim करें।'
+    };
+    saveReward(reward);
+    setRewardState({ label: reward.rewardText, note: reward.note, spun: true });
   });
+
+  updateUI();
+}
+function build(status){
+  var m = getPay();
+  var utm = getUtmParams();
+  var rewardState = buildReward();
+  return {
+    orderId: 'AVN-'+Date.now()+'-'+Math.random().toString(36).slice(2,6),
+    name: $('#cName').value.trim(),
+    phone: $('#cPhone').value.trim(),
+    paymentMethod: m,
+    amount: m==='prepaid'?999:1250,
+    product: 'Avnideep 6Pro Vitality Shilajit Capsules',
+    status: status,
+    pageUrl: window.location.href,
+    utm_source: utm.source,
+    utm_medium: utm.medium,
+    utm_campaign: utm.campaign,
+    createdAt: new Date().toISOString(),
+    userAgent: navigator.userAgent || '',
+    rewardId: rewardState.reward.rewardId || '',
+    rewardAmount: rewardState.reward.rewardAmount || 0
+  };
+}
+function validate(p){
+  if(p.name.length < 2){ $('#cName').focus(); return 'पूरा नाम दर्ज करें।'; }
+  if(!/^[6-9]\d{9}$/.test(p.phone)){ $('#cPhone').focus(); return 'सही 10 अंकों का मोबाइल नंबर दर्ज करें।'; }
+  return '';
 }
 function initPay(){
   $$('input[name="pay"]').forEach(function(i){i.addEventListener('change', updatePay)});
@@ -2191,6 +2336,7 @@ function init(){
   // Critical (immediate)
   initScroll();
   initPay();
+  initRewardWheel();
   initForm();
   initFaq();
   initReviews();

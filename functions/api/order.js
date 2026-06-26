@@ -46,6 +46,8 @@ function normalizeOrder(body, ip) {
     page_url: String(body.pageUrl || "").slice(0, 300),
     utr: String(body.utr || "").trim().slice(0, 50),
     payment_note: String(body.paymentNote || "").trim().slice(0, 200),
+    reward_id: String(body.rewardId || "").trim().slice(0, 100),
+    reward_amount: Number(body.rewardAmount || 0),
     created_at: body.createdAt || new Date().toISOString(),
     ip_address: ip || "unknown",
     user_agent: String(body.userAgent || "").slice(0, 200),
@@ -150,6 +152,8 @@ async function saveToD1(order, env) {
           page_url TEXT DEFAULT '',
           utr TEXT DEFAULT '',
           payment_note TEXT DEFAULT '',
+          reward_id TEXT DEFAULT '',
+          reward_amount REAL DEFAULT 0,
           created_at TEXT DEFAULT (datetime('now')),
           ip_address TEXT DEFAULT '',
           user_agent TEXT DEFAULT '',
@@ -168,6 +172,20 @@ async function saveToD1(order, env) {
           console.log("D1_ALTER_COLUMN_FAILED", String(alterErr.message || alterErr).slice(0, 100));
         }
       }
+      try {
+        await env.DB.prepare(`ALTER TABLE orders ADD COLUMN reward_id TEXT DEFAULT ''`).run();
+      } catch (alterErr) {
+        if (String(alterErr.message || alterErr).indexOf('duplicate column name') < 0 && String(alterErr.message || alterErr).indexOf('already exists') < 0) {
+          console.log("D1_ALTER_COLUMN_FAILED", String(alterErr.message || alterErr).slice(0, 100));
+        }
+      }
+      try {
+        await env.DB.prepare(`ALTER TABLE orders ADD COLUMN reward_amount REAL DEFAULT 0`).run();
+      } catch (alterErr) {
+        if (String(alterErr.message || alterErr).indexOf('duplicate column name') < 0 && String(alterErr.message || alterErr).indexOf('already exists') < 0) {
+          console.log("D1_ALTER_COLUMN_FAILED", String(alterErr.message || alterErr).slice(0, 100));
+        }
+      }
     } catch (tableErr) {
       console.log("D1_TABLE_CREATE_SKIPPED", String(tableErr.message || tableErr).slice(0, 100));
     }
@@ -178,8 +196,8 @@ async function saveToD1(order, env) {
         payment_method, amount, product, status, source, page_url,
         created_at, ip_address, user_agent, 
         utm_source, utm_medium, utm_campaign,
-        utr, payment_note, fbp, fbc
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        utr, payment_note, reward_id, reward_amount, fbp, fbc
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).bind(
       order.order_id,
       order.name,
@@ -200,6 +218,8 @@ async function saveToD1(order, env) {
       order.utm_campaign,
       order.utr || '',
       order.payment_note || '',
+      order.reward_id || '',
+      order.reward_amount || 0,
       order.fbp || '',
       order.fbc || ''
     ).run();
@@ -579,6 +599,8 @@ async function saveGoogleSheets(order, env) {
       utm_source: order.utm_source,
       utm_medium: order.utm_medium,
       utm_campaign: order.utm_campaign,
+      reward_id: order.reward_id || '',
+      reward_amount: String(order.reward_amount || 0),
       source: order.source || '',
       ist_time: new Date(order.created_at).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }),
     }).toString();
