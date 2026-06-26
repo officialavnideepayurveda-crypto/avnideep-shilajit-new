@@ -607,7 +607,7 @@ async function saveGoogleSheets(order, env) {
   }
 
   // Retry up to 3 times with exponential backoff
-  const MAX_RETRIES = 3;
+  const MAX_RETRIES = 1;
   let lastError = null;
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {

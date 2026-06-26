@@ -3,6 +3,15 @@
 
 
 
+const corsHeaders = (env) => ({
+  "Access-Control-Allow-Origin": env.ALLOWED_ORIGIN || "*",
+  "Access-Control-Allow-Methods": "GET, POST, PATCH, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+  "Access-Control-Max-Age": "86400",
+  "Content-Type": "application/json; charset=utf-8",
+  "Cache-Control": "no-store, no-cache, must-revalidate",
+});
+
 function generateRewardId() {
   const ts = Date.now().toString(36);
   const rand = Math.random().toString(36).substring(2, 8).toUpperCase();

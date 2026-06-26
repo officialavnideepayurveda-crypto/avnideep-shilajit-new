@@ -1923,7 +1923,7 @@ function initRewardWheel(){
     
     const segment = REWARD_SEGMENTS[targetIdx];
     const segAngle = (2 * Math.PI) / REWARD_SEGMENTS.length;
-    const segCenterAngle = targetIdx * segAngle + segAngle / 2;
+    const segCenterAngle = targetIdx * segAngle + segAngle / 2 - Math.PI / 2;
     const finalTarget = -Math.PI / 2 - segCenterAngle;
     const fullRotations = (5 + Math.random() * 3) * Math.PI * 2;
     rewardState.targetAngle = rewardState.currentAngle + fullRotations + finalTarget;
@@ -2340,13 +2340,14 @@ function initForm(){
       // COD flow: Show success when backend saved, otherwise use WhatsApp fallback
       if(apiSuccess){
         dataLayer.push({event:'Purchase', value:1250, currency:'INR'});
-  
+        try{ if(typeof fbq === 'function') fbq('track', 'Purchase', {value:1250, currency:'INR', content_name:'AVN-6PRO-001', content_type:'product', order_id:payload.orderId}); }catch(e){}
         window.location.href = '/thank-you?order_id=' + encodeURIComponent(payload.orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.name) + '&method=cod';
       } else {
         if(apiError){
           showErr(err, 'ऑर्डर backend पर सेव नहीं हुआ: ' + apiError + '। WhatsApp fallback भेजा जा रहा है।');
         }
         dataLayer.push({event:'Purchase', value:1250, currency:'INR', method:'whatsapp_fallback'});
+        try{ if(typeof fbq === 'function') fbq('track', 'Purchase', {value:1250, currency:'INR', content_name:'AVN-6PRO-001', content_type:'product', order_id:payload.orderId}); }catch(e){}
   
         window.location.href = '/thank-you?order_id=' + encodeURIComponent(payload.orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.name) + '&method=cod_whatsapp&wa_url=' + encodeURIComponent(waOrderUrl);
         form.reset();
