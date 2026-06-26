@@ -162,6 +162,23 @@
       }
     }
 
+    @media (max-width: 640px) {
+      .payment-content {
+        padding: 16px 14px 20px;
+        gap: 12px;
+      }
+
+      .content-title {
+        font-size: 16px !important;
+        margin-bottom: 0px !important;
+      }
+
+      .content-subtitle {
+        font-size: 12px !important;
+        margin-bottom: 12px !important;
+      }
+    }
+
     .content-title {
       font-size: 20px;
       font-weight: 600;
@@ -933,85 +950,83 @@
           <h1 class="content-title">🎯 अपनी payment पूरी करें | Complete Your Payment</h1>
           <p class="content-subtitle" style="color: #d9534f; font-weight: 600; margin-bottom: 16px;">⏰ Session expires in <span id="timer-display-subtitle">15:00</span></p>
           
-          <!-- STEP-BY-STEP INSTRUCTIONS -->
-          <div style="background: #f0f7ff; border-left: 4px solid #0f172a; padding: 16px; border-radius: 12px; margin-bottom: 20px;">
-            <div style="font-size: 12px; font-weight: 700; color: #0f172a; margin-bottom: 10px; text-transform: uppercase;">📋 बस 2 Steps में payment पूरी करें:</div>
-            <div style="display: flex; flex-direction: column; gap: 12px; font-size: 13px; color: #0f172a; line-height: 1.6;">
-              <div style="display: flex; gap: 12px; align-items: flex-start;">
-                <div style="background: #0f172a; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0;">1</div>
-                <div><strong>नीचे "Pay Now" बटन दबाएं</strong> (Click the yellow button below)<br><span style="color: #475569;">इससे payment का चयन खुल जाएगा</span></div>
+          <!-- RAZORPAY PAYMENT BUTTON - MOBILE FIRST (SHOWN IMMEDIATELY) -->
+          <div style="background: white; border: 1px solid #e5e8f0; padding: 16px; border-radius: 16px; margin-bottom: 16px;">
+            <div style="text-align: center; margin-bottom: 12px;">
+              <div style="font-size: 12px; text-transform: uppercase; color: #475569; font-weight: 700; letter-spacing: 1px; margin-bottom: 8px;">💳 अभी Payment करें | Pay Now</div>
+              <div style="display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; margin-bottom: 10px;">
+                <span style="background: #f0f7ff; color: #0c6fdb; padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 700;">📱 UPI</span>
+                <span style="background: #f0f7ff; color: #0c6fdb; padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 700;">💳 Cards</span>
+                <span style="background: #f0f7ff; color: #0c6fdb; padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 700;">🏦 Net</span>
+                <span style="background: #f0f7ff; color: #0c6fdb; padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 700;">👛 Wallet</span>
               </div>
-              <div style="display: flex; gap: 12px; align-items: flex-start;">
-                <div style="background: #0f172a; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0;">2</div>
-                <div><strong>अपना payment method चुनें</strong> (Choose UPI, Card, or NetBanking)<br><span style="color: #475569;">और payment submit करें - बस इतना काफी है!</span></div>
+            </div>
+            <div style="display:flex;justify-content:center;margin:12px 0;">
+              <form><script src="https://checkout.razorpay.com/v1/payment-button.js" data-payment_button_id="pl_R5uwVzIJNFKftr" async> </script> </form>
+            </div>
+            <div style="text-align: center; font-size: 11px; color: #22c55e; font-weight: 600; margin-top: 10px;">
+              ✓ Secured by Razorpay (PCI-DSS)
+            </div>
+          </div>
+          
+          <!-- URGENT TIMER -->
+          <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 12px; padding: 12px; margin-bottom: 14px; text-align: center;">
+            <div style="font-size: 13px; font-weight: 700; color: #856404;">⏰ <span id="timer-display-urgent" style="font-family: monospace; color: #d9534f;">15:00</span> बाकी है</div>
+          </div>
+          
+          <!-- PRICING BREAKDOWN -->
+          <div style="background: #fef3c7; border: 1px solid #fcd34d; border-radius: 12px; padding: 12px; margin-bottom: 14px;">
+            <div style="font-size: 11px; font-weight: 700; color: #92400e; margin-bottom: 8px;">🎁 20% Discount!</div>
+            <div style="display: grid; gap: 6px; font-size: 11px; color: #78350f;">
+              <div style="display: flex; justify-content: space-between;">
+                <span>MRP:</span>
+                <span style="text-decoration: line-through;">₹1250</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; color: #dc2626; font-weight: 700;">
+                <span>Discount:</span>
+                <span>-₹251</span>
+              </div>
+              <div style="border-top: 1px solid #fcd34d; padding-top: 6px; display: flex; justify-content: space-between; font-weight: 700; color: #16a34a;">
+                <span>Pay:</span>
+                <span>₹999 ✓</span>
               </div>
             </div>
           </div>
           
-          <!-- PRICING BREAKDOWN -->
-          <div style="background: #fef3c7; border: 1px solid #fcd34d; border-radius: 12px; padding: 14px; margin-bottom: 16px;">
-            <div style="font-size: 12px; font-weight: 700; color: #92400e; margin-bottom: 10px;">🎁 अभी Special Discount मिल रहा है!</div>
-            <div style="display: grid; gap: 8px; font-size: 12px; color: #78350f;">
-              <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span>Original Price:</span>
-                <span style="text-decoration: line-through; color: #92400e;">₹1250</span>
+          <!-- STEP-BY-STEP INSTRUCTIONS -->
+          <div style="background: #f0f7ff; border-left: 4px solid #0f172a; padding: 12px; border-radius: 8px; margin-bottom: 14px;">
+            <div style="font-size: 11px; font-weight: 700; color: #0f172a; margin-bottom: 8px; text-transform: uppercase;">📋 सिर्फ 2 Steps:</div>
+            <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px; color: #0f172a; line-height: 1.5;">
+              <div style="display: flex; gap: 8px; align-items: flex-start;">
+                <div style="background: #0f172a; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; font-size: 11px;">1</div>
+                <div><strong>ऊपर "Pay Now" दबाएं</strong></div>
               </div>
-              <div style="display: flex; justify-content: space-between; align-items: center; font-weight: 700; color: #dc2626;">
-                <span>💰 Discount:</span>
-                <span>-₹251 (20% OFF)</span>
-              </div>
-              <div style="border-top: 1px solid #fcd34d; padding-top: 8px; display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 13px; color: #166534;">
-                <span>Final Amount:</span>
-                <span style="font-size: 16px; color: #16a34a;">₹999 ✓</span>
+              <div style="display: flex; gap: 8px; align-items: flex-start;">
+                <div style="background: #0f172a; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; font-size: 11px;">2</div>
+                <div><strong>अपना Payment Method चुनें & Pay करें</strong></div>
               </div>
             </div>
           </div>
           
           <!-- TRUST BADGES -->
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
-            <div style="background: #ecfdf5; padding: 12px; border-radius: 12px; text-align: center; border: 1px solid #86efac;">
-              <div style="font-size: 18px; margin-bottom: 4px;">🔒</div>
-              <div style="font-size: 11px; font-weight: 700; color: #166534;">100% Safe<br>Verified</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px;">
+            <div style="background: #ecfdf5; padding: 10px; border-radius: 10px; text-align: center; border: 1px solid #86efac;">
+              <div style="font-size: 16px; margin-bottom: 3px;">🔒</div>
+              <div style="font-size: 10px; font-weight: 700; color: #166534;">100% Safe</div>
             </div>
-            <div style="background: #ecfdf5; padding: 12px; border-radius: 12px; text-align: center; border: 1px solid #86efac;">
-              <div style="font-size: 18px; margin-bottom: 4px;">⚡</div>
-              <div style="font-size: 11px; font-weight: 700; color: #166534;">Instant<br>Confirmation</div>
-            </div>
-          </div>
-          
-          <!-- RAZORPAY PAYMENT BUTTON -->
-          <div style="background: white; border: 1px solid #e5e8f0; padding: 20px; border-radius: 16px; margin-bottom: 16px;">
-            <div style="text-align: center; margin-bottom: 16px;">
-              <div style="font-size: 12px; text-transform: uppercase; color: #475569; font-weight: 700; letter-spacing: 1px; margin-bottom: 8px;">💳 Payment Options</div>
-              <div style="display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;">
-                <span style="background: #f0f7ff; color: #0c6fdb; padding: 6px 10px; border-radius: 8px; font-size: 11px; font-weight: 700;">📱 UPI</span>
-                <span style="background: #f0f7ff; color: #0c6fdb; padding: 6px 10px; border-radius: 8px; font-size: 11px; font-weight: 700;">💳 Cards</span>
-                <span style="background: #f0f7ff; color: #0c6fdb; padding: 6px 10px; border-radius: 8px; font-size: 11px; font-weight: 700;">🏦 NetBanking</span>
-                <span style="background: #f0f7ff; color: #0c6fdb; padding: 6px 10px; border-radius: 8px; font-size: 11px; font-weight: 700;">👛 Wallet</span>
-              </div>
-            </div>
-            <div style="display:flex;justify-content:center;margin:16px 0;">
-              <form><script src="https://checkout.razorpay.com/v1/payment-button.js" data-payment_button_id="pl_R5uwVzIJNFKftr" async> </script> </form>
-            </div>
-            <div style="text-align: center; font-size: 12px; color: #22c55e; font-weight: 600; margin-top: 12px;">
-              ✓ Secured by Razorpay (PCI-DSS Compliant)
+            <div style="background: #ecfdf5; padding: 10px; border-radius: 10px; text-align: center; border: 1px solid #86efac;">
+              <div style="font-size: 16px; margin-bottom: 3px;">⚡</div>
+              <div style="font-size: 10px; font-weight: 700; color: #166534;">Instant Pay</div>
             </div>
           </div>
           
-          <!-- URGENT TIMER -->
-          <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 12px; padding: 14px; margin-bottom: 16px; text-align: center;">
-            <div style="font-size: 14px; font-weight: 700; color: #856404;">⏰ Session Expires In: <span id="timer-display-urgent" style="font-family: monospace; color: #d9534f;">15:00</span></div>
-            <div style="font-size: 11px; color: #856404; margin-top: 4px;">जल्दी करें - Payment अभी पूरी करें!</div>
-          </div>
-          
-          <!-- FAQ / HELP -->
-          <div style="background: #f8f9fa; padding: 14px; border-radius: 12px; margin-bottom: 16px;">
-            <div style="font-size: 12px; font-weight: 700; color: #0f172a; margin-bottom: 8px;">❓ समस्या है?</div>
-            <div style="font-size: 12px; color: #475569; line-height: 1.6;">
-              • सभी Payment Methods काम कर रहे हैं<br>
-              • आपका phone internet connection check करें<br>
-              • फिर से "Pay Now" बटन दबाएं<br>
-              • अगर समस्या बनी रहे तो Support से संपर्क करें
+          <!-- HELP SECTION -->
+          <div style="background: #f8f9fa; padding: 10px; border-radius: 10px;">
+            <div style="font-size: 11px; font-weight: 700; color: #0f172a; margin-bottom: 6px;">❓ समस्या?</div>
+            <div style="font-size: 11px; color: #475569; line-height: 1.5;">
+              • Internet ठीक करें<br>
+              • फिर से "Pay Now" दबाएं<br>
+              • अगर हो समस्या तो Support से संपर्क करें
             </div>
           </div>
           
