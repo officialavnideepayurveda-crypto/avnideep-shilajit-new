@@ -1800,7 +1800,7 @@ function initVideo(){
   });
 }
 function getPay(){
-  var c = $('input[name="pay"]:checked');
+  var c = $('input[name="paymentMethod"]:checked');
   return c ? c.value : 'cod';
 }
 function updatePay(){
@@ -1821,7 +1821,7 @@ function updatePay(){
     sv.textContent = '₹' + total;
   }
   $$('.pay-card').forEach(function(c){
-    var i = $('input[name="pay"]', c);
+    var i = $('input[name="paymentMethod"]', c);
     c.classList.toggle('selected', !!(i && i.checked));
   });
 }
@@ -2084,10 +2084,10 @@ function build(status){
   return '';
 }
 function initPay(){
-  $$('input[name="pay"]').forEach(function(i){i.addEventListener('change', updatePay)});
+  $$('input[name="paymentMethod"]').forEach(function(i){i.addEventListener('change', updatePay)});
   $$('.pay-card').forEach(function(c){
     c.addEventListener('click', function(){
-      var r = $('input[name="pay"]', c);
+      var r = $('input[name="paymentMethod"]', c);
       if(r){ r.checked = true; updatePay(); }
     });
   });
