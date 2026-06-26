@@ -2145,6 +2145,11 @@ function fetchT(url, opt, ms){
     .finally(function(){clearTimeout(t)});
 }
 
+function getCookie(name){
+  var v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+  return v ? v.pop() : '';
+}
+
 // Send order to Google Sheets as additional storage
 async function sendToGoogleSheets(payload) {
   try {
@@ -2258,6 +2263,7 @@ function initForm(){
   }
 
   form.addEventListener('submit', async function(e){
+    try{
     e.preventDefault();
     if(submitting) return;
     err.classList.remove('show');
@@ -2351,6 +2357,12 @@ function initForm(){
 
     submitting = false;
     btn.disabled = false;
+  }catch(ex){
+    console.error('Order error:', ex);
+    showErr(err, 'कुछ गलत हुआ: ' + (ex.message || ex) + '। कृपया पुनः प्रयास करें।');
+    submitting = false;
+    btn.disabled = false;
+  }
   });
 }
 
