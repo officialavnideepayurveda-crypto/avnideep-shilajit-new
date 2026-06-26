@@ -1,33 +1,7 @@
 // Lucky Reward Wheel API endpoint
 // Uses existing D1 binding (DB), same patterns as order.js
 
-const REWARDS = [
-  { amount: 100, label: "\u20b9100 Cash Reward", weight: 35 },
-  { amount: 250, label: "\u20b9250 Cash Reward", weight: 30 },
-  { amount: 500, label: "\u20b9500 Cash Reward", weight: 20 },
-  { amount: 1000, label: "\u20b91000 Cash Reward", weight: 15 }
-];
 
-function corsHeaders(env) {
-  const origin = (env && env.ALLOWED_ORIGIN) || '*';
-  return {
-    'Access-Control-Allow-Origin': origin,
-    'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Content-Type': 'application/json',
-    'Cache-Control': 'no-store, no-cache, must-revalidate'
-  };
-}
-
-function pickReward() {
-  const totalWeight = REWARDS.reduce((sum, r) => sum + r.weight, 0);
-  let random = Math.random() * totalWeight;
-  for (const reward of REWARDS) {
-    random -= reward.weight;
-    if (random <= 0) return { amount: reward.amount, label: reward.label };
-  }
-  return { amount: 100, label: "\u20b9100 Cash Reward" };
-}
 
 function generateRewardId() {
   const ts = Date.now().toString(36);
@@ -74,8 +48,9 @@ export async function onRequestPost(context) {
       }, 200, headers);
     }
     
-    // New spin - pick a reward
-    const reward = pickReward();
+    // New spin - use amount from frontend
+    const rewardAmount = body.rewardAmount || 100;
+    const rewardLabel = body.rewardLabel || "₹" + rewardAmount + " Cash Reward";
     const rewardId = generateRewardId();
     const ip = request.headers.get('CF-Connecting-IP') || request.headers.get('X-Forwarded-For') || '';
     const ua = request.headers.get('User-Agent') || '';
@@ -83,16 +58,16 @@ export async function onRequestPost(context) {
     // Insert into D1
     await env.DB.prepare(
       'INSERT INTO rewards (reward_id, phone, name, reward_amount, reward_label, status, ip_address, user_agent) VALUES (?, ?, ?, ?, ?, \'claimed\', ?, ?)'
-    ).bind(rewardId, phone, name, reward.amount, reward.label, ip, ua).run();
+    ).bind(rewardId, phone, name, rewardAmount, rewardLabel, ip, ua).run();
     
     return jsonResponse({
       success: true,
       existing: false,
       reward_id: rewardId,
-      reward_amount: reward.amount,
-      reward_label: reward.label,
+      reward_amount: rewardAmount,
+      reward_label: rewardLabel,
       status: 'claimed',
-      message: `\ud83c\udf89 Congratulations! You have won ${reward.label}.`
+      message: `\ud83c\udf89 Congratulations! You have won ${rewardLabel}.`
     }, 200, headers);
     
   } catch (err) {

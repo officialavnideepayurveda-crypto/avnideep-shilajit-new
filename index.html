@@ -1833,13 +1833,13 @@ function getPhoneValue(){
 // ===== PREMIUM LUCKY REWARD WHEEL =====
 const REWARD_SEGMENTS = [
   { label: "\u20b9100", amount: 100, color: "#FF6B35", lightColor: "#FF8C5A" },
+  { label: "\u20b9150", amount: 150, color: "#9C27B0", lightColor: "#BA68C8" },
   { label: "\u20b9250", amount: 250, color: "#FFB800", lightColor: "#FFD53B" },
+  { label: "\u20b9100", amount: 100, color: "#E91E63", lightColor: "#F06292" },
   { label: "\u20b9500", amount: 500, color: "#E63946", lightColor: "#F06A76" },
-  { label: "\u20b91000", amount: 1000, color: "#2EC4B6", lightColor: "#5DD8CE" },
-  { label: "\u20b9250", amount: 250, color: "#FFB800", lightColor: "#FFD53B" },
-  { label: "\u20b9100", amount: 100, color: "#FF6B35", lightColor: "#FF8C5A" },
-  { label: "\u20b9500", amount: 500, color: "#E63946", lightColor: "#F06A76" },
-  { label: "\u20b9100", amount: 100, color: "#2EC4B6", lightColor: "#5DD8CE" }
+  { label: "\u20b9100", amount: 100, color: "#2EC4B6", lightColor: "#5DD8CE" },
+  { label: "\u20b9150", amount: 150, color: "#9C27B0", lightColor: "#BA68C8" },
+  { label: "\u20b91000", amount: 1000, color: "#FF6B35", lightColor: "#FF8C5A" }
 ];
 
 let rewardState = { spinning: false, currentAngle: 0, phone: "", rewardId: "", rewardAmount: 0, rewardLabel: "", hasSpun: false };
@@ -1915,7 +1915,7 @@ function initRewardWheel(){
     prizeText.innerHTML = '<span class="reward-loader"></span> Good luck!';
     prizeDisplay.className = "reward-prize-display";
     
-    const weights = [35, 30, 20, 15, 0, 0, 0, 0];
+    const weights = [70, 25, 5, 0, 0, 0, 0, 0];
     const totalWeight = weights.reduce(function(a,b){return a+b}, 0);
     let r = Math.random() * totalWeight;
     let targetIdx = 0;
@@ -1990,7 +1990,7 @@ function onSpinComplete(ctx, prizeText, prizeDisplay, phoneInput, spinBtn){
   try{ localStorage.setItem(lsKey, JSON.stringify(saveData)); }catch(e){}
   fetch("/api/reward-spin", {
     method: "POST", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ phone: phone, name: document.getElementById("cName")?.value || "" })
+    body: JSON.stringify({ phone: phone, name: document.getElementById("cName")?.value || "", rewardAmount: amount, rewardLabel: "\u20b9" + amount + " Cash Reward" })
   }).then(r => r.json()).then(data => {
     if(data.success && data.reward_id){ rewardState.rewardId = data.reward_id; saveData.rewardId = data.reward_id; try{ localStorage.setItem(lsKey, JSON.stringify(saveData)); }catch(e){} }
   }).catch(function(){});
@@ -2044,20 +2044,38 @@ function buildReward(){
   return { reward: info || { rewardId: "", rewardAmount: 0 }, label: info && info.rewardAmount ? "₹" + info.rewardAmount + " Cash Reward" : "अब Spin करें" };
 }
 
-function attachRewardToOrder(orderData){
-  if(typeof orderData !== "object") orderData = {};
-  var r = buildReward();
-  if(r && r.reward && r.reward.rewardId){
-    orderData.reward_id = r.reward.rewardId;
-    orderData.reward_amount = r.reward.rewardAmount;
-    orderData.reward_label = r.reward.rewardLabel;
-  }
-  return orderData;
-}
 
-if(typeof window.__origBuild === "undefined" && typeof window.build === "function"){
-  window.__origBuild = window.build;
-  window.build = function(status){ return attachRewardToOrder(window.__origBuild(status)); };
+
+function build(status){
+  var m = getPay();
+  var utm = getUtmParams();
+  var data = {
+    orderId: 'AVN-'+Date.now()+'-'+Math.random().toString(36).slice(2,6),
+    name: $('#cName').value.trim(),
+    phone: $('#cPhone').value.trim(),
+    pincode: $('#cPin').value.trim(),
+    address: $('#cAddr').value.trim(),
+    paymentMethod: m,
+    amount: m==='prepaid'?999:1250,
+    product: 'Avnideep 6Pro Vitality Shilajit Capsules',
+    status: status,
+    pageUrl: window.location.href,
+    utm_source: utm.source,
+    utm_medium: utm.medium,
+    utm_campaign: utm.campaign,
+    createdAt: new Date().toISOString(),
+    userAgent: navigator.userAgent || '',
+    fbp: getCookie('_fbp') || '',
+    fbc: getCookie('_fbc') || ''
+  };
+  // Attach reward data if available
+  var rewardInfo = buildReward();
+  if(rewardInfo && rewardInfo.reward && rewardInfo.reward.rewardId){
+    data.reward_id = rewardInfo.reward.rewardId;
+    data.reward_amount = rewardInfo.reward.rewardAmount;
+    data.reward_label = rewardInfo.reward.rewardLabel;
+  }
+  return data;
 }function validate(p){
   if(p.name.length < 2){ $('#cName').focus(); return 'पूरा नाम दर्ज करें।'; }
   if(!/^[6-9]\d{9}$/.test(p.phone)){ $('#cPhone').focus(); return 'सही 10 अंकों का मोबाइल नंबर दर्ज करें।'; }
