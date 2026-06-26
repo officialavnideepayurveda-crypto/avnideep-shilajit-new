@@ -17,8 +17,8 @@
   <link rel="preconnect" href="https://connect.facebook.net">
   <link rel="preconnect" href="https://www.googletagmanager.com">
   <link rel="preconnect" href="https://wa.me">
-  <link rel="icon" href="https://cdn.avnideepayurveda.in/Avnideep-shilajit/mainimagee.webp" type="image/webp">
-  <link rel="apple-touch-icon" href="https://cdn.avnideepayurveda.in/Avnideep-shilajit/mainimagee.webp">
+  <link rel="icon" href="https://cdn.avnideepayurveda.in/mainimagee.webp" type="image/webp">
+  <link rel="apple-touch-icon" href="https://cdn.avnideepayurveda.in/mainimagee.webp">
   <link rel="manifest" href="manifest.webmanifest">
   <title>Order Confirmed 🎉 - Avnideep Ayurveda</title>
 
@@ -171,22 +171,35 @@
     var method = params.get('method') || 'cod';
     var waUrl = params.get('wa_url') || '';
 
-    // === Purchase Event: Only fire for prepaid (COD already fires from index.html) ===
-    // COD orders fire fbq Purchase directly from index.html before redirect.
-    // Thank-you only fires for prepaid to avoid double-counting.
-    if(method !== 'cod' && method !== 'cod_whatsapp') {
+    // === FACEBOOK PIXEL PURCHASE EVENT ===
+    var purchaseTracked = false;
+    function trackFacebookPurchase() {
+      if (purchaseTracked) return;
       try {
-        fbq('track', 'Purchase', {
-          value: amount,
-          currency: 'INR',
-          content_name: 'AVN-6PRO-001',
-          content_type: 'product',
-          order_id: orderId
-        });
-        console.log('FB Pixel Purchase tracked: INR ' + amount);
-      } catch(e) {
+        if (typeof fbq === 'function') {
+          fbq('track', 'Purchase', {
+            value: amount,
+            currency: 'INR',
+            content_name: 'AVN-6PRO-001',
+            order_id: orderId,
+            eventID: orderId
+          });
+          purchaseTracked = true;
+          console.log('FB Pixel Purchase tracked: INR ' + amount);
+        }
+      } catch (e) {
         console.warn('FB Pixel error:', e);
       }
+    }
+    trackFacebookPurchase();
+    window.addEventListener('load', trackFacebookPurchase);
+    setTimeout(trackFacebookPurchase, 1200);
+
+    // === GTM / dataLayer Purchase Event ===
+    try {
+      dataLayer.push({event:'Purchase', value:amount, currency:'INR', order_id:orderId});
+    } catch(e) {
+      console.warn('dataLayer error:', e);
     }
 
     // Google Sheets save handled by index.html before redirect
