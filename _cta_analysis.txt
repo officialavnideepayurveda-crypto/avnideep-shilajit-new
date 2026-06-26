@@ -1,0 +1,251 @@
+=== LAST 250 LINES ===
+L1905:             <h5>Anil Verma <span class="rv-verified">✓ Verified</span></h5>
+L1906:             <small>Hyderabad • 3 weeks ago</small>
+L1907:           </div>
+L1908:         </div>
+L1909:         <div class="rv-stars">★★★★★</div>
+L1910:         <p>"उम्र 32 है और ये product ने confidence वापस दिया। discreet delivery बहुत अच्छा रहा।"</p>
+L1911:       </article>
+L1912:       <article class="rv hidden">
+L1913:         <div class="rv-top">
+L1914:           <div class="rv-avatar">PK</div>
+L1915:           <div class="rv-info">
+L1916:             <h5>Prakash Yadav <span class="rv-verified">✓ Verified</span></h5>
+L1917:             <small>Ahmedabad • 1 month ago</small>
+L1918:           </div>
+L1919:         </div>
+L1920:         <div class="rv-stars">★★★★★</div>
+L1921:         <p>"इतने कम पैसे में इतना अच्छा result मिला, bahut achha। फिर से order करूँगा।"</p>
+L1922:       </article>
+L1923:       <article class="rv hidden">
+L1924:         <div class="rv-top">
+L1925:           <div class="rv-avatar">JD</div>
+L1926:           <div class="rv-info">
+L1927:             <h5>John D. <span class="rv-verified">✓ Verified</span></h5>
+L1928:             <small>India • 2 weeks ago</small>
+L1929:           </div>
+L1930:         </div>
+L1931:         <div class="rv-stars">★★★★★</div>
+L1932:         <p>"Good product, improved my vitality and confidence. Quick quick discreet delivery."</p>
+L1933:       </article>
+L1934:     </div>
+L1935:     <div class="reviews-actions">
+L1936:       <button type="button" id="rvMoreBtn" class="show-more-btn">See more reviews</button>
+L1937:     </div>
+L1938:   </section>
+L1939: 
+L1940:   <section>
+L1941:     <div class="text-center">
+L1942:       <span class="section-kicker">📸 Real Customers</span>
+L1943:       <h2 class="section-h">हमारे खुश <span class="hl">ग्राहक</span></h2>
+L1944:       <p class="sub" style="font-size:13px;color:#bbb;margin-top:-10px">हमारे असली ग्राहक — उनके अपने हाथों में 6Pro</p>
+L1945:     </div>
+L1946:     <div class="cust-gallery" id="custGallery">
+L1947:       <div class="gallery-grid">
+L1948:         <div class="gal-item">
+L1949:           <img src="https://cdn.avnideepayurveda.in/Avnideep-shilajit/rev1.jpg" width="280" height="280" loading="lazy" decoding="async" alt="Happy customer with Avnideep 6Pro bottle" class="gal-img">
+L1950:           <div class="gal-overlay">
+L1951:             <span class="gal-badge">⭐ Verified Customer</span>
+L1952:           </div>
+L1953:         </div>
+L1954:         <div class="gal-item">
+L1955:           <img src="https://cdn.avnideepayurveda.in/Avnideep-shilajit/rev2.jpg" width="280" height="280" loading="lazy" decoding="async" alt="Happy customer with Avnideep 6Pro bottle" class="gal-img">
+L1956:           <div class="gal-overlay">
+L1957:             <span class="gal-badge">⭐ Verified Customer</span>
+L1958:           </div>
+L1959:         </div>
+L1960:         <div class="gal-item">
+L1961:           <img src="https://cdn.avnideepayurveda.in/Avnideep-shilajit/rev4.jpg" width="280" height="280" loading="lazy" decoding="async" alt="Happy customer with Avnideep 6Pro bottle" class="gal-img">
+L1962:           <div class="gal-overlay">
+L1963:             <span class="gal-badge">⭐ Verified Customer</span>
+L1964:           </div>
+L1965:         </div>
+L1966:         <div class="gal-item">
+L1967:           <img src="https://cdn.avnideepayurveda.in/Avnideep-shilajit/rev5.jpg" width="280" height="280" loading="lazy" decoding="async" alt="Happy customer with Avnideep 6Pro bottle" class="gal-img">
+L1968:           <div class="gal-overlay">
+L1969:             <span class="gal-badge">⭐ Verified Customer</span>
+L1970:           </div>
+L1971:         </div>
+L1972:         <div class="gal-item">
+L1973:           <img src="https://cdn.avnideepayurveda.in/Avnideep-shilajit/review%20(1).jpg" width="280" height="280" loading="lazy" decoding="async" alt="Happy customer with Avnideep 6Pro bottle" class="gal-img">
+L1974:           <div class="gal-overlay">
+L1975:             <span class="gal-badge">⭐ Verified Customer</span>
+L1976:           </div>
+L1977:         </div>
+L1978:         <div class="gal-item">
+L1979:           <img src="https://cdn.avnideepayurveda.in/Avnideep-shilajit/1%20(1).jpg" width="280" height="280" loading="lazy" decoding="async" alt="Happy customer with Avnideep 6Pro bottle" class="gal-img">
+L1980:           <div class="gal-overlay">
+L1981:             <span class="gal-badge">⭐ Verified Customer</span>
+L1982:           </div>
+L1983:         </div>
+L1984:         <div class="gal-item">
+L1985:           <img src="https://cdn.avnideepayurveda.in/Avnideep-shilajit/2%20(1).jpg" width="280" height="280" loading="lazy" decoding="async" alt="Happy customer with Avnideep 6Pro bottle" class="gal-img">
+L1986:           <div class="gal-overlay">
+L1987:             <span class="gal-badge">⭐ Verified Customer</span>
+L1988:           </div>
+L1989:         </div>
+L1990:         <div class="gal-item">
+L1991:           <img src="https://cdn.avnideepayurveda.in/Avnideep-shilajit/3%20(1).jpg" width="280" height="280" loading="lazy" decoding="async" alt="Happy customer with Avnideep 6Pro bottle" class="gal-img">
+L1992:           <div class="gal-overlay">
+L1993:             <span class="gal-badge">⭐ Verified Customer</span>
+L1994:           </div>
+L1995:         </div>
+L1996:         <div class="gal-item">
+L1997:           <img src="https://cdn.avnideepayurveda.in/Avnideep-shilajit/4.jpg" width="280" height="280" loading="lazy" decoding="async" alt="Happy customer with Avnideep 6Pro bottle" class="gal-img">
+L1998:           <div class="gal-overlay">
+L1999:             <span class="gal-badge">⭐ Verified Customer</span>
+L2000:           </div>
+L2001:         </div>
+L2002:         <div class="gal-item">
+L2003:           <img src="https://cdn.avnideepayurveda.in/Avnideep-shilajit/6.jpg" width="280" height="280" loading="lazy" decoding="async" alt="Happy customer with Avnideep 6Pro bottle" class="gal-img">
+L2004:           <div class="gal-overlay">
+L2005:             <span class="gal-badge">⭐ Verified Customer</span>
+L2006:           </div>
+L2007:         </div>
+L2008:       </div>
+L2009:       <p class="gallery-foot">👆 फोटो पर टैप करें बड़ा देखने के लिए</p>
+L2010:     </div>
+L2011:   </section>
+L2012: 
+L2013:   <!-- Lightbox -->
+L2014:   <div class="glightbox" id="glightbox" role="dialog" aria-modal="true" aria-hidden="true">
+L2015:     <button class="glightbox-close" id="glClose" aria-label="Close">✕</button>
+L2016:     <button class="glightbox-nav glightbox-prev" id="glPrev" aria-label="Previous">‹</button>
+L2017:     <button class="glightbox-nav glightbox-next" id="glNext" aria-label="Next">›</button>
+L2018:     <div class="glightbox-content">
+L2019:       <img id="glImage" src="" alt="Customer photo" class="glightbox-img">
+L2020:     </div>
+L2021:     <div class="glightbox-counter" id="glCounter">1 / 5</div>
+L2022:   </div>
+L2023: 
+L2024:   <section>
+L2025:     <div class="text-center">
+L2026:       <span class="section-kicker">सवाल-जवाब</span>
+L2027:       <h2 class="section-h">FAQ</h2>
+L2028:     </div>
+L2029:     <div class="faq-list">
+L2030:       <div class="faq-item open">
+L2031:         <button type="button" class="faq-q"><span>क्या ये प्रोडक्ट सुरक्षित है?</span><span class="faq-icon">+</span></button>
+L2032:         <div class="faq-a">हाँ, यह 100% प्राकृतिक आयुर्वेदिक फ़ॉर्मूला है। बिना किसी केमिकल के बनाया गया है और उचित मात्रा में सेवन सुरक्षित है।</div>
+L2033:       </div>
+L2034:       <div class="faq-item">
+L2035:         <button type="button" class="faq-q"><span>इसके लाभ कितने दिन में महसूस होते हैं?</span><span class="faq-icon">+</span></button>
+L2036:         <div class="faq-a">नियमित इस्तेमाल से धीरे-धीरे शरीर में सकारात्मक बदलाव आ सकते हैं। व्यक्तिगत अनुभव भिन्न हो सकते हैं।</div>
+L2037:       </div>
+L2038:       <div class="faq-item">
+L2039:         <button type="button" class="faq-q"><span>क्या इसके कोई साइड इफेक्ट हैं?</span><span class="faq-icon">+</span></button>
+L2040:         <div class="faq-a">यह पूर्णतः natural herbs से बना है। किसी भी नए supplement की तरह, डॉक्टर से सलाह लेना उचित है।</div>
+L2041:       </div>
+L2042:       <div class="faq-item">
+L2043:         <button type="button" class="faq-q"><span>इसे कैसे इस्तेमाल करना है?</span><span class="faq-icon">+</span></button>
+L2044:         <div class="faq-a">दिन में 1-2 कैप्सूल पर्याप्त मात्रा में पानी के साथ लें। आराम से खाने के बाद लेना अच्छा रहता है।</div>
+L2045:       </div>
+L2046:       <div class="faq-item">
+L2047:         <button type="button" class="faq-q"><span>क्या ये गोपनीय तरीके से डिलीवर होगा?</span><span class="faq-icon">+</span></button>
+L2048:         <div class="faq-a">हाँ, पैकेजिंग पूरी तरह discreet होती है। बिल और पैकेज पर किसी तरह का product नाम नहीं लिखा जाता।</div>
+L2049:       </div>
+L2050:       <div class="faq-item">
+L2051:         <button type="button" class="faq-q"><span>पेमेंट कैसे कर सकते हैं?</span><span class="faq-icon">+</span></button>
+L2052:         <div class="faq-a">COD और prepaid दोनों available हैं। prepaid में UPI/Card/NetBanking से payment कर सकते हैं और ₹251 की बचत भी है।</div>
+L2053:       </div>
+L2054:     </div>
+L2055:   </section>
+L2056: 
+L2057:   
+L2058: </main><footer class="footer">
+L2059:     <div class="f-brand">Avnideep Ayurveda</div>
+L2060:     <div class="f-tag">असली आयुर्वेदिक वेलनेस</div>
+L2061:     <p class="f-desc">प्राकृतिक ingredients और पारंपरिक ज्ञान से बने trusted product।</p>
+L2062:     <div class="f-contact">
+L2063:       <span>📍 Haridwar, Uttarakhand, India</span>
+L2064:       <a href="tel:+917060101043">📞 +91 7060101043</a>
+L2065:       <a href="mailto:support@avnideepayurveda.in">✉️ support@avnideepayurveda.in</a>
+L2066:       <a href="https://wa.me/917060101043" target="_blank" rel="noopener">📱 +91 7060101043 (WhatsApp)</a>
+L2067:     </div>
+L2068:     <div class="f-links">
+L2069:       <a href="privacy-policy.html">Privacy Policy</a>
+L2070:       <a href="refund-policy.html">Refund Policy</a>
+L2071:       <a href="disclaimer.html">Disclaimer</a>
+L2072:       <a href="shipping-policy.html">Shipping Policy</a>
+L2073:       <a href="terms-and-conditions.html">Terms & Conditions</a>
+L2074:       <a href="contact-us.html">Contact Us</a>
+L2075:       <a href="about-us.html">About Us</a>
+L2076:     </div>
+L2077:     <p class="f-copy">© 2026 Avnideep Ayurveda. All Rights Reserved.</p>
+L2078:   </footer>
+L2079: </div>
+L2080: 
+L2081: <div class="sbar" id="sbar" aria-hidden="true">
+L2082:   <div class="sbar-info">
+L2083:     <p>₹1250</p>
+L2084:     <span>COD उपलब्ध</span>
+L2085:   </div>
+L2086:   
+L2087:   <div class="sbar-actions">
+L2088:     <a class="sbar-call" href="tel:+917060101043" aria-label="Call">📞 Call</a>
+L2089:     <a class="sbar-order" href="#checkout" data-scroll="checkout" aria-label="Order">ऑर्डर करें</a>
+L2090:   </div>
+L2091: </div>
+L2092: 
+L2093: 
+L2094: <div class="smodal" id="sModal" role="dialog" aria-labelledby="sTitle" aria-modal="true">
+L2095:   <div class="smodal-box">
+L2096:     <div class="smodal-check">✓</div>
+L2097:     <h3 id="sTitle">ऑर्डर सफल!</h3>
+L2098:     <p id="sMsg">आपका COD ऑर्डर सेव हो गया। हमारी टीम जल्द कॉल करेगी।</p>
+L2099:     <div class="smodal-order-id" id="sOrderId" hidden>
+L2100:       <small>Your Order ID:</small>
+L2101:       <strong id="sOrderIdText">-</strong>
+L2102:     </div>
+L2103:     <div class="smodal-actions">
+L2104:       <a class="smodal-wa" id="sWaBtn" href="https://wa.me/917060101043?utm_source=facebook&utm_medium=cpc&utm_campaign=avnideep_6pro" target="_blank" rel="noopener">💬 WhatsApp पर Track करें</a>
+L2105:       <button class="smodal-btn" type="button" id="sClose">आगे बढ़ें</button>
+L2106:     </div>
+L2107:   </div>
+L2108: </div>  
+L2109: 
+L2110:   <div style="max-width:600px;margin:0 auto;padding:20px 16px;text-align:center">
+L2111:     <p style="font-size:11px;color:#999;line-height:1.6;margin-bottom:14px"><strong>अस्वीकरण:</strong> इस सेक्शन में प्रदर्शित कुछ चित्र एवं समीक्षाएं AI द्वारा निर्मित या उदाहरणात्मक हैं। इनका उद्देश्य केवल जानकारी प्रदान करना है। वास्तविक परिणाम व्यक्ति अनुसार अलग-अलग हो सकते हैं।</p>
+L2112:     <p style="font-size:11px;color:#888;line-height:1.6"><strong>Disclaimer:</strong> These statements have not been evaluated by the Food and Drug Administration (FDA). This product is not intended to diagnose, treat, cure, or prevent any disease. Results may vary. Consult a healthcare professional before use.</p>
+L2113:     <p style="font-size:11px;color:#666;line-height:1.6;margin-top:8px">Ayurvedic dietary supplement. Manufactured in a GMP-certified facility.</p>
+L2114:   </div>
+L2115: 
+L2116: <!-- Social Proof Popup -->
+L2117: <div class="sp-notif" id="spNotif" role="status" aria-live="polite">
+L2118:   <button class="sp-notif-close" id="spClose" aria-label="Close">&times;</button>
+L2119:   <img class="sp-notif-img" id="spImg" src="https://cdn.avnideepayurveda.in/Avnideep-shilajit/mainimagee.webp" alt="" loading="lazy" decoding="async">
+L2120:   <div class="sp-notif-body">
+L2121:     <div class="sp-notif-name" id="spName"><span class="city" id="spCity"></span></div>
+L2122:     <div class="sp-notif-msg" id="spMsg">ne abhi-abhi <strong>6Pro Vitality Shilajit</strong> order kiya</div>
+L2123:     <span class="sp-notif-time" id="spTime"></span>
+L2124:   </div>
+L2125: </div>
+L2126: 
+L2127: 
+L2128: <!-- ===== STICKY BOTTOM ORDER BAR ===== -->
+L2129: <div class="sticky-order-bar" id="stickyBar">
+L2130:   <div class="sticky-inner">
+L2131:     <div class="sticky-left">
+L2132:       <div class="sticky-price">
+L2133:         <span class="sticky-current">₹1,250</span>
+L2134:         <span class="sticky-mrp">₹2,499</span>
+L2135:         <span class="sticky-badge">50% OFF</span>
+L2136:       </div>
+L2137:       <div class="sticky-urgency">
+L2138:         <span class="urgency-dot"></span>
+L2139:         <span class="urgency-text">Only few left</span>
+L2140:       </div>
+L2141:     </div>
+L2142:     <div class="sticky-right">
+L2143:       <button class="sticky-order-btn" id="stickyOrderBtn">
+L2144:         <span class="sticky-btn-text">ORDER NOW</span>
+L2145:         <span class="sticky-btn-sub">⚡ Free Delivery</span>
+L2146:       </button>
+L2147:     </div>
+L2148:   </div>
+L2149: </div>
+L2150: </body>
+L2151: </html>
+L2152: 
+L2153: 
+L2154: 

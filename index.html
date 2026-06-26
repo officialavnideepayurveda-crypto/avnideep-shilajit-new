@@ -291,17 +291,45 @@ section{padding:24px 16px}
 .guarantee p{font-size:14px;color:#ddd;line-height:1.55}
 
 .checkout{background:linear-gradient(180deg,#3a0808,#1a0303);padding:28px 18px;border-radius:22px;margin:24px 0}
-.reward-wheel{background:linear-gradient(180deg,rgba(255,213,79,.1),rgba(255,87,34,.08));border:1px solid rgba(255,213,79,.25);border-radius:20px;padding:18px 16px;margin-bottom:18px;box-shadow:0 18px 40px rgba(0,0,0,.25)}
-.reward-header{display:flex;align-items:center;gap:14px;margin-bottom:14px}
-.reward-header span{font-size:30px}
-.reward-header div strong{display:block;font-size:16px;color:#fff;font-weight:900;line-height:1.25}
-.reward-header div p{margin-top:6px;font-size:13px;color:#fff;opacity:.88}
-.reward-body{display:grid;gap:12px}
-.reward-prize{background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:16px;text-align:center;font-size:16px;font-weight:800;color:#fff;min-height:58px;display:grid;place-items:center}
-.reward-spin-btn{width:100%;padding:16px 18px;background:linear-gradient(135deg,#ff9800,#ff5722);color:#fff;border-radius:14px;font-size:16px;font-weight:900;cursor:pointer;transition:transform .2s,box-shadow .2s;box-shadow:0 12px 30px rgba(255,87,34,.3)}
-.reward-spin-btn:hover{transform:translateY(-1px)}
-.reward-spin-btn:disabled{opacity:.6;cursor:not-allowed;transform:none;box-shadow:none}
-.reward-note{font-size:13px;color:#fee9be;line-height:1.5;text-align:center}
+.reward-wheel{background:linear-gradient(180deg,rgba(255,213,79,.12),rgba(255,87,34,.08));border:1px solid rgba(255,213,79,.3);border-radius:24px;padding:20px 16px 18px;margin-bottom:20px;box-shadow:0 20px 50px rgba(0,0,0,.3);position:relative;overflow:hidden}
+.reward-wheel::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle at 30% 20%,rgba(255,213,79,.06),transparent 60%);pointer-events:none}
+.reward-header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.reward-header .icon{font-size:32px;flex-shrink:0}
+.reward-header .texts{flex:1}
+.reward-header .texts strong{display:block;font-size:17px;color:#fff;font-weight:900;line-height:1.3}
+.reward-header .texts p{margin-top:4px;font-size:12.5px;color:rgba(255,255,255,.8);line-height:1.4}
+.reward-wheel-container{display:flex;flex-direction:column;align-items:center;gap:14px}
+.reward-canvas-wrap{position:relative;width:280px;height:280px;margin:0 auto}
+.reward-canvas-wrap canvas{width:100%;height:100%;display:block}
+.reward-pointer{position:absolute;top:-8px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:14px solid transparent;border-right:14px solid transparent;border-top:22px solid #ffd53b;filter:drop-shadow(0 2px 6px rgba(255,213,59,.5));z-index:5}
+.reward-pointer::after{content:'';position:absolute;top:-24px;left:50%;transform:translateX(-50%);width:10px;height:10px;background:#ffd53b;border-radius:50%;box-shadow:0 0 12px rgba(255,213,59,.6)}
+.reward-center-dot{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:32px;height:32px;background:radial-gradient(circle at 30% 30%,#ffd53b,#f90);border-radius:50%;z-index:6;box-shadow:0 0 20px rgba(255,213,59,.5);border:3px solid rgba(255,255,255,.3)}
+.reward-center-dot::after{content:'★';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:16px;color:#fff}
+.reward-phone-input-wrap{width:100%;max-width:300px;margin:0 auto}
+.reward-phone-input{width:100%;padding:12px 16px;border-radius:12px;border:2px solid rgba(255,213,79,.25);background:rgba(0,0,0,.3);color:#fff;font-size:15px;font-weight:600;text-align:center;outline:none;transition:border-color .3s,box-shadow .3s;letter-spacing:1px}
+.reward-phone-input:focus{border-color:#ffd53b;box-shadow:0 0 20px rgba(255,213,59,.15)}
+.reward-phone-input::placeholder{color:rgba(255,255,255,.3);font-weight:400;letter-spacing:0}
+.reward-spin-btn{width:100%;max-width:300px;padding:15px 20px;background:linear-gradient(135deg,#ff9800,#ff5722);color:#fff;border-radius:14px;font-size:17px;font-weight:900;cursor:pointer;transition:transform .25s,box-shadow .25s,opacity .3s;box-shadow:0 8px 30px rgba(255,87,34,.35);border:none;position:relative;overflow:hidden;letter-spacing:.5px}
+.reward-spin-btn:not(:disabled):hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(255,87,34,.45)}
+.reward-spin-btn:not(:disabled):active{transform:translateY(0)}
+.reward-spin-btn::after{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:linear-gradient(45deg,transparent 40%,rgba(255,255,255,.12) 50%,transparent 60%);transition:transform .6s}
+.reward-spin-btn:not(:disabled):hover::after{transform:translateX(100%)}
+.reward-spin-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+.reward-prize-display{width:100%;text-align:center;padding:12px 14px;background:rgba(0,0,0,.3);border:1px solid rgba(255,213,79,.2);border-radius:14px;min-height:48px;display:grid;place-items:center;transition:all .4s}
+.reward-prize-display.won{background:rgba(255,213,79,.1);border-color:#ffd53b;box-shadow:0 0 25px rgba(255,213,59,.1)}
+.reward-prize-text{font-size:15px;font-weight:700;color:#fff;line-height:1.4}
+.reward-prize-text .amount{color:#ffd53b;font-size:22px;font-weight:900}
+.reward-prize-text .sub{display:block;font-size:12px;color:rgba(255,255,255,.7);font-weight:400;margin-top:4px}
+.reward-prize-text .congrats{display:block;font-size:14px;color:#4caf50;font-weight:600;margin-top:2px}
+.reward-note{font-size:12px;color:rgba(255,238,190,.85);line-height:1.5;text-align:center;padding:0 4px}
+.reward-loader{display:inline-block;width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse-glow{0%,100%{box-shadow:0 0 20px rgba(255,213,59,.3)}50%{box-shadow:0 0 40px rgba(255,213,59,.6)}}
+.reward-prize-display.won .reward-prize-text{animation:fadeInUp .5s ease}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.confetti-container{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:99999;overflow:hidden}
+.confetti-piece{position:absolute;width:10px;height:10px;top:-10px;opacity:0}
+@media(max-width:420px){.reward-canvas-wrap{width:240px;height:240px}.reward-header .texts strong{font-size:15px}.reward-spin-btn{font-size:15px;padding:13px 16px}.reward-phone-input{padding:11px 14px}}
 .checkout .badge-secure{display:inline-flex;align-items:center;gap:6px;background:rgba(0,230,118,.15);border:1px solid #00e676;color:#00e676;padding:5px 12px;border-radius:50px;font-size:11px;font-weight:800;margin-bottom:10px}
 .checkout h2{font-size:24px;color:#fff;font-weight:900;margin-bottom:6px}
 .checkout .sub{font-size:13px;color:#ffd54f;font-weight:600;margin-bottom:18px}
@@ -1194,18 +1222,29 @@ fbq('track', 'PageView');
   <section id="checkout">
     <div class="checkout">
 
-      <div class="reward-wheel" id="rewardWheel">
+            <div class="reward-wheel" id="rewardWheel">
         <div class="reward-header">
-          <span>🎉</span>
-          <div>
-            <strong>आज ही Spin करें और पाइए प्रीमियम इनाम</strong>
-            <p>हर मोबाइल पर एक बार ही मौका। delivery के बाद claim करें।</p>
+          <span class="icon">🎁</span>
+          <div class="texts">
+            <strong>Spin the Lucky Reward Wheel &amp; Win Cash!</strong>
+            <p>One spin per mobile • Claim reward after delivery</p>
           </div>
         </div>
-        <div class="reward-body">
-          <div class="reward-prize" id="rewardPrize">अब Spin करें</div>
-          <button type="button" class="reward-spin-btn" id="rewardSpinBtn">Spin करें</button>
-          <div class="reward-note" id="rewardNote">इनाम cashback या free delivery नहीं है। यह एक प्रीमियम बोनस है।</div>
+        <div class="reward-wheel-container">
+          <div class="reward-canvas-wrap" id="rewardCanvasWrap">
+            <div class="reward-pointer"></div>
+            <canvas id="rewardCanvas" width="400" height="400"></canvas>
+            <div class="reward-center-dot"></div>
+          </div>
+          <div class="reward-phone-input-wrap" id="rewardPhoneWrap">
+            <input type="tel" class="reward-phone-input" id="rewardPhoneInput" placeholder="Enter mobile number to spin" maxlength="10" inputmode="numeric" pattern="[0-9]*" autocomplete="tel">
+          </div>
+          <button type="button" class="reward-spin-btn" id="rewardSpinBtn" disabled>🎯 Enter mobile to spin</button>
+          <div class="reward-prize-display" id="rewardPrizeDisplay">
+            <span class="reward-prize-text" id="rewardPrizeText">Enter your mobile &amp; spin to win up to ₹1,000!</span>
+          </div>
+          <div class="reward-note" id="rewardNote">💡 This is a <strong>post-delivery cash reward</strong>, not an instant discount. Reward credited via UPI/Paytm after successful delivery.</div>
+        </div>
         </div>
       </div>
 
@@ -1791,136 +1830,235 @@ function getPhoneValue(){
   if(!phone) return '';
   return phone.value.replace(/[^0-9]/g,'').slice(0,10);
 }
-function getRewardKey(phone){
-  return phone ? 'avn_reward_spin:' + phone : 'avn_reward_spin';
-}
-function buildReward(){
-  var prizeText = 'इनाम unlocked नहीं है';
-  var reward = { rewardId: '', rewardAmount: 0 };
-  try{
-    var phone = getPhoneValue();
-    var saved = localStorage.getItem(getRewardKey(phone));
-    if(!saved && phone){
-      saved = localStorage.getItem('avn_reward_spin');
-    }
-    if(saved){
-      var parsed = JSON.parse(saved);
-      if(parsed && parsed.rewardId){
-        if(!parsed.phone || !phone || parsed.phone === phone){
-          reward = parsed;
-          prizeText = parsed.rewardText || parsed.rewardLabel || 'आपका इनाम: ' + (parsed.rewardAmount ? '₹'+parsed.rewardAmount : 'विशेष उपहार');
-        }
-      }
-    }
-  }catch(e){ }
-  return { reward: reward, label: prizeText };
-}
-function setRewardState(state){
-  var prize = $('#rewardPrize');
-  var note = $('#rewardNote');
-  if(!prize || !note) return;
-  prize.textContent = state.label || 'अब Spin करें';
-  note.textContent = state.note || 'हर मोबाइल पर एक बार Spin। delivery के बाद आपका Reward claim करें।';
-  var btn = $('#rewardSpinBtn');
-  if(btn){
-    btn.disabled = !!state.spun;
-    btn.textContent = state.spun ? 'पहले ही Spin किया गया' : 'Spin करें';
-  }
-}
+// ===== PREMIUM LUCKY REWARD WHEEL =====
+const REWARD_SEGMENTS = [
+  { label: "\u20b9100", amount: 100, color: "#FF6B35", lightColor: "#FF8C5A" },
+  { label: "\u20b9250", amount: 250, color: "#FFB800", lightColor: "#FFD53B" },
+  { label: "\u20b9500", amount: 500, color: "#E63946", lightColor: "#F06A76" },
+  { label: "\u20b91000", amount: 1000, color: "#2EC4B6", lightColor: "#5DD8CE" },
+  { label: "\u20b9250", amount: 250, color: "#FFB800", lightColor: "#FFD53B" },
+  { label: "\u20b9100", amount: 100, color: "#FF6B35", lightColor: "#FF8C5A" },
+  { label: "\u20b9500", amount: 500, color: "#E63946", lightColor: "#F06A76" },
+  { label: "\u20b9100", amount: 100, color: "#2EC4B6", lightColor: "#5DD8CE" }
+];
+
+let rewardState = { spinning: false, currentAngle: 0, phone: "", rewardId: "", rewardAmount: 0, rewardLabel: "", hasSpun: false };
+
 function initRewardWheel(){
-  var btn = $('#rewardSpinBtn');
-  var prize = $('#rewardPrize');
-  var note = $('#rewardNote');
-  if(!btn || !prize || !note) return;
-
-  var outcomes = [
-    { id: 'REW-PLUSH', label: 'फ्री Premium Gift Box', amount: 0, note: 'Delivery के बाद claim करें।' },
-    { id: 'REW-DOCTOR', label: 'Free Doctor Consultation', amount: 0, note: 'Delivery के बाद claim करें।' },
-    { id: 'REW-CASH200', label: '₹200 Future Cashback Voucher', amount: 200, note: 'डिलीवरी के बाद आपके phone पर भेजेगा।' },
-    { id: 'REW-WELLNESS', label: 'Free Wellness Guide Pack', amount: 0, note: 'Delivery के बाद claim करें।' },
-    { id: 'REW-VIP', label: 'VIP Priority Support', amount: 0, note: 'Delivery के बाद अपनाएं।' },
-    { id: 'REW-SUPPLEMENT', label: 'Free Supplement Sample', amount: 0, note: 'Delivery के बाद claim करें।' }
-  ];
-
-  function getSaved(){
-    try{
-      var phone = getPhoneValue();
-      var stored = phone ? localStorage.getItem(getRewardKey(phone)) : null;
-      if(!stored){
-        stored = localStorage.getItem('avn_reward_spin');
+  const canvas = document.getElementById("rewardCanvas");
+  if(!canvas) return;
+  const ctx = canvas.getContext("2d");
+  const phoneInput = document.getElementById("rewardPhoneInput");
+  const spinBtn = document.getElementById("rewardSpinBtn");
+  const prizeDisplay = document.getElementById("rewardPrizeDisplay");
+  const prizeText = document.getElementById("rewardPrizeText");
+  
+  drawWheel(ctx, 0);
+  
+  phoneInput.addEventListener("input", function(){
+    const phone = this.value.replace(/\D/g, "").slice(0, 10);
+    this.value = phone;
+    rewardState.phone = phone;
+    if(phone.length === 10){
+      spinBtn.disabled = true;
+      spinBtn.textContent = "⏳ Checking...";
+      const lsKey = "avn_reward_spin:" + phone;
+      try{
+        const localData = localStorage.getItem(lsKey);
+        if(localData){
+          const parsed = JSON.parse(localData);
+          if(parsed && (parsed.rewardId || parsed.rewardAmount)){
+            rewardState.hasSpun = true;
+            rewardState.rewardAmount = parsed.rewardAmount || parsed.amount || 0;
+            rewardState.rewardLabel = parsed.rewardLabel || parsed.label || ("₹" + (parsed.rewardAmount||parsed.amount||0) + " Cash Reward");
+            rewardState.rewardId = parsed.rewardId || "";
+            showWonState(prizeText, prizeDisplay, phoneInput, spinBtn);
+            return;
+          }
+        }
+      }catch(e){}
+      fetch("/api/reward-spin?phone=" + encodeURIComponent(phone))
+        .then(r => r.json())
+        .then(data => {
+          if(data.success && data.found && data.reward){
+            const r = data.reward;
+            rewardState.hasSpun = true;
+            rewardState.rewardAmount = r.reward_amount;
+            rewardState.rewardLabel = r.reward_label;
+            rewardState.rewardId = r.reward_id;
+            try{ localStorage.setItem(lsKey, JSON.stringify(r)); }catch(e){}
+            showWonState(prizeText, prizeDisplay, phoneInput, spinBtn);
+          }else{
+            spinBtn.disabled = false;
+            spinBtn.textContent = "🎯 SPIN NOW!";
+            prizeText.innerHTML = "Tap SPIN to try your luck! 🍀";
+            prizeDisplay.className = "reward-prize-display";
+          }
+        })
+        .catch(function(){ spinBtn.disabled = false; spinBtn.textContent = "🎯 SPIN NOW!"; });
+    }else{
+      spinBtn.disabled = true;
+      spinBtn.textContent = phone.length > 0 ? "Enter 10 digits" : "🎯 Enter mobile to spin";
+    }
+  });
+  
+  spinBtn.addEventListener("click", function(){
+    if(rewardState.spinning || rewardState.hasSpun) return;
+    const phone = rewardState.phone;
+    if(!phone || phone.length !== 10){
+      prizeText.innerHTML = "⚠️ Please enter a valid 10-digit mobile number";
+      return;
+    }
+    rewardState.spinning = true;
+    spinBtn.disabled = true;
+    spinBtn.textContent = "🎯 Spinning...";
+    prizeText.innerHTML = '<span class="reward-loader"></span> Good luck!';
+    prizeDisplay.className = "reward-prize-display";
+    
+    const weights = [35, 30, 20, 15, 0, 0, 0, 0];
+    const totalWeight = weights.reduce(function(a,b){return a+b}, 0);
+    let r = Math.random() * totalWeight;
+    let targetIdx = 0;
+    for(let i = 0; i < weights.length; i++){ r -= weights[i]; if(r <= 0){ targetIdx = i; break; } }
+    
+    const segment = REWARD_SEGMENTS[targetIdx];
+    const segAngle = (2 * Math.PI) / REWARD_SEGMENTS.length;
+    const segCenterAngle = targetIdx * segAngle + segAngle / 2;
+    const finalTarget = -Math.PI / 2 - segCenterAngle;
+    const fullRotations = (5 + Math.random() * 3) * Math.PI * 2;
+    rewardState.targetAngle = rewardState.currentAngle + fullRotations + finalTarget;
+    rewardState.winningSegment = targetIdx;
+    rewardState.winningAmount = segment.amount;
+    rewardState.winningLabel = segment.label;
+    
+    function animateSpin(){
+      const remaining = rewardState.targetAngle - rewardState.currentAngle;
+      if(Math.abs(remaining) < 0.01){
+        rewardState.currentAngle = rewardState.targetAngle;
+        drawWheel(ctx, rewardState.currentAngle);
+        onSpinComplete(ctx, prizeText, prizeDisplay, phoneInput, spinBtn);
+        return;
       }
-      return stored ? JSON.parse(stored) : null;
-    }catch(e){ return null; }
+      rewardState.currentAngle += remaining * 0.08;
+      drawWheel(ctx, rewardState.currentAngle);
+      requestAnimationFrame(animateSpin);
+    }
+    animateSpin();
+  });
+}
+
+function drawWheel(ctx, angle){
+  const w = ctx.canvas.width, h = ctx.canvas.height, cx = w/2, cy = h/2, radius = Math.min(cx, cy) - 8;
+  const n = REWARD_SEGMENTS.length, segAngle = (2 * Math.PI) / n;
+  ctx.clearRect(0, 0, w, h); ctx.save(); ctx.translate(cx, cy); ctx.rotate(angle);
+  ctx.beginPath(); ctx.arc(0, 0, radius + 6, 0, Math.PI * 2); ctx.fillStyle = "rgba(255,213,59,.08)"; ctx.fill();
+  for(let i = 0; i < n; i++){
+    const sa = i * segAngle - Math.PI/2, ea = sa + segAngle;
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, radius, sa, ea); ctx.closePath();
+    const seg = REWARD_SEGMENTS[i];
+    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, radius);
+    g.addColorStop(0, seg.lightColor); g.addColorStop(1, seg.color);
+    ctx.fillStyle = g; ctx.fill();
+    ctx.strokeStyle = "rgba(255,255,255,.15)"; ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.save(); ctx.rotate(sa + segAngle/2);
+    ctx.textAlign = "right"; ctx.fillStyle = "#fff"; ctx.font = "bold 22px system-ui, -apple-system, sans-serif";
+    ctx.shadowColor = "rgba(0,0,0,.4)"; ctx.shadowBlur = 4;
+    ctx.fillText(seg.label, radius - 18, 8); ctx.restore();
   }
-  function saveReward(data){
-    try{
-      var phone = getPhoneValue();
-      data.phone = phone || data.phone || '';
-      var key = getRewardKey(phone || data.phone);
-      localStorage.setItem(key, JSON.stringify(data));
-      try{ localStorage.setItem('avn_reward_spin', JSON.stringify(data)); }catch(e){}
-    }catch(e){}
+  ctx.beginPath(); ctx.arc(0, 0, radius * 0.18, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(0,0,0,.25)"; ctx.fill(); ctx.restore();
+  ctx.beginPath(); ctx.arc(cx, cy, radius + 4, 0, Math.PI * 2);
+  ctx.strokeStyle = "rgba(255,213,59,.2)"; ctx.lineWidth = 2; ctx.stroke();
+  for(let i = 0; i < 24; i++){
+    const a = (i/24) * Math.PI * 2, dx = cx + (radius+10)*Math.cos(a), dy = cy + (radius+10)*Math.sin(a);
+    ctx.beginPath(); ctx.arc(dx, dy, 3, 0, Math.PI * 2);
+    ctx.fillStyle = i%2===0 ? "rgba(255,213,59,.5)" : "rgba(255,255,255,.2)"; ctx.fill();
   }
-  function hasSpun(){
-    var saved = getSaved();
-    return saved && saved.rewardId;
+}
+
+function onSpinComplete(ctx, prizeText, prizeDisplay, phoneInput, spinBtn){
+  const amount = rewardState.winningAmount, phone = rewardState.phone;
+  if(!rewardState.rewardId){
+    const ts = Date.now().toString(36), rand = Math.random().toString(36).substring(2, 8).toUpperCase();
+    rewardState.rewardId = "AVN-RWD-" + ts + "-" + rand;
   }
-  function updateUI(){
-    var saved = getSaved();
-    if(saved && saved.rewardId){
-      setRewardState({
-        label: saved.rewardText || saved.rewardLabel || 'आपका इनाम: ' + (saved.rewardAmount ? '₹'+saved.rewardAmount : 'विशेष उपहार'),
-        note: saved.note || 'Delivery के बाद claim करें।',
-        spun: true
-      });
-    } else {
-      setRewardState({ label: 'अब Spin करें', note: 'हर मोबाइल पर केवल 1 spin। delivery के बाद claim करें।', spun: false });
+  rewardState.hasSpun = true;
+  rewardState.rewardAmount = amount;
+  rewardState.rewardLabel = "₹" + amount + " Cash Reward";
+  const lsKey = "avn_reward_spin:" + phone;
+  const saveData = { rewardId: rewardState.rewardId, rewardAmount: amount, rewardLabel: "₹" + amount + " Cash Reward" };
+  try{ localStorage.setItem(lsKey, JSON.stringify(saveData)); }catch(e){}
+  fetch("/api/reward-spin", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ phone: phone, name: document.getElementById("cName")?.value || "" })
+  }).then(r => r.json()).then(data => {
+    if(data.success && data.reward_id){ rewardState.rewardId = data.reward_id; saveData.rewardId = data.reward_id; try{ localStorage.setItem(lsKey, JSON.stringify(saveData)); }catch(e){} }
+  }).catch(function(){});
+  showWonState(prizeText, prizeDisplay, phoneInput, spinBtn);
+  launchConfetti(amount);
+}
+
+function showWonState(prizeText, prizeDisplay, phoneInput, spinBtn){
+  const amt = rewardState.rewardAmount, lbl = rewardState.rewardLabel || ("₹" + amt + " Cash Reward");
+  prizeText.innerHTML = '<span class="congrats">🎉 Congratulations!</span> You have won <span class="amount">' + lbl + '</span><span class="sub">Your reward will be transferred to your UPI/Paytm after your order is successfully delivered.</span>';
+  prizeDisplay.className = "reward-prize-display won";
+  phoneInput.disabled = true; spinBtn.disabled = true; spinBtn.textContent = "✅ Reward Claimed!";
+  window.__rewardInfo = { rewardId: rewardState.rewardId, rewardAmount: amt, rewardLabel: lbl };
+}
+
+function launchConfetti(amount){
+  var colors = ["#FFD53B", "#FF6B35", "#E63946", "#2EC4B6", "#FFB800", "#FF8C5A", "#4CAF50", "#9C27B0"];
+  var container = document.createElement("div"); container.className = "confetti-container"; document.body.appendChild(container);
+  var count = Math.min(80 + Math.floor(amount / 10), 200), pieces = [];
+  for(var i = 0; i < count; i++){
+    var el = document.createElement("div"); el.className = "confetti-piece";
+    var color = colors[Math.floor(Math.random()*colors.length)], size = 6+Math.random()*8, isCircle = Math.random()>0.5;
+    var left = Math.random()*100, delay = Math.random()*0.8, duration = 2+Math.random()*2, drift = (Math.random()-0.5)*200, rot = Math.random()*720;
+    el.style.cssText = "position:absolute;left:"+left+"%;width:"+size+"px;height:"+(isCircle?size:size*0.6)+"px;background:"+color+";border-radius:"+(isCircle?"50%":"2px")+";opacity:1;top:-10px";
+    container.appendChild(el);
+    pieces.push({el:el,st:performance.now()+delay*1000,dur:duration*1000,drift:drift,rot:rot});
+  }
+  function anim(now){
+    var alive = false;
+    for(var j=0;j<pieces.length;j++){
+      var p=pieces[j],t=(now-p.st)/p.dur;
+      if(t<0){alive=true;continue} if(t>=1){p.el.style.opacity="0";continue}
+      alive=true;
+      p.el.style.transform="translateX("+(p.drift*Math.sin(t*Math.PI*2))+"px) translateY("+(t*100)+"vh) rotate("+(p.rot*t)+"deg)";
+      p.el.style.opacity=t<0.9?1:1-(t-0.9)/0.1;
+    }
+    if(alive) requestAnimationFrame(anim);
+    else setTimeout(function(){if(container.parentNode)container.parentNode.removeChild(container)},100);
+  }
+  requestAnimationFrame(anim);
+}
+
+function buildReward(){
+  var info = window.__rewardInfo || null;
+  if(!info){
+    var phone = document.getElementById("rewardPhoneInput")?.value || document.getElementById("cPhone")?.value || "";
+    if(phone){
+      try{ var saved = localStorage.getItem("avn_reward_spin:" + phone); if(saved){ var parsed = JSON.parse(saved); info = { rewardId: parsed.rewardId || "", rewardAmount: parsed.rewardAmount || 0, rewardLabel: parsed.rewardLabel || "" }; } }catch(e){}
     }
   }
-
-  btn.addEventListener('click', function(){
-    if(hasSpun()) return;
-
-    var winners = outcomes.slice();
-    var index = Math.floor(Math.random()*winners.length);
-    var chosen = winners[index];
-    var rewardId = chosen.id + '-' + Date.now() + '-' + Math.random().toString(36).slice(2,5);
-    var reward = {
-      rewardId: rewardId,
-      rewardAmount: chosen.amount || 0,
-      rewardLabel: chosen.label,
-      rewardText: 'आपका इनाम: ' + chosen.label,
-      note: chosen.note || 'Delivery के बाद claim करें।'
-    };
-    saveReward(reward);
-    setRewardState({ label: reward.rewardText, note: reward.note, spun: true });
-  });
-
-  updateUI();
+  return { reward: info || { rewardId: "", rewardAmount: 0 }, label: info && info.rewardAmount ? "₹" + info.rewardAmount + " Cash Reward" : "अब Spin करें" };
 }
-function build(status){
-  var m = getPay();
-  var utm = getUtmParams();
-  var rewardState = buildReward();
-  return {
-    orderId: 'AVN-'+Date.now()+'-'+Math.random().toString(36).slice(2,6),
-    name: $('#cName').value.trim(),
-    phone: $('#cPhone').value.trim(),
-    paymentMethod: m,
-    amount: m==='prepaid'?999:1250,
-    product: 'Avnideep 6Pro Vitality Shilajit Capsules',
-    status: status,
-    pageUrl: window.location.href,
-    utm_source: utm.source,
-    utm_medium: utm.medium,
-    utm_campaign: utm.campaign,
-    createdAt: new Date().toISOString(),
-    userAgent: navigator.userAgent || '',
-    rewardId: rewardState.reward.rewardId || '',
-    rewardAmount: rewardState.reward.rewardAmount || 0
-  };
+
+function attachRewardToOrder(orderData){
+  if(typeof orderData !== "object") orderData = {};
+  var r = buildReward();
+  if(r && r.reward && r.reward.rewardId){
+    orderData.reward_id = r.reward.rewardId;
+    orderData.reward_amount = r.reward.rewardAmount;
+    orderData.reward_label = r.reward.rewardLabel;
+  }
+  return orderData;
 }
-function validate(p){
+
+if(typeof window.__origBuild === "undefined" && typeof window.build === "function"){
+  window.__origBuild = window.build;
+  window.build = function(status){ return attachRewardToOrder(window.__origBuild(status)); };
+}function validate(p){
   if(p.name.length < 2){ $('#cName').focus(); return 'पूरा नाम दर्ज करें।'; }
   if(!/^[6-9]\d{9}$/.test(p.phone)){ $('#cPhone').focus(); return 'सही 10 अंकों का मोबाइल नंबर दर्ज करें।'; }
   return '';
