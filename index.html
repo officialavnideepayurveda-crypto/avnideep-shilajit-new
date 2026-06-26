@@ -1272,16 +1272,16 @@ fbq('track', 'PageView');
         </div>
         <div class="row2">
           <div class="form-field">
-            <label for="cPhone">📱 मोबाइल नंबर *</label>
-            <input id="cPhone" name="phone" type="tel" placeholder="9876543210" inputmode="numeric" autocomplete="tel" pattern="[6-9][0-9]{9}" maxlength="10" required>
-            <span class="field-check" data-for="cPhone">✓</span>
+            <label for="tcPhoneInput">📱 मोबाइल नंबर *</label>
+            <input id="tcPhoneInput" name="phone" type="tel" placeholder="9876543210" inputmode="numeric" autocomplete="tel" pattern="[6-9][0-9]{9}" maxlength="10" required>
+            <span class="field-check" data-for="tcPhoneInput">✓</span>
           </div>
         </div>
 
         <div class="pay-label">💳 Payment Method चुनें:</div>
         <div class="pay-grid" role="radiogroup" aria-label="Payment method">
           <label class="pay-card recommended">
-            <input type="radio" name="pay" value="prepaid">
+            <input type="radio" name="paymentMethod" value="prepaid">
             <div class="pay-top">
               <div>
                 <strong>⚡ Prepaid Online <span class="save-badge">SAVE ₹251</span></strong>
@@ -1294,7 +1294,7 @@ fbq('track', 'PageView');
             </div>
           </label>
           <label class="pay-card selected">
-            <input type="radio" name="pay" value="cod" checked>
+            <input type="radio" name="paymentMethod" value="cod" checked>
             <div class="pay-top">
               <div>
                 <strong>💵 Cash on Delivery</strong>
