@@ -930,37 +930,69 @@
         
         <!-- PAYMENT CONTENT -->
         <div id="payment-idle" class="payment-content">
-        <!-- PAYMENT CONTENT -->
-        <div id="payment-idle" class="payment-content">
-          <h1 class="content-title">Complete Your Payment</h1>
-          <p class="content-subtitle">Fast & secure payment checkout</p>
+          <h1 class="content-title">🎯 अपनी payment पूरी करें | Complete Your Payment</h1>
+          <p class="content-subtitle" style="color: #d9534f; font-weight: 600; margin-bottom: 16px;">⏰ Session expires in <span id="timer-display-subtitle">15:00</span></p>
           
-          <!-- RAZORPAY PAYMENT BUTTON -->
-          <div class="razorpay-container">
-            <div class="qr-top">
-              <div>
-                <div class="qr-title">Pay with Razorpay</div>
-                <div class="qr-instruction">Click the button below to pay via UPI, Card, NetBanking, or Wallet</div>
+          <!-- STEP-BY-STEP INSTRUCTIONS -->
+          <div style="background: #f0f7ff; border-left: 4px solid #0f172a; padding: 16px; border-radius: 12px; margin-bottom: 20px;">
+            <div style="font-size: 12px; font-weight: 700; color: #0f172a; margin-bottom: 10px; text-transform: uppercase;">📋 बस 2 Steps में payment पूरी करें:</div>
+            <div style="display: flex; flex-direction: column; gap: 12px; font-size: 13px; color: #0f172a; line-height: 1.6;">
+              <div style="display: flex; gap: 12px; align-items: flex-start;">
+                <div style="background: #0f172a; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0;">1</div>
+                <div><strong>नीचे "Pay Now" बटन दबाएं</strong> (Click the yellow button below)<br><span style="color: #475569;">इससे payment का चयन खुल जाएगा</span></div>
               </div>
-              <div class="qr-support">
-                <svg fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
-                Secured by Razorpay
+              <div style="display: flex; gap: 12px; align-items: flex-start;">
+                <div style="background: #0f172a; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0;">2</div>
+                <div><strong>अपना payment method चुनें</strong> (Choose UPI, Card, or NetBanking)<br><span style="color: #475569;">और payment submit करें - बस इतना काफी है!</span></div>
               </div>
-            </div>
-            <div style="display:flex;justify-content:center;margin:24px 0;">
-              <form><script src="https://checkout.razorpay.com/v1/payment-button.js" data-payment_button_id="pl_R5uwVzIJNFKftr" async> </script> </form>
-            </div>
-            <div style="text-align:center;font-size:13px;color:#64748b;margin-top:8px;">
-              💳 UPI • Cards • NetBanking • Wallet
             </div>
           </div>
           
-          <!-- TIMER CARD -->
-          <div class="timer-card">
-            <div class="timer-icon">⏱️</div>
-            <div class="timer-text">
-              <div class="timer-label">Session expires in</div>
-              <div class="timer-countdown" id="timer-display">15:00</div>
+          <!-- TRUST BADGES -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
+            <div style="background: #ecfdf5; padding: 12px; border-radius: 12px; text-align: center; border: 1px solid #86efac;">
+              <div style="font-size: 18px; margin-bottom: 4px;">🔒</div>
+              <div style="font-size: 11px; font-weight: 700; color: #166534;">100% Safe<br>Verified</div>
+            </div>
+            <div style="background: #ecfdf5; padding: 12px; border-radius: 12px; text-align: center; border: 1px solid #86efac;">
+              <div style="font-size: 18px; margin-bottom: 4px;">⚡</div>
+              <div style="font-size: 11px; font-weight: 700; color: #166534;">Instant<br>Confirmation</div>
+            </div>
+          </div>
+          
+          <!-- RAZORPAY PAYMENT BUTTON -->
+          <div style="background: white; border: 1px solid #e5e8f0; padding: 20px; border-radius: 16px; margin-bottom: 16px;">
+            <div style="text-align: center; margin-bottom: 16px;">
+              <div style="font-size: 12px; text-transform: uppercase; color: #475569; font-weight: 700; letter-spacing: 1px; margin-bottom: 8px;">💳 Payment Options</div>
+              <div style="display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;">
+                <span style="background: #f0f7ff; color: #0c6fdb; padding: 6px 10px; border-radius: 8px; font-size: 11px; font-weight: 700;">📱 UPI</span>
+                <span style="background: #f0f7ff; color: #0c6fdb; padding: 6px 10px; border-radius: 8px; font-size: 11px; font-weight: 700;">💳 Cards</span>
+                <span style="background: #f0f7ff; color: #0c6fdb; padding: 6px 10px; border-radius: 8px; font-size: 11px; font-weight: 700;">🏦 NetBanking</span>
+                <span style="background: #f0f7ff; color: #0c6fdb; padding: 6px 10px; border-radius: 8px; font-size: 11px; font-weight: 700;">👛 Wallet</span>
+              </div>
+            </div>
+            <div style="display:flex;justify-content:center;margin:16px 0;">
+              <form><script src="https://checkout.razorpay.com/v1/payment-button.js" data-payment_button_id="pl_R5uwVzIJNFKftr" async> </script> </form>
+            </div>
+            <div style="text-align: center; font-size: 12px; color: #22c55e; font-weight: 600; margin-top: 12px;">
+              ✓ Secured by Razorpay (PCI-DSS Compliant)
+            </div>
+          </div>
+          
+          <!-- URGENT TIMER -->
+          <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 12px; padding: 14px; margin-bottom: 16px; text-align: center;">
+            <div style="font-size: 14px; font-weight: 700; color: #856404;">⏰ Session Expires In: <span id="timer-display-urgent" style="font-family: monospace; color: #d9534f;">15:00</span></div>
+            <div style="font-size: 11px; color: #856404; margin-top: 4px;">जल्दी करें - Payment अभी पूरी करें!</div>
+          </div>
+          
+          <!-- FAQ / HELP -->
+          <div style="background: #f8f9fa; padding: 14px; border-radius: 12px; margin-bottom: 16px;">
+            <div style="font-size: 12px; font-weight: 700; color: #0f172a; margin-bottom: 8px;">❓ समस्या है?</div>
+            <div style="font-size: 12px; color: #475569; line-height: 1.6;">
+              • सभी Payment Methods काम कर रहे हैं<br>
+              • आपका phone internet connection check करें<br>
+              • फिर से "Pay Now" बटन दबाएं<br>
+              • अगर समस्या बनी रहे तो Support से संपर्क करें
             </div>
           </div>
           
@@ -1030,15 +1062,34 @@
     const orderId = params.get('order_id') || "AVN-681164";
     const API_ENDPOINT = "./api/order";
 
-    // Purchase Event: Handled server-side via CAPI (functions/api/order.js)
-    // Client-side fbq Purchase removed to prevent double counting.
-    
-    var custName = params.get('name') || '';
-    var custPhone = params.get('phone') || '';
+    // Fire Purchase immediately on page load - order already created
+    var purchaseTracked = false;
+    function trackFacebookPurchase() {
+      if (purchaseTracked) return;
+      try {
+        if (typeof fbq === 'function') {
+          fbq('track', 'Purchase', {
+            value: amount,
+            currency: 'INR',
+            content_name: 'AVN-6PRO-001',
+            order_id: orderId,
+            eventID: orderId
+          });
+          purchaseTracked = true;
+        }
+      } catch(e) {
+        console.warn('FB Pixel immediate error:', e);
+      }
+    }
+    trackFacebookPurchase();
+    window.addEventListener('load', trackFacebookPurchase);
+    setTimeout(trackFacebookPurchase, 1200);
 
     window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('success-order').textContent = orderId;
       startTimer(900);
+
+
     });
     
     let timerInterval;
@@ -1048,14 +1099,23 @@
         const mins = Math.floor(remaining / 60);
         const secs = remaining % 60;
         const display = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-        document.getElementById('timer-display').textContent = display;
-        document.getElementById('sidebar-timer').textContent = display;
         
+        // Update all timer display elements
+        const timerDisplay = document.getElementById('timer-display');
+        const sidebarTimer = document.getElementById('sidebar-timer');
+        const timerSubtitle = document.getElementById('timer-display-subtitle');
+        const timerUrgent = document.getElementById('timer-display-urgent');
+        
+        if (timerDisplay) timerDisplay.textContent = display;
+        if (sidebarTimer) sidebarTimer.textContent = display;
+        if (timerSubtitle) timerSubtitle.textContent = display;
+        if (timerUrgent) timerUrgent.textContent = display;
+        
+        // Red color when < 60 seconds
         if (remaining <= 60) {
-          document.getElementById('timer-display').style.color = '#dc2626';
-          if (document.getElementById('sidebar-timer')) {
-            document.getElementById('sidebar-timer').style.color = '#dc2626';
-          }
+          if (timerDisplay) timerDisplay.style.color = '#dc2626';
+          if (sidebarTimer) sidebarTimer.style.color = '#dc2626';
+          if (timerUrgent) timerUrgent.style.color = '#d9534f';
         }
       };
       updateTimer();
@@ -1068,9 +1128,14 @@
         updateTimer();
       }, 1000);
     }
+    
 
-    // Auto-open Razorpay is disabled. Payment UI will load normally and the customer must click the Razorpay button.
-    var isAuto = false;
+    
+
+    
+
+    
+    
   </script>
 </body>
 </html>
