@@ -701,7 +701,7 @@ export async function onRequestOptions({ env }) {
 // ============================================================
 // MAIN ORDER HANDLER
 // ============================================================
-export async function onRequestPost({ request, env }) {
+export async function onRequestPost({ request, env, waitUntil }) {
   const ip = request.headers.get("CF-Connecting-IP") || request.headers.get("X-Forwarded-For") || "unknown";
 
   // ============================================================
@@ -890,8 +890,8 @@ export async function onRequestPost({ request, env }) {
     );
 
     // Fire Telegram + Email in background — don't block the response
-    sendTelegram(order, env).catch(() => {});
-    sendEmail(order, env).catch(() => {});
+    waitUntil(sendTelegram(order, env).catch(() => {}));
+    waitUntil(sendEmail(order, env).catch(() => {}));
 
     // Placeholder for Telegram + Email (fire-and-forget)
     const telegram = { ok: null, skipped: null, note: "fire-and-forget" };
