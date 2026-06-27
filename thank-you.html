@@ -162,19 +162,57 @@
   </div>
 
   <script>
-  // ===== IMMEDIATE: Facebook Pixel Purchase Event =====
+  // ===== Facebook Pixel Purchase Event =====
+  // Purchase only fires when we can confirm a real payment happened:
+  //   1) Razorpay redirected here after a SUCCESSFUL payment
+  //      (Razorpay adds razorpay_payment_id to the URL itself - we don't set this, Razorpay does)
+  //   2) COD order confirmed by index.html (method=cod / cod_whatsapp with order_id present)
+  // A plain visit to this page (no Razorpay params, no COD params) does NOT fire Purchase.
   (function(){
     var params = new URLSearchParams(window.location.search);
     var orderId = params.get('order_id') || '';
-    var amount = parseFloat(params.get('amount')) || 1250;
+    var amountParam = params.get('amount');
+    var amount = amountParam !== null ? parseFloat(amountParam) : null;
     var name = params.get('name') || '';
-    var method = params.get('method') || 'cod';
+    var method = params.get('method') || '';
     var waUrl = params.get('wa_url') || '';
+
+    // Razorpay appends these on a genuine successful-payment redirect
+    var razorpayPaymentId = params.get('razorpay_payment_id') || '';
+    var razorpayOrderId = params.get('razorpay_order_id') || '';
+    var isRazorpaySuccess = !!razorpayPaymentId;
+
+    var isConfirmedCod = (method === 'cod' || method === 'cod_whatsapp') && !!orderId;
+
+    // If Razorpay sent us here, order_id/amount/name/phone won't be in the URL
+    // (Razorpay only adds its own params) - recover them from sessionStorage,
+    // which index.html saved right before sending the customer to pay.
+    var storedPhone = '';
+    if (isRazorpaySuccess) {
+      try {
+        var stored = sessionStorage.getItem('avn_prepaid_order');
+        if (stored) {
+          var data = JSON.parse(stored);
+          orderId = orderId || data.orderId || razorpayOrderId || '';
+          if (amount === null) amount = Number(data.amount) || null;
+          name = name || data.name || '';
+          storedPhone = data.phone || '';
+        }
+      } catch(e){}
+      if (!orderId) orderId = razorpayOrderId || razorpayPaymentId;
+      method = 'prepaid';
+    }
+
+    // Apply default only after all recovery attempts (URL -> sessionStorage)
+    if (amount === null || isNaN(amount)) amount = isRazorpaySuccess ? 999 : 1250;
+
+
+    var shouldTrackPurchase = isRazorpaySuccess || isConfirmedCod;
 
     // === FACEBOOK PIXEL PURCHASE EVENT ===
     var purchaseTracked = false;
     function trackFacebookPurchase() {
-      if (purchaseTracked) return;
+      if (purchaseTracked || !shouldTrackPurchase) return;
       try {
         if (typeof fbq === 'function') {
           fbq('track', 'Purchase', {
@@ -182,7 +220,7 @@
             currency: 'INR',
             content_name: 'AVN-6PRO-001',
             order_id: orderId,
-            eventID: orderId
+            eventID: razorpayPaymentId || orderId
           });
           purchaseTracked = true;
           console.log('FB Pixel Purchase tracked: INR ' + amount);
@@ -191,15 +229,41 @@
         console.warn('FB Pixel error:', e);
       }
     }
-    trackFacebookPurchase();
-    window.addEventListener('load', trackFacebookPurchase);
-    setTimeout(trackFacebookPurchase, 1200);
+    if (shouldTrackPurchase) {
+      trackFacebookPurchase();
+      window.addEventListener('load', trackFacebookPurchase);
+      setTimeout(trackFacebookPurchase, 1200);
+    }
 
     // === GTM / dataLayer Purchase Event ===
-    try {
-      dataLayer.push({event:'Purchase', value:amount, currency:'INR', order_id:orderId});
-    } catch(e) {
-      console.warn('dataLayer error:', e);
+    if (shouldTrackPurchase) {
+      try {
+        dataLayer.push({event:'Purchase', value:amount, currency:'INR', order_id:orderId});
+      } catch(e) {
+        console.warn('dataLayer error:', e);
+      }
+    }
+
+    // If Razorpay redirected here, confirm the order on the backend now using
+    // the existing PATCH /api/order endpoint (same one used for manual UTR
+    // confirmation) - this triggers the server-side Facebook CAPI Purchase
+    // event too, so Meta gets the conversion even if the browser pixel is
+    // blocked by an ad-blocker.
+    if (isRazorpaySuccess && orderId) {
+      try {
+        fetch('/api/order', {
+          method: 'PATCH',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({
+            orderId: orderId,
+            name: name,
+            phone: storedPhone,
+            amount: amount,
+            autoConfirm: true
+          }),
+          keepalive: true
+        }).catch(function(e){ console.warn('order confirm save failed', e); });
+      } catch(e){ console.warn('order confirm save error', e); }
     }
 
     // Google Sheets save handled by index.html before redirect

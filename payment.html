@@ -1043,7 +1043,7 @@
         <div id="payment-modal" class="modal">
           <div class="modal-content">
             <div class="modal-header">
-              <div class="modal-icon">�</div>
+              <div class="modal-icon"> </div>
               <h2 class="modal-title">Verify Payment</h2>
               <p class="modal-subtitle">Enter 12-digit UTR number from your bank</p>
             </div>
@@ -1096,28 +1096,32 @@
     const orderId = params.get('order_id') || "AVN-681164";
     const API_ENDPOINT = "./api/order";
 
-    // Fire Purchase immediately on page load - order already created
-    var purchaseTracked = false;
-    function trackFacebookPurchase() {
-      if (purchaseTracked) return;
-      try {
-        if (typeof fbq === 'function') {
-          fbq('track', 'Purchase', {
-            value: amount,
-            currency: 'INR',
-            content_name: 'AVN-6PRO-001',
-            order_id: orderId,
-            eventID: orderId
-          });
-          purchaseTracked = true;
-        }
-      } catch(e) {
-        console.warn('FB Pixel immediate error:', e);
-      }
+    // Safety net: if the Razorpay Redirect URL is ever pointed back to this
+    // page by mistake (instead of thank-you.html), forward to thank-you.html
+    // with the same params so Purchase still tracks correctly in one place.
+    if (params.get('razorpay_payment_id')) {
+      window.location.replace('/thank-you?' + params.toString() +
+        '&order_id=' + encodeURIComponent(orderId) +
+        '&amount=' + encodeURIComponent(amount));
     }
-    trackFacebookPurchase();
-    window.addEventListener('load', trackFacebookPurchase);
-    setTimeout(trackFacebookPurchase, 1200);
+
+    // NOTE: Purchase is NOT fired here anymore. This page only opens the
+    // Razorpay payment button - actual payment has not happened yet at load time.
+    // Purchase now fires only on thank-you.html, and only when the visitor
+    // arrives there via a real Razorpay redirect (razorpay_payment_id present in URL).
+    // This page still fires InitiateCheckout so the funnel step is tracked.
+    try {
+      if (typeof fbq === 'function') {
+        fbq('track', 'InitiateCheckout', {
+          value: amount,
+          currency: 'INR',
+          content_name: 'AVN-6PRO-001',
+          order_id: orderId
+        });
+      }
+    } catch(e) {
+      console.warn('FB Pixel InitiateCheckout error:', e);
+    }
 
     window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('success-order').textContent = orderId;
