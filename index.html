@@ -734,7 +734,106 @@ body.sb-on{padding-bottom:78px}
 
 
 /* Age Notice */
-.age-notice{text-align:center;font-size:12px;color:#888;margin:8px 0 4px}</style>
+.age-notice{text-align:center;font-size:12px;color:#888;margin:8px 0 4px}
+
+/* ===== WHATSAPP GALLERY ===== */
+.whatsapp-gallery {
+  background: linear-gradient(180deg, #0d0d0d 0%, #0a0a0a 100%);
+  border-top: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+}
+.whatsapp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.whatsapp-card {
+  background: #111;
+  border: 1px solid #25D366;
+  border-radius: 16px;
+  overflow: hidden;
+  transition: transform 0.3s, box-shadow 0.3s;
+  box-shadow: 0 4px 20px rgba(37, 211, 102, 0.08);
+}
+.whatsapp-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(37, 211, 102, 0.2);
+}
+.whatsapp-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: #075E54;
+  border-bottom: 1px solid #128C7E;
+}
+.whatsapp-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #25D366, #128C7E);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+  color: #fff;
+  flex-shrink: 0;
+}
+.whatsapp-info {
+  flex: 1;
+  min-width: 0;
+}
+.whatsapp-info strong {
+  font-size: 14px;
+  color: #fff;
+  display: block;
+  line-height: 1.2;
+}
+.whatsapp-info span {
+  font-size: 11px;
+  color: rgba(255,255,255,.7);
+}
+.whatsapp-badge {
+  font-size: 11px;
+  color: #25D366;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+.whatsapp-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 0;
+}
+@media(max-width:600px){
+  .whatsapp-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .whatsapp-header {
+    padding: 10px 12px;
+  }
+  .whatsapp-info strong {
+    font-size: 12px;
+  }
+  .whatsapp-info span {
+    font-size: 10px;
+  }
+  .whatsapp-avatar {
+    width: 30px;
+    height: 30px;
+    font-size: 11px;
+  }
+}
+@media(max-width:380px){
+  .whatsapp-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
 <script>window.dataLayer = window.dataLayer || [];</script>
 <!-- Meta Pixel Code -->
 <script>
@@ -784,6 +883,62 @@ function sendCAPIEvent(eventName, eventID, customData) {
       <span>✅ 10 Days Money Back</span>
       <span>🌿 100% Ayurvedic</span>
     </div>
+
+<!-- ===== WHATSAPP CHAT GALLERY ===== -->
+<section class="section whatsapp-gallery" id="whatsapp-orders">
+  <div class="section-container">
+    <h2 class="section-title">हमारे <span style="color:var(--gold)">WhatsApp ऑर्डर्स</span></h2>
+    <p class="section-subtitle">हजारों खुश ग्राहकों ने WhatsApp पर डायरेक्ट ऑर्डर किया | देखें कुछ सढ60 ग्राहकों की बातचीत</p>
+    <div class="whatsapp-grid">
+      <div class="whatsapp-card">
+        <div class="whatsapp-header">
+          <div class="whatsapp-avatar">RK</div>
+          <div class="whatsapp-info">
+            <strong>राजेश कुमार</strong>
+            <span>डिलीही • 2 बक्स ऑर्डर</span>
+          </div>
+          <div class="whatsapp-badge">✅ डिलीवरी</div>
+        </div>
+        <img src="assets/images/whatsapp-chat-1.jpg" loading="lazy" alt="WhatsApp order chat 1" class="whatsapp-img">
+      </div>
+      <div class="whatsapp-card">
+        <div class="whatsapp-header">
+          <div class="whatsapp-avatar">AM</div>
+          <div class="whatsapp-info">
+            <strong>अमित मिश्रा</strong>
+            <span>मुंबई • 1 बक्स ऑर्डर</span>
+          </div>
+          <div class="whatsapp-badge">✅ डिलीवरी</div>
+        </div>
+        <img src="assets/images/whatsapp-chat-2.jpg" loading="lazy" alt="WhatsApp order chat 2" class="whatsapp-img">
+      </div>
+      <div class="whatsapp-card">
+        <div class="whatsapp-header">
+          <div class="whatsapp-avatar">SS</div>
+          <div class="whatsapp-info">
+            <strong>सूर्य प्रकाश</strong>
+            <span>लखनऊ • 3 बक्स ऑर्डर</span>
+          </div>
+          <div class="whatsapp-badge">✅ डिलीवरी</div>
+        </div>
+        <img src="assets/images/whatsapp-chat-3.jpg" loading="lazy" alt="WhatsApp order chat 3" class="whatsapp-img">
+      </div>
+      <div class="whatsapp-card">
+        <div class="whatsapp-header">
+          <div class="whatsapp-avatar">VP</div>
+          <div class="whatsapp-info">
+            <strong>विकास पांडे</strong>
+            <span>बंगलौर • 2 बक्स ऑर्डर</span>
+          </div>
+          <div class="whatsapp-badge">✅ डिलीवरी</div>
+        </div>
+        <img src="assets/images/whatsapp-chat-4.jpg" loading="lazy" alt="WhatsApp order chat 4" class="whatsapp-img">
+      </div>
+    </div>
+  </div>
+</section>
+
+
   </div>
 
   <header class="topbar">
