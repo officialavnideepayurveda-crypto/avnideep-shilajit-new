@@ -1937,8 +1937,8 @@ function initRewardWheel(){
     
     const segment = REWARD_SEGMENTS[targetIdx];
     const segAngle = (2 * Math.PI) / REWARD_SEGMENTS.length;
-    const segCenterAngle = targetIdx * segAngle + segAngle / 2 - Math.PI / 2;
-    const finalTarget = -Math.PI / 2 - segCenterAngle;
+    const segCenterAngle = targetIdx * segAngle + segAngle / 2;
+    const finalTarget = -segCenterAngle;
     const fullRotations = (5 + Math.random() * 3) * Math.PI * 2;
     rewardState.targetAngle = rewardState.currentAngle + fullRotations + finalTarget;
     rewardState.winningSegment = targetIdx;
