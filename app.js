@@ -14,6 +14,43 @@
 // === Duplicate Order Lock: Check localStorage ===
 
 
+
+// ===== Facebook CAPI Server-Side Event Forwarding =====
+// Sends events to /api/events with matching event_id for Facebook dedup
+var _capiQueue = [];
+
+function _genEventId(eventName) {
+  return eventName + '_' + Date.now() + '_' + Math.random().toString(36).substring(2, 10);
+}
+
+function _sendCapiEvent(eventName, eventId, customData) {
+  // Only send server-side events if user has accepted cookies (GDPR compliance)
+  try {
+    if (localStorage.getItem('fb_consent') !== 'accepted') return;
+    fetch('/api/events', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        event_name: eventName,
+        event_id: eventId,
+        event_source_url: window.location.href.split('?')[0],
+        custom_data: customData || {}
+      })
+    }).catch(function(){});
+  } catch(e){}
+}
+
+function trackFbEvent(eventName, params, eventId) {
+  if (!eventId) eventId = _genEventId(eventName);
+  try {
+    if (typeof fbq === 'function') {
+      fbq('track', eventName, Object.assign({}, params || {}, {eventID: eventId}));
+    }
+  } catch(e){}
+  _sendCapiEvent(eventName, eventId, params);
+}
+
+
 (function(){
 
 
@@ -381,7 +418,7 @@ function initCheckoutUI() {
     // Facebook Lead event
 
 
-    try { if (typeof fbq === 'function') fbq('track', 'Lead', { content_name: 'AVN-6PRO-001', value: amount, currency: 'INR' }); } catch(e) {}
+    trackFbEvent('Lead', { content_name: 'AVN-6PRO-001', value: amount, currency: 'INR' });
 
 
     try { if (typeof dataLayer !== 'undefined') dataLayer.push({event:'Lead'}); } catch(e) {}
@@ -474,7 +511,7 @@ function initCheckoutUI() {
     // Facebook InitiateCheckout
 
 
-    try { if (typeof fbq === 'function') fbq('track', 'InitiateCheckout', { content_name: 'AVN-6PRO-001', content_type: 'product', value: amount, currency: 'INR' }); } catch(e) {}
+    trackFbEvent('InitiateCheckout', { content_name: 'AVN-6PRO-001', content_type: 'product', value: amount, currency: 'INR' });
 
 
 
@@ -877,7 +914,7 @@ function initScroll(){
       dataLayer.push({event:'InitiateCheckout', value:payload.amount, currency:'INR'});
 
 
-      try{ if(typeof fbq === 'function') fbq('track', 'InitiateCheckout', {value:payload.amount, currency:'INR', content_name:'AVN-6PRO-001'}); }catch(e){}
+      trackFbEvent('InitiateCheckout', {value:payload.amount, currency:'INR', content_name:'AVN-6PRO-001'});
 
 
       t.scrollIntoView({behavior:'smooth', block:'start'});
@@ -1115,7 +1152,7 @@ function initVideo(){
       dataLayer.push({event:'ViewContent', content_name:'Avnideep 6Pro Vitality Shilajit'});
 
 
-      try{ if(typeof fbq === 'function') fbq('track', 'ViewContent', {content_name:'Avnideep 6Pro Vitality Shilajit', content_type:'product'}); }catch(e){}
+      trackFbEvent('ViewContent', {content_name:'Avnideep 6Pro Vitality Shilajit', content_type:'product'});
 
 
     }
@@ -1817,7 +1854,7 @@ function initForm(){
     dataLayer.push({event:'Lead', value:payload.amount, currency:'INR'});
 
 
-      try{ if(typeof fbq === 'function') fbq('track', 'Lead', {value:payload.amount, currency:'INR', content_name:'AVN-6PRO-001'}); }catch(e){}
+      trackFbEvent('Lead', {value:payload.amount, currency:'INR', content_name:'AVN-6PRO-001'});
 
 
 

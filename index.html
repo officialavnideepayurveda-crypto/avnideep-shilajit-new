@@ -725,20 +725,55 @@ body.sb-on{padding-bottom:78px}
   .sp-notif-img{width:34px;height:34px}
 }
 
+
+
+/* Cookie Consent Banner */
+.cookie-bar{position:fixed;bottom:0;left:0;right:0;background:#1a1a2e;color:#fff;padding:16px 20px;z-index:999999;font-size:14px;line-height:1.5;box-shadow:0 -4px 20px rgba(0,0,0,0.3);transform:translateY(100%);transition:transform 0.4s ease;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+.cookie-bar.show{transform:translateY(0)}
+.cookie-bar .cb-wrap{max-width:1100px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+.cookie-bar .cb-text{flex:1;min-width:240px}
+.cookie-bar .cb-text a{color:#ffd54f;text-decoration:underline}
+.cookie-bar .cb-btns{display:flex;gap:8px;flex-shrink:0}
+.cookie-bar .cb-btn{padding:10px 20px;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:opacity 0.2s}
+.cookie-bar .cb-btn:hover{opacity:0.85}
+.cookie-bar .cb-accept{background:#4CAF50;color:#fff}
+.cookie-bar .cb-reject{background:#555;color:#fff}
+
+/* Footer Disclaimer */
+.f-disclaimer{background:#f8f4f0;border-top:1px solid #e0d5c7;padding:14px 16px;margin:0 -999px 0;padding-left:calc(16px + 999px);padding-right:calc(16px + 999px);font-size:12px;line-height:1.6;color:#666}
+.f-disclaimer p{margin:0;max-width:760px;margin:0 auto}
+.f-disclaimer strong{color:#7A0C0C}
+
+/* Age Notice */
+.age-notice{text-align:center;font-size:12px;color:#888;margin:8px 0 4px}
+
+/* Cookie Settings Button */
+.cookie-settings-btn{position:fixed;bottom:16px;left:16px;z-index:99999;background:#1a1a2e;color:#fff;border:none;border-radius:50%;width:44px;height:44px;font-size:20px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,0.25);display:none;align-items:center;justify-content:center;transition:transform 0.2s}
+.cookie-settings-btn:hover{transform:scale(1.1)}
 </style>
 <script>window.dataLayer = window.dataLayer || [];</script>
 <!-- Meta Pixel Code -->
 <script>
-!function(f,b,e,v,n,t,s)
-{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-n.queue=[];t=b.createElement(e);t.async=!0;
-t.src=v;s=b.getElementsByTagName(e)[0];
-s.parentNode.insertBefore(t,s)}(window, document,'script',
-'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init', '1715387275770711');
-fbq('track', 'PageView');
+// Facebook Pixel with GDPR Consent Check
+window.fbPixelLoaded = false;
+function loadFacebookPixel() {
+  if (window.fbPixelLoaded) return;
+  window.fbPixelLoaded = true;
+  !function(f,b,e,v,n,t,s)
+  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];
+  s.parentNode.insertBefore(t,s)}(window, document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', '1715387275770711');
+  fbq('track', 'PageView');
+}
+// Check if consent already given
+if (localStorage.getItem('fb_consent') === 'accepted') {
+  loadFacebookPixel();
+}
 </script>
 <!-- End Meta Pixel Code -->
 </head>
@@ -1322,7 +1357,8 @@ fbq('track', 'PageView');
         </button>
 
 
-        <div class="pay-logos">
+                  <p class="age-notice">This product is for adults aged 18 years and above.</p>
+<div class="pay-logos">
           <span>UPI</span><span>VISA</span><span>Mastercard</span><span>RuPay</span><span>NetBanking</span>
         </div>
 
@@ -1610,7 +1646,11 @@ fbq('track', 'PageView');
       <a href="about-us.html">About Us</a>
     </div>
     <p class="f-copy">© 2026 Avnideep Ayurveda. All Rights Reserved.</p>
-  </footer>
+  
+  <div class="f-disclaimer">
+    <p><strong>Regulatory Disclaimer:</strong> This product is not intended to diagnose, treat, cure, or prevent any disease. The information on this website is for educational and informational purposes only and has not been evaluated by the Ministry of AYUSH, Government of India, or the Food Safety and Standards Authority of India (FSSAI). Individual results may vary. Always consult a qualified healthcare professional before starting any supplement, especially if you are pregnant, nursing, have a medical condition, or are taking medication. Avnideep 6Pro Vitality Shilajit is an Ayurvedic supplement, not a medicine. This product is for use by adults aged 18 years and above.</p>
+  </div>
+</footer>
 </div>
 
 <div class="sbar" id="sbar" aria-hidden="true">
@@ -2667,6 +2707,56 @@ function initSocialProof(){
     <span class="sp-notif-time" id="spTime"></span>
   </div>
 </div>
+
+
+
+<!-- Cookie Consent Banner (GDPR) -->
+<div id="cookieBar" class="cookie-bar">
+  <div class="cb-wrap">
+    <div class="cb-text">
+      <strong>We value your privacy</strong><br>
+      We use cookies (including Facebook Pixel) to improve your experience, analyze traffic, and serve ads. By clicking "Accept All", you consent to our use of cookies. 
+      <a href="privacy-policy.html" target="_blank">Learn more</a>
+    </div>
+    <div class="cb-btns">
+      <button class="cb-btn cb-reject" onclick="rejectCookies()">Reject All</button>
+      <button class="cb-btn cb-accept" onclick="acceptCookies()">Accept All</button>
+    </div>
+  </div>
+</div>
+
+<!-- Cookie Settings Button -->
+<button id="cookieSettingsBtn" class="cookie-settings-btn" onclick="showCookieBar()" title="Cookie Settings">Cookie</button>
+
+<script>
+// Cookie Consent Management
+function acceptCookies() {
+  localStorage.setItem('fb_consent', 'accepted');
+  document.getElementById('cookieBar').classList.remove('show');
+  document.getElementById('cookieSettingsBtn').style.display = 'flex';
+  if (typeof loadFacebookPixel === 'function') {
+    loadFacebookPixel();
+  }
+}
+function rejectCookies() {
+  localStorage.setItem('fb_consent', 'rejected');
+  document.getElementById('cookieBar').classList.remove('show');
+  document.getElementById('cookieSettingsBtn').style.display = 'flex';
+}
+function showCookieBar() {
+  document.getElementById('cookieBar').classList.add('show');
+}
+(function() {
+  var consent = localStorage.getItem('fb_consent');
+  if (!consent) {
+    setTimeout(function() {
+      document.getElementById('cookieBar').classList.add('show');
+    }, 1000);
+  } else {
+    document.getElementById('cookieSettingsBtn').style.display = 'flex';
+  }
+})();
+</script>
 
 </body>
 </html>

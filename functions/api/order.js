@@ -4,6 +4,8 @@
 // Handles 1000+ concurrent users on Cloudflare free tier
 // ============================================================
 
+import { sendCAPIEvent, buildUserData, buildCustomData } from './_capi';
+
 const jsonHeaders = (env) => ({
   "Access-Control-Allow-Origin": env.ALLOWED_ORIGIN || "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS, GET, PATCH",
@@ -480,92 +482,52 @@ async function sendEmail(order, env) {
 
 // ============================================================
 // 🔷 FACEBOOK CONVERSION API (Server-Side Events)
-// Sends Purchase events to Facebook for better ad optimization
+// Uses shared CAPI utility from _capi.js for consistent event tracking
 // ============================================================
-async function sha256(str) {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(str);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
 async function sendFacebookCAPI(order, env, eventName = 'Purchase') {
-  if (!env.META_ACCESS_TOKEN || !env.META_PIXEL_ID) {
-    return { skipped: true, reason: 'facebook_capi_credentials_missing' };
-  }    try {
-      // Skip if no phone (Facebook needs at least one identifier for matching)
-      const rawPhone = String(order.phone || '').replace(/[^0-9]/g, '');
-      if (!rawPhone) {
-        return { skipped: true, reason: 'no_phone_for_matching' };
-      }
-
-      // Hash phone with country code for Facebook matching (E.164 format)
-      const phoneWithCode = rawPhone.startsWith('91') ? `+${rawPhone}` : `+91${rawPhone}`;
-      const hashedPhone = await sha256(phoneWithCode);
-
-      // Advanced Matching: split name, hash additional fields
-      const nameParts = (order.name || '').trim().split(/\s+/);
-      const firstName = nameParts[0] || '';
-      const lastName = nameParts.slice(1).join(' ') || '';
-      const [hashedFirstName, hashedLastName, hashedCountry] = await Promise.all([
-        firstName ? sha256(firstName.toLowerCase()) : Promise.resolve(''),
-        lastName ? sha256(lastName.toLowerCase()) : Promise.resolve(''),
-        sha256('in'),
-      ]);
-
-      const eventData = {
-
-        data: [{
-          event_name: eventName,
-          event_time: Math.floor(Date.now() / 1000),
-          event_id: String(order.order_id || ''),
-          action_source: 'website',
-          event_source_url: String(order.page_url || 'https://shop.avnideepayurveda.in/'),
-          user_data: {
-            ph: hashedPhone,
-            client_ip_address: (order.ip_address && order.ip_address !== 'unknown') ? String(order.ip_address) : '0.0.0.0',
-            client_user_agent: String(order.user_agent || ''),
-            fbp: String(order.fbp || ''),
-            fbc: String(order.fbc || ''),
-            fn: hashedFirstName,
-            ln: hashedLastName,
-            country: hashedCountry,
-            external_id: String(order.order_id || ''),
-          },
-          custom_data: {
-            value: Number(order.amount) || 0,
-            currency: 'INR',
-            content_name: 'AVN-6PRO-001',  // SKU used for Meta compliance,
-            content_type: 'product',
-            order_id: String(order.order_id || ''),
-          },
-        }],
-        access_token: env.META_ACCESS_TOKEN,
-      };
-
-    const url = `https://graph.facebook.com/v22.0/${env.META_PIXEL_ID}/events`;
-
-    const res = await withTimeout(fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(eventData),
-    }), 4000, 'facebook_capi');
-
-    const resBody = await res.text().catch(() => '');
-
-    if (!res.ok) {
-      return { ok: false, status: res.status, error: resBody.slice(0, 300) };
+  try {
+    const rawPhone = String(order.phone || '').replace(/[^0-9]/g, '');
+    if (!rawPhone) {
+      return { skipped: true, reason: 'no_phone_for_matching' };
     }
 
-    let json;
-    try { json = JSON.parse(resBody); } catch (e) { json = null; }
+    const userData = await buildUserData({
+      name: order.name,
+      phone: order.phone,
+      fbp: order.fbp,
+      fbc: order.fbc,
+      ip: (order.ip_address && order.ip_address !== 'unknown') ? order.ip_address : '0.0.0.0',
+      ua: order.user_agent,
+      orderId: order.order_id
+    });
+
+    const customData = buildCustomData({
+      value: order.amount,
+      currency: 'INR',
+      orderId: order.order_id,
+      contentName: 'AVN-6PRO-001'
+    });
+
+    const result = await sendCAPIEvent({
+      env,
+      eventName: eventName,
+      eventId: String(order.order_id || ''),
+      userData,
+      customData,
+      eventSourceUrl: order.page_url || 'https://shop.avnideepayurveda.in/',
+      actionSource: 'website',
+      timeout: 4000,
+      retries: 1
+    });
+
+    if (result && result.error) {
+      return { ok: false, error: String(result.error) };
+    }
 
     return {
       ok: true,
-      status: res.status,
-      events_received: json?.events_received || 0,
-      message: json?.events_received ? 'Events sent to Facebook' : 'Unknown response',
+      events_received: result?.events_received || 0,
+      message: result?.events_received ? 'Events sent to Facebook' : 'Unknown response',
     };
   } catch (err) {
     return { ok: false, error: String(err.message || err) };
