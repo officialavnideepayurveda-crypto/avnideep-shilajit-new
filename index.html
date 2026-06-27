@@ -2014,6 +2014,7 @@ function onSpinComplete(ctx, prizeText, prizeDisplay, phoneInput, spinBtn){
 
 function showWonState(prizeText, prizeDisplay, phoneInput, spinBtn){
   const amt = rewardState.rewardAmount, lbl = rewardState.rewardLabel || ("₹" + amt + " Cash Reward");
+  launchConfetti(amt);
   prizeText.innerHTML = '<span class="congrats">🎉 Congratulations!</span> You have won <span class="amount">' + lbl + '</span><span class="sub">Your reward will be transferred to your UPI/Paytm after your order is successfully delivered.</span>';
   prizeDisplay.className = "reward-prize-display won";
   phoneInput.disabled = true; spinBtn.disabled = true; spinBtn.textContent = "✅ Reward Claimed!";
