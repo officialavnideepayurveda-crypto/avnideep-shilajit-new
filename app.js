@@ -24,9 +24,7 @@ function _genEventId(eventName) {
 }
 
 function _sendCapiEvent(eventName, eventId, customData) {
-  // Only send server-side events if user has accepted cookies (GDPR compliance)
   try {
-    if (localStorage.getItem('fb_consent') !== 'accepted') return;
     fetch('/api/events', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
