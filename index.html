@@ -748,6 +748,23 @@ s.parentNode.insertBefore(t,s)}(window, document,'script',
 'https://connect.facebook.net/en_US/fbevents.js');
 fbq('init', '1715387275770711');
 fbq('track', 'PageView');
+
+// CAPI helper - sends events to server for deduplication
+function sendCAPIEvent(eventName, eventID, customData) {
+  try {
+    var payload = {
+      event_name: eventName,
+      event_id: eventID,
+      custom_data: customData || {},
+      event_source_url: window.location.href
+    };
+    fetch('/api/events', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).catch(function(){});
+  } catch(e){}
+}
 </script>
 <!-- End Meta Pixel Code -->
 </head>
@@ -1727,7 +1744,9 @@ function initScroll(){
       var t = $('#'+b.dataset.scroll);
       if(!t) return;
       dataLayer.push({event:'InitiateCheckout', value:1250, currency:'INR'});
-      try{ if(typeof fbq === 'function') fbq('track', 'InitiateCheckout', {value:1250, currency:'INR', content_name:'AVN-6PRO-001'}); }catch(e){}
+      var icoEventId = 'ico_' + Date.now() + '_' + Math.random().toString(36).substring(2,8);
+      try{ if(typeof fbq === 'function') fbq('track', 'InitiateCheckout', {value:1250, currency:'INR', content_name:'AVN-6PRO-001', eventID:icoEventId}); }catch(e){}
+      sendCAPIEvent('InitiateCheckout', icoEventId, {value:1250, currency:'INR', content_name:'AVN-6PRO-001'});
       t.scrollIntoView({behavior:'smooth', block:'start'});
       setTimeout(function(){
         var n = $('#cName');
@@ -1807,7 +1826,9 @@ function initVideo(){
       b.style.aspectRatio = '16/9';
       b.appendChild(f);
       dataLayer.push({event:'ViewContent', content_name:'Doctor Video'});
-      try{ if(typeof fbq === 'function') fbq('track', 'ViewContent', {content_name:'Doctor Video', content_type:'video'}); }catch(e){}
+      var vcEventId = 'vc_' + Date.now() + '_' + Math.random().toString(36).substring(2,8);
+      try{ if(typeof fbq === 'function') fbq('track', 'ViewContent', {content_name:'Doctor Video', content_type:'video', eventID:vcEventId}); }catch(e){}
+      sendCAPIEvent('ViewContent', vcEventId, {content_name:'Doctor Video', content_type:'video'});
     }
     b.addEventListener('click', load);
     b.addEventListener('keydown', function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();load()}});
@@ -2298,7 +2319,9 @@ function initForm(){
     btn.innerHTML = '<span>⏳ Processing... कृपया रुकें</span>';
 
     dataLayer.push({event:'Lead', value:payload.amount, currency:'INR'});
-      try{ if(typeof fbq === 'function') fbq('track', 'Lead', {value:payload.amount, currency:'INR', content_name:'AVN-6PRO-001'}); }catch(e){}
+      var leadEventId = 'lead_' + Date.now() + '_' + Math.random().toString(36).substring(2,8);
+      try{ if(typeof fbq === 'function') fbq('track', 'Lead', {value:payload.amount, currency:'INR', content_name:'AVN-6PRO-001', eventID:leadEventId}); }catch(e){}
+      sendCAPIEvent('Lead', leadEventId, {value:payload.amount, currency:'INR', content_name:'AVN-6PRO-001'});
 
     if(m === 'prepaid'){
       // Fire-and-forget send to backend so Supabase receives an initial record for prepaid orders
@@ -2355,14 +2378,18 @@ function initForm(){
       // COD flow: Show success when backend saved, otherwise use WhatsApp fallback
       if(apiSuccess){
         dataLayer.push({event:'Purchase', value:1250, currency:'INR'});
-        try{ if(typeof fbq === 'function') fbq('track', 'Purchase', {value:1250, currency:'INR', content_name:'AVN-6PRO-001', content_type:'product', order_id:payload.orderId}); }catch(e){}
+        var purchEventId = 'purch_' + Date.now() + '_' + Math.random().toString(36).substring(2,8);
+        try{ if(typeof fbq === 'function') fbq('track', 'Purchase', {value:1250, currency:'INR', content_name:'AVN-6PRO-001', content_type:'product', order_id:payload.orderId, eventID:purchEventId}); }catch(e){}
+        sendCAPIEvent('Purchase', purchEventId, {value:1250, currency:'INR', content_name:'AVN-6PRO-001', content_type:'product', order_id:payload.orderId});
         window.location.href = '/thank-you?order_id=' + encodeURIComponent(payload.orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.name) + '&method=cod';
       } else {
         if(apiError){
           showErr(err, 'ऑर्डर backend पर सेव नहीं हुआ: ' + apiError + '। WhatsApp fallback भेजा जा रहा है।');
         }
         dataLayer.push({event:'Purchase', value:1250, currency:'INR', method:'whatsapp_fallback'});
-        try{ if(typeof fbq === 'function') fbq('track', 'Purchase', {value:1250, currency:'INR', content_name:'AVN-6PRO-001', content_type:'product', order_id:payload.orderId}); }catch(e){}
+        var purchFallbackId = 'purch_fb_' + Date.now() + '_' + Math.random().toString(36).substring(2,8);
+        try{ if(typeof fbq === 'function') fbq('track', 'Purchase', {value:1250, currency:'INR', content_name:'AVN-6PRO-001', content_type:'product', order_id:payload.orderId, eventID:purchFallbackId}); }catch(e){}
+        sendCAPIEvent('Purchase', purchFallbackId, {value:1250, currency:'INR', content_name:'AVN-6PRO-001', content_type:'product', order_id:payload.orderId});
   
         window.location.href = '/thank-you?order_id=' + encodeURIComponent(payload.orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.name) + '&method=cod_whatsapp&wa_url=' + encodeURIComponent(waOrderUrl);
         form.reset();
