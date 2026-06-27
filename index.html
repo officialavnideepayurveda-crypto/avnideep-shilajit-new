@@ -736,18 +736,38 @@ body.sb-on{padding-bottom:78px}
 /* Age Notice */
 .age-notice{text-align:center;font-size:12px;color:#888;margin:8px 0 4px}
 
-/* ===== WHATSAPP GALLERY ===== */
-.whatsapp-gallery {
+/* ===== WHATSAPP CAROUSEL ===== */
+.whatsapp-carousel {
   background: linear-gradient(180deg, #0d0d0d 0%, #0a0a0a 100%);
   border-top: 1px solid var(--border-color);
   border-bottom: 1px solid var(--border-color);
 }
-.whatsapp-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 20px;
+.carousel-wrapper {
+  position: relative;
   max-width: 1100px;
   margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.carousel-track {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  padding: 8px 4px 16px;
+  flex: 1;
+  scrollbar-width: none;
+}
+.carousel-track::-webkit-scrollbar {
+  display: none;
+}
+.carousel-slide {
+  flex: 0 0 calc(50% - 8px);
+  max-width: calc(50% - 8px);
+  scroll-snap-align: start;
 }
 .whatsapp-card {
   background: var(--bg-card);
@@ -809,10 +829,66 @@ body.sb-on{padding-bottom:78px}
   display: block;
   border-radius: 0;
 }
-@media(max-width:600px){
-  .whatsapp-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
+.carousel-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(37, 211, 102, 0.15);
+  border: 1px solid rgba(37, 211, 102, 0.3);
+  color: #25D366;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+  z-index: 2;
+}
+.carousel-btn:hover {
+  background: rgba(37, 211, 102, 0.3);
+  border-color: #25D366;
+  transform: scale(1.1);
+}
+.carousel-btn:active {
+  transform: scale(0.95);
+}
+.carousel-dots {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+.carousel-dots .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+}
+.carousel-dots .dot.active {
+  background: #25D366;
+  border-color: #25D366;
+  box-shadow: 0 0 8px rgba(37, 211, 102, 0.5);
+  transform: scale(1.2);
+}
+.carousel-dots .dot:hover {
+  background: rgba(37, 211, 102, 0.5);
+}
+@media (max-width: 768px) {
+  .carousel-wrapper {
+    gap: 8px;
+  }
+  .carousel-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+  .carousel-slide {
+    flex: 0 0 calc(100% - 8px);
+    max-width: calc(100% - 8px);
   }
   .whatsapp-header {
     padding: 10px 12px;
@@ -829,12 +905,18 @@ body.sb-on{padding-bottom:78px}
     font-size: 11px;
   }
 }
-@media(max-width:380px){
-  .whatsapp-grid {
-    grid-template-columns: 1fr;
+@media (min-width: 769px) and (max-width: 1023px) {
+  .carousel-slide {
+    flex: 0 0 calc(50% - 8px);
+    max-width: calc(50% - 8px);
   }
 }
-</style>
+@media (min-width: 1024px) {
+  .carousel-slide {
+    flex: 0 0 calc(33.333% - 11px);
+    max-width: calc(33.333% - 11px);
+  }
+}</style>
 <script>window.dataLayer = window.dataLayer || [];</script>
 <!-- Meta Pixel Code -->
 <script>
@@ -886,107 +968,7 @@ function sendCAPIEvent(eventName, eventID, customData) {
     </div>
 
 <!-- ===== WHATSAPP CHAT GALLERY ===== -->
-<section class="section whatsapp-gallery" id="whatsapp-orders">
-  <div class="section-container">
-    <h2 class="section-title">हमारे <span style="color:var(--gold)">WhatsApp ऑर्डर्स</span></h2>
-    <p class="section-subtitle">हजारों खुश ग्राहकों ने WhatsApp पर डायरेक्ट ऑर्डर किया | देखें कुछ सढ60 ग्राहकों की बातचीत</p>
-    <div class="whatsapp-grid">
-      <div class="whatsapp-card">
-        <div class="whatsapp-header">
-          <div class="whatsapp-avatar">RK</div>
-          <div class="whatsapp-info">
-            <strong>राजेश कुमार</strong>
-            <span>डिलीही • 2 बक्स ऑर्डर</span>
-          </div>
-          <div class="whatsapp-badge">✅ डिलीवरी</div>
-        </div>
-        <img src="https://shop.avnideepayurveda.in/assets/images/whatsapp-chat-1.jpg" loading="lazy" alt="व्हाट्सएप ऑर्डर चैट 1" class="whatsapp-img">
-      </div>
-      <div class="whatsapp-card">
-        <div class="whatsapp-header">
-          <div class="whatsapp-avatar">AM</div>
-          <div class="whatsapp-info">
-            <strong>अमित मिश्रा</strong>
-            <span>मुंबई • 1 बक्स ऑर्डर</span>
-          </div>
-          <div class="whatsapp-badge">✅ डिलीवरी</div>
-        </div>
-        <img src="https://shop.avnideepayurveda.in/assets/images/whatsapp-chat-2.jpg" loading="lazy" alt="व्हाट्सएप ऑर्डर चैट 2" class="whatsapp-img">
-      </div>
-      <div class="whatsapp-card">
-        <div class="whatsapp-header">
-          <div class="whatsapp-avatar">SS</div>
-          <div class="whatsapp-info">
-            <strong>सूर्य प्रकाश</strong>
-            <span>लखनऊ • 3 बक्स ऑर्डर</span>
-          </div>
-          <div class="whatsapp-badge">✅ डिलीवरी</div>
-        </div>
-        <img src="https://shop.avnideepayurveda.in/assets/images/whatsapp-chat-3.jpg" loading="lazy" alt="व्हाट्सएप ऑर्डर चैट 3" class="whatsapp-img">
-      </div>
-      <div class="whatsapp-card">
-        <div class="whatsapp-header">
-          <div class="whatsapp-avatar">VP</div>
-          <div class="whatsapp-info">
-            <strong>विकास पांडे</strong>
-            <span>बंगलौर • 2 बक्स ऑर्डर</span>
-          </div>
-          <div class="whatsapp-badge">✅ डिलीवरी</div>
-        </div>
-        <img src="https://shop.avnideepayurveda.in/assets/images/whatsapp-chat-4.jpg" loading="lazy" alt="व्हाट्सएप ऑर्डर चैट 4" class="whatsapp-img">
-      </div>
-    </div>
-  </div>
-</section>
 
-
-  </div>
-
-  <header class="topbar">
-    <div class="logo">
-      <div class="logo-mark">6A</div>
-      <div class="logo-text">Avnideep<small>6Pro Ayurveda</small></div>
-    </div>
-    <a class="topbar-call" href="tel:+917060101043">Call</a>
-  </header>
-<main>
-
-  <section class="hero">
-    <div class="hero-badge">India's Trusted Ayurvedic Supplement</div>
-    <h1>कमजोरी खत्म, अब पाएं <span class="hl">पूरा जोश और ताकत</span></h1>
-    <p class="sub">✅ 14 आयुर्वेदिक जड़ी-बूटियाँ • ✅ 100% Natural • ✅ Doctor Recommended</p>
-
-    <div class="hero-img-wrap">
-      <div class="hero-badge-corner">50%<br>OFF</div>
-      <picture>
-        <source srcset="https://cdn.avnideepayurveda.in/Avnideep-shilajit/mainimagee.webp" type="image/webp">
-        <img src="https://cdn.avnideepayurveda.in/Avnideep-shilajit/mainimagee.webp" width="280" height="373" alt="Avnideep 6Pro Vitality Shilajit Capsules - 50% OFF Offer" class="hero-img" fetchpriority="high" decoding="async" >
-      </picture>
-    </div>
-
-    <div class="price-tag">
-      <span class="price-old">₹2500</span>
-      <span class="price-new">₹1250</span>
-      <span class="price-off">SAVE ₹1250</span>
-    </div>
-
-    <div class="rating-row">
-      <span class="stars">★★★★★</span>
-      <span>4.8/5 • 12,000+ Verified Buyers</span>
-    </div>
-
-    <div class="bonus-stack">
-      <div class="bonus-item">🎁 <strong>FREE</strong> Doctor Consultation (₹500 value)</div>
-      <div class="bonus-item">🚚 <strong>FREE</strong> Express Delivery (₹150 value)</div>
-      <div class="bonus-item">🛡️ <strong>10-Day</strong> Money Back Guarantee</div>
-    </div>
-
-    <button class="cta-primary" type="button" data-scroll="checkout">
-      <span>⚡ अभी ऑर्डर करें - ₹1250</span>
-      <small>👇 Tap to claim 50% OFF</small>
-    </button>
-
-  </section>
 
   <div class="trust-strip">
     <div class="trust-item"><span class="ico">🚚</span>FREE<br>Delivery</div>
@@ -1773,7 +1755,81 @@ function sendCAPIEvent(eventName, eventID, customData) {
   </section>
 
   
-</main><footer class="footer">
+</main>
+
+<!-- ===== WHATSAPP CHAT CAROUSEL ===== -->
+<section class="section whatsapp-carousel" id="whatsapp-orders">
+  <div class="section-container">
+    <h2 class="section-title">हमारे <span style="color:var(--gold)">WhatsApp ऑर्डर्स</span></h2>
+    <p class="section-subtitle">हजारों खुश ग्राहकों ने WhatsApp पर डायरेक्ट ऑर्डर किया | देखें कुछ ग्राहकों की बातचीत</p>
+    <div class="carousel-wrapper">
+      <button class="carousel-btn carousel-prev" aria-label="Previous">❮</button>
+      <div class="carousel-track" id="whatsappCarousel">
+        <div class="carousel-slide">
+          <div class="whatsapp-card">
+            <div class="whatsapp-header">
+              <div class="whatsapp-avatar">RK</div>
+              <div class="whatsapp-info">
+                <strong>राजेश कुमार</strong>
+                <span>डिल्ली • 2 बक्स ऑर्डर</span>
+              </div>
+              <div class="whatsapp-badge">✅ डिलीवरी</div>
+            </div>
+            <img src="https://shop.avnideepayurveda.in/assets/images/whatsapp-chat-1.jpg" loading="lazy" alt="व्हाट्सएप ऑर्डर चैट 1" class="whatsapp-img">
+          </div>
+        </div>
+        <div class="carousel-slide">
+          <div class="whatsapp-card">
+            <div class="whatsapp-header">
+              <div class="whatsapp-avatar">AM</div>
+              <div class="whatsapp-info">
+                <strong>अमित मिश्रा</strong>
+                <span>मुंबई • 1 बक्स ऑर्डर</span>
+              </div>
+              <div class="whatsapp-badge">✅ डिलीवरी</div>
+            </div>
+            <img src="https://shop.avnideepayurveda.in/assets/images/whatsapp-chat-2.jpg" loading="lazy" alt="व्हाट्सएप ऑर्डर चैट 2" class="whatsapp-img">
+          </div>
+        </div>
+        <div class="carousel-slide">
+          <div class="whatsapp-card">
+            <div class="whatsapp-header">
+              <div class="whatsapp-avatar">SS</div>
+              <div class="whatsapp-info">
+                <strong>सूर्य प्रकाश</strong>
+                <span>लखनऊ • 3 बक्स ऑर्डर</span>
+              </div>
+              <div class="whatsapp-badge">✅ डिलीवरी</div>
+            </div>
+            <img src="https://shop.avnideepayurveda.in/assets/images/whatsapp-chat-3.jpg" loading="lazy" alt="व्हाट्सएप ऑर्डर चैट 3" class="whatsapp-img">
+          </div>
+        </div>
+        <div class="carousel-slide">
+          <div class="whatsapp-card">
+            <div class="whatsapp-header">
+              <div class="whatsapp-avatar">VP</div>
+              <div class="whatsapp-info">
+                <strong>विकास पाण्डे</strong>
+                <span>बंगलौर • 2 बक्स ऑर्डर</span>
+              </div>
+              <div class="whatsapp-badge">✅ डिलीवरी</div>
+            </div>
+            <img src="https://shop.avnideepayurveda.in/assets/images/whatsapp-chat-4.jpg" loading="lazy" alt="व्हाट्सएप ऑर्डर चैट 4" class="whatsapp-img">
+          </div>
+        </div>
+      </div>
+      <button class="carousel-btn carousel-next" aria-label="Next">❯</button>
+    </div>
+    <div class="carousel-dots" id="whatsappDots">
+      <span class="dot active" data-index="0"></span>
+      <span class="dot" data-index="1"></span>
+      <span class="dot" data-index="2"></span>
+      <span class="dot" data-index="3"></span>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
     <div class="f-brand">Avnideep Ayurveda</div>
     <div class="f-tag">असली आयुर्वेदिक वेलनेस</div>
     <p class="f-desc">प्राकृतिक ingredients और पारंपरिक ज्ञान से बने trusted product।</p>
@@ -2869,6 +2925,117 @@ function initSocialProof(){
 
 
 
+<script>
+// WhatsApp Chat Carousel
+(function(){
+  var track = document.getElementById('whatsappCarousel');
+  if (!track) return;
+  var slides = track.querySelectorAll('.carousel-slide');
+  if (slides.length === 0) return;
+  var dots = document.querySelectorAll('.carousel-dots .dot');
+  var prevBtn = document.querySelector('.carousel-prev');
+  var nextBtn = document.querySelector('.carousel-next');
+  var currentIndex = 0;
+  var autoPlayInterval = null;
+  var isPaused = false;
+
+  function goToSlide(index) {
+    if (index < 0) index = 0;
+    if (index >= slides.length) index = slides.length - 1;
+    currentIndex = index;
+    if (scrollTimeout) clearTimeout(scrollTimeout);
+    var scrollAmount = 0;
+    for (var i = 0; i < index; i++) {
+      scrollAmount += slides[i].offsetWidth + 16;
+    }
+    track.scrollTo({ left: scrollAmount, behavior: 'smooth' });
+    // Update dots
+    dots.forEach(function(d) { d.classList.remove('active'); });
+    if (dots[index]) dots[index].classList.add('active');
+  }
+
+  function nextSlide() {
+    var next = currentIndex + 1;
+    if (next >= slides.length) next = 0;
+    goToSlide(next);
+  }
+
+  function prevSlide() {
+    var prev = currentIndex - 1;
+    if (prev < 0) prev = slides.length - 1;
+    goToSlide(prev);
+  }
+
+  function startAutoPlay() {
+    if (autoPlayInterval) clearInterval(autoPlayInterval);
+    autoPlayInterval = setInterval(function() {
+      if (!isPaused) nextSlide();
+    }, 3500);
+  }
+
+  function stopAutoPlay() {
+    if (autoPlayInterval) {
+      clearInterval(autoPlayInterval);
+      autoPlayInterval = null;
+    }
+  }
+
+  // Event listeners
+  if (prevBtn) prevBtn.addEventListener('click', function() { stopAutoPlay(); prevSlide(); startAutoPlay(); });
+  if (nextBtn) nextBtn.addEventListener('click', function() { stopAutoPlay(); nextSlide(); startAutoPlay(); });
+
+  dots.forEach(function(dot) {
+    dot.addEventListener('click', function() {
+      var index = parseInt(this.getAttribute('data-index'));
+      if (!isNaN(index)) {
+        stopAutoPlay();
+        goToSlide(index);
+        startAutoPlay();
+      }
+    });
+  });
+
+  // Pause on hover
+  track.addEventListener('mouseenter', function() { isPaused = true; });
+  track.addEventListener('mouseleave', function() { isPaused = false; });
+
+  // Touch support - reset autoplay timer after manual scroll
+  var scrollTimeout = null;
+  track.addEventListener('scroll', function() {
+    if (scrollTimeout) clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(function() {
+      // Detect which slide is most visible
+      var trackRect = track.getBoundingClientRect();
+      var trackCenter = trackRect.left + trackRect.width / 2;
+      var closestIdx = 0;
+      var closestDist = Infinity;
+      slides.forEach(function(s, i) {
+        var rect = s.getBoundingClientRect();
+        var slideCenter = rect.left + rect.width / 2;
+        var dist = Math.abs(slideCenter - trackCenter);
+        if (dist < closestDist) {
+          closestDist = dist;
+          closestIdx = i;
+        }
+      });
+      currentIndex = closestIdx;
+      dots.forEach(function(d) { d.classList.remove('active'); });
+      if (dots[closestIdx]) dots[closestIdx].classList.add('active');
+    }, 150);
+  });
+
+  // Initialize - go to first slide and start autoplay
+  goToSlide(0);
+  startAutoPlay();
+
+  // Handle resize
+  var resizeTimer = null;
+  window.addEventListener('resize', function() {
+    if (resizeTimer) clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function() { goToSlide(currentIndex); }, 200);
+  });
+})();
+</script>
 </body>
 </html>
 
