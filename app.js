@@ -32,7 +32,10 @@ function _sendCapiEvent(eventName, eventId, customData) {
         event_name: eventName,
         event_id: eventId,
         event_source_url: window.location.href.split('?')[0],
-        custom_data: customData || {}
+        custom_data: customData || {},
+        user_data: {
+          client_user_agent: navigator.userAgent || ''
+        }
       })
     }).catch(function(){});
   } catch(e){}

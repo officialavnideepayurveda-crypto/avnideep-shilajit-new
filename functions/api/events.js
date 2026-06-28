@@ -46,13 +46,17 @@ export async function onRequestPost(context) {
     }
 
     // Build user_data with hashed PII
+    // Prefer client_user_agent from request body (sent by browser JS),
+    // fall back to User-Agent header for server-to-server calls
+    const userUa = user_data?.client_user_agent || request.headers.get('User-Agent') || '';
+    const userIp = request.headers.get('CF-Connecting-IP') || request.headers.get('X-Forwarded-For') || '';
     const userData = await buildUserData({
       name: user_data?.name,
       phone: user_data?.phone,
       fbp: user_data?.fbp,
       fbc: user_data?.fbc,
-      ip: request.headers.get('CF-Connecting-IP') || request.headers.get('X-Forwarded-For'),
-      ua: request.headers.get('User-Agent'),
+      ip: userIp,
+      ua: userUa,
       orderId: custom_data?.order_id
     });
 

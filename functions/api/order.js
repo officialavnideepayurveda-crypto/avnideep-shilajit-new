@@ -484,7 +484,7 @@ async function sendEmail(order, env) {
 // 🔷 FACEBOOK CONVERSION API (Server-Side Events)
 // Uses shared CAPI utility from _capi.js for consistent event tracking
 // ============================================================
-async function sendFacebookCAPI(order, env, eventName = 'Purchase') {
+async function sendFacebookCAPI(order, env, eventName = 'Purchase', requestUa = '') {
   try {
     const rawPhone = String(order.phone || '').replace(/[^0-9]/g, '');
     if (!rawPhone) {
@@ -497,7 +497,7 @@ async function sendFacebookCAPI(order, env, eventName = 'Purchase') {
       fbp: order.fbp,
       fbc: order.fbc,
       ip: (order.ip_address && order.ip_address !== 'unknown') ? order.ip_address : '0.0.0.0',
-      ua: order.user_agent,
+      ua: order.user_agent || requestUa || '',
       orderId: order.order_id
     });
 
@@ -845,7 +845,7 @@ export async function onRequestPost({ request, env, waitUntil }) {
     const allResults = await Promise.allSettled([
       saveToD1(order, env),
       saveGoogleSheets(order, env),
-      sendFacebookCAPI(order, env, order.payment_method === 'prepaid' ? 'InitiateCheckout' : 'Purchase'),
+      sendFacebookCAPI(order, env, order.payment_method === 'prepaid' ? 'InitiateCheckout' : 'Purchase', request.headers.get('User-Agent') || ''),
     ]);
     const [d1result, sheets, facebookCapi] = allResults.map(r =>
       r.status === "fulfilled" ? r.value : { ok: false, skipped: false, error: String(r.reason?.message || r.reason || "Channel failed") }
@@ -1016,7 +1016,7 @@ export async function onRequestPatch({ request, env }) {
     const emailResult = await sendEmail(confirmOrder, env);
     
     // For prepaid: POST only sent InitiateCheckout, send Purchase on payment confirmation
-    const facebookCapiResult = await sendFacebookCAPI(confirmOrder, env, 'Purchase');
+    const facebookCapiResult = await sendFacebookCAPI(confirmOrder, env, 'Purchase', request.headers.get('User-Agent') || '');
     
     return new Response(
       JSON.stringify({
