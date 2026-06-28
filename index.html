@@ -916,6 +916,15 @@ body.sb-on{padding-bottom:78px}
     flex: 0 0 calc(33.333% - 11px);
     max-width: calc(33.333% - 11px);
   }
+}
+/* Prevent image dragging */
+img, picture, video, canvas {
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
+  user-drag: none;
+  -webkit-touch-callout: none;
 }</style>
 <script>window.dataLayer = window.dataLayer || [];</script>
 <!-- Meta Pixel Code -->
@@ -3072,7 +3081,21 @@ function initSocialProof(){
     resizeTimer = setTimeout(function() { goToSlide(currentIndex); }, 200);
   });
 })();
-</script>
+
+
+// Right-click + image drag protection (images only)
+document.addEventListener('contextmenu', function(e) {
+  if (e.target.tagName === 'IMG' || e.target.closest('picture')) {
+    e.preventDefault();
+    return false;
+  }
+});
+document.addEventListener('dragstart', function(e) {
+  if (e.target.tagName === 'IMG' || e.target.tagName === 'A') {
+    e.preventDefault();
+    return false;
+  }
+});</script>
 </body>
 </html>
 
