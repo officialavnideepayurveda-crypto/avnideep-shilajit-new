@@ -940,7 +940,17 @@ input, textarea, [contenteditable] {
   user-select: auto;
 }</style>
 <script>window.dataLayer = window.dataLayer || [];</script>
-<!-- Meta Pixel Code -->
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-HTH3FR9SF6"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-HTH3FR9SF6');
+  </script>
+  <!-- End Google Analytics -->
+
+  <!-- Meta Pixel Code -->
 <script>
 !function(f,b,e,v,n,t,s)
 {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -970,7 +980,12 @@ function sendCAPIEvent(eventName, eventID, customData) {
   } catch(e){}
 }
 </script>
+  <!-- Meta Pixel Noscript (fallback for JS-disabled browsers) -->
+  <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=1715387275770711&ev=PageView&noscript=1"
+  /></noscript>
 <!-- End Meta Pixel Code -->
+  <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1715387275770711&ev=PageView&noscript=1" /></noscript>
 </head>
 <body>
 <a href="#checkout" class="skip">Skip to order</a>
