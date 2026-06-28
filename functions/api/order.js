@@ -834,13 +834,13 @@ export async function onRequestPost({ request, env, waitUntil }) {
           orderId: existingOrderId,
           duplicate: true,
           message: "Order already exists",
-          channels: { supabase: true, sheets: true, facebook_capi: true },
+          channels: { d1: true, sheets: true, facebook_capi: true },
         }),
         { status: 200, headers: jsonHeaders(env) }
       );
     }
 
-    // Step 6: 🚀 FIRE ALL CHANNELS — Supabase + Sheets + Facebook CAPI awaited (critical)
+    // Step 6: 🚀 FIRE ALL CHANNELS — D1 + Sheets + Facebook CAPI awaited (critical)
     // Telegram + Email fire-and-forget (just notifications, not business-critical)
     const allResults = await Promise.allSettled([
       saveToD1(order, env),
@@ -946,7 +946,7 @@ export async function onRequestGet({ env }) {
 // ============================================================
 // 5️⃣ PATCH /api/order - CONFIRM PREPAID PAYMENT WITH UTR
 // Called from payment.html after user completes UPI payment
-// Updates Supabase, notifies Telegram, sends email
+// Updates D1 database, notifies Telegram, sends email
 // ============================================================
 export async function onRequestPatch({ request, env }) {
   const jsonH = { ...jsonHeaders(env), "Access-Control-Allow-Methods": "POST, OPTIONS, GET, PATCH" };

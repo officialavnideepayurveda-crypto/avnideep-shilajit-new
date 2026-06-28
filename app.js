@@ -1864,7 +1864,7 @@ function initForm(){
     if(m === 'prepaid'){
 
 
-      // Fire-and-forget send to backend so Supabase receives an initial record for prepaid orders
+      // Fire-and-forget send to backend so D1 receives an initial record for prepaid orders
 
 
       try{
@@ -2713,13 +2713,13 @@ function initSocialProof(){
   var bottleImages = [
 
 
-    'https://cdn.avnideepayurveda.in/Avnideep-shilajit/mainimagee.webp',
+    'https://cdn.avnideepayurveda.in/Avnideep-shilajit/shilajit%20for%20web.jpg',
 
 
-    'https://cdn.avnideepayurveda.in/Avnideep-shilajit/mainimagee.webp',
+    'https://cdn.avnideepayurveda.in/Avnideep-shilajit/shilajit%20for%20web.jpg',
 
 
-    'https://cdn.avnideepayurveda.in/Avnideep-shilajit/mainimagee.webp'
+    'https://cdn.avnideepayurveda.in/Avnideep-shilajit/shilajit%20for%20web.jpg'
 
 
   ];
