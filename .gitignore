@@ -23,3 +23,20 @@ nul
 
 # Wrangler auto-generated config
 wrangler.toml
+
+# Analysis / scratch files
+_*.txt
+_*.js
+script_structure.txt
+
+# Deployment check files
+deployed*.html
+
+# Utility scripts (Python, PowerShell)
+fix_*.py
+fix_*.ps1
+impl.py
+improve.py
+
+# Reference / one-off scripts
+google-sheets-apps-script.js

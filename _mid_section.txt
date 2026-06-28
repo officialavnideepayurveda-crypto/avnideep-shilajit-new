@@ -1,160 +1,0 @@
-          <button type="button" class="step-btn-back" onclick="goToStep(2)">← Edit Details</button>
-        </div>
-
-      </form>
-    </div>
-  </section>
-
-
-  <section>
-    <div class="guarantee">
-      <div class="guarantee-icon"><img src="https://cdn.avnideepayurveda.in/Avnideep-shilajit/100-Money-Back-Guarantee.png.webp" width="70" height="70" alt="10 Day Money Back Guarantee" loading="lazy" decoding="async"></div>
-      <h3>10 दिन Money Back Guarantee</h3>
-      <p>अगर आप 100% satisfied नहीं हैं, तो हम आपका पूरा पैसा वापस करते हैं। बिना किसी सवाल के। T&C apply.</p>
-    </div>
-  </section>
-
-  <section>
-    <div class="text-center">
-      <span class="section-kicker">⭐ Verified Reviews</span>
-      <h2 class="section-h">1 लाख+ <span class="hl">खुश ग्राहक</span></h2>
-      <p class="sub">सब review पुरुषों की थकान, कमजोरी और energy improvement के बारे में हैं</p>
-    </div>
-    <div class="reviews-grid">
-      <article class="rv">
-        <div class="rv-top">
-          <div class="rv-avatar">RS</div>
-          <div class="rv-info">
-            <h5>Rohit Sharma <span class="rv-verified">✓ Verified</span></h5>
-            <small>Delhi • 2 weeks ago</small>
-          </div>
-        </div>
-        <div class="rv-stars">★★★★★</div>
-        <p>"बहुत अच्छा प्रोडक्ट। 2 हफ्ते में फर्क महसूस किया। थकान खत्म, energy बढ़ी।"</p>
-      </article>
-      <article class="rv">
-        <div class="rv-top">
-          <div class="rv-avatar">VP</div>
-          <div class="rv-info">
-            <h5>Vikram Patel <span class="rv-verified">✓ Verified</span></h5>
-            <small>Mumbai • 1 month ago</small>
-          </div>
-        </div>
-        <div class="rv-stars">★★★★★</div>
-        <p>"दोस्त की सलाह पर लिया। 3 दिन में delivery मिल गई। confidence वापस आ गया।"</p>
-      </article>
-      <article class="rv">
-        <div class="rv-top">
-          <div class="rv-avatar">SK</div>
-          <div class="rv-info">
-            <h5>Suresh Kumar <span class="rv-verified">✓ Verified</span></h5>
-            <small>Bangalore • 3 weeks ago</small>
-          </div>
-        </div>
-        <div class="rv-stars">★★★★★</div>
-        <p>"Prepaid offer में ₹999 में मिला। कोई side effect नहीं। 10/10 recommend।"</p>
-      </article>
-      <article class="rv hidden">
-        <div class="rv-top">
-          <div class="rv-avatar">AM</div>
-          <div class="rv-info">
-            <h5>Amit Singh <span class="rv-verified">✓ Verified</span></h5>
-            <small>Lucknow • 4 weeks ago</small>
-          </div>
-        </div>
-        <div class="rv-stars">★★★★★</div>
-        <p>"कमज़ोरी और energy issues ठीक हुए। अब ज़्यादा stamina और satisfaction है।"</p>
-      </article>
-      <article class="rv hidden">
-        <div class="rv-top">
-          <div class="rv-avatar">MP</div>
-          <div class="rv-info">
-            <h5>Mohit Patel <span class="rv-verified">✓ Verified</span></h5>
-            <small>Jaipur • 1 month ago</small>
-          </div>
-        </div>
-        <div class="rv-stars">★★★★★</div>
-        <p>"एक महीने में lasting vitality और energy में improvement दिखी। बिलकुल safe है।"</p>
-      </article>
-      <article class="rv hidden">
-        <div class="rv-top">
-          <div class="rv-avatar">RJ</div>
-          <div class="rv-info">
-            <h5>Rajesh Kumar <span class="rv-verified">✓ Verified</span></h5>
-            <small>Pune • 2 weeks ago</small>
-          </div>
-        </div>
-        <div class="rv-stars">★★★★★</div>
-        <p>"थकान, कमजोरी पहले बहुत embarrassing थी, अब दिनचर्या भी बेहतर है। natural formula बिलकुल safe।"</p>
-      </article>
-      <article class="rv hidden">
-        <div class="rv-top">
-          <div class="rv-avatar">SJ</div>
-          <div class="rv-info">
-            <h5>Sanjay Jain <span class="rv-verified">✓ Verified</span></h5>
-            <small>Kanpur • 10 days ago</small>
-          </div>
-        </div>
-        <div class="rv-stars">★★★★★</div>
-        <p>"पहली dose से ही energy feel की। 2 weeks में दिनचर्या बेहतर हुई और weakness गायब।"</p>
-      </article>
-      <article class="rv hidden">
-        <div class="rv-top">
-          <div class="rv-avatar">AN</div>
-          <div class="rv-info">
-            <h5>Anil Verma <span class="rv-verified">✓ Verified</span></h5>
-            <small>Hyderabad • 3 weeks ago</small>
-          </div>
-        </div>
-        <div class="rv-stars">★★★★★</div>
-        <p>"उम्र 32 है और ये product ने confidence वापस दिया। discreet delivery बहुत अच्छा रहा।"</p>
-      </article>
-      <article class="rv hidden">
-        <div class="rv-top">
-          <div class="rv-avatar">PK</div>
-          <div class="rv-info">
-            <h5>Prakash Yadav <span class="rv-verified">✓ Verified</span></h5>
-            <small>Ahmedabad • 1 month ago</small>
-          </div>
-        </div>
-        <div class="rv-stars">★★★★★</div>
-        <p>"इतने कम पैसे में इतना अच्छा result मिला, bahut achha। फिर से order करूँगा।"</p>
-      </article>
-      <article class="rv hidden">
-        <div class="rv-top">
-          <div class="rv-avatar">JD</div>
-          <div class="rv-info">
-            <h5>John D. <span class="rv-verified">✓ Verified</span></h5>
-            <small>India • 2 weeks ago</small>
-          </div>
-        </div>
-        <div class="rv-stars">★★★★★</div>
-        <p>"Good product, improved my vitality and confidence. Quick quick discreet delivery."</p>
-      </article>
-    </div>
-    <div class="reviews-actions">
-      <button type="button" id="rvMoreBtn" class="show-more-btn">See more reviews</button>
-    </div>
-  </section>
-
-  <section>
-    <div class="text-center">
-      <span class="section-kicker">📸 Real Customers</span>
-      <h2 class="section-h">हमारे खुश <span class="hl">ग्राहक</span></h2>
-      <p class="sub" style="font-size:13px;color:#bbb;margin-top:-10px">हमारे असली ग्राहक — उनके अपने हाथों में 6Pro</p>
-    </div>
-    <div class="cust-gallery" id="custGallery">
-      <div class="gallery-grid">
-        <div class="gal-item">
-          <img src="https://cdn.avnideepayurveda.in/Avnideep-shilajit/rev1.jpg" width="280" height="280" loading="lazy" decoding="async" alt="Happy customer with Avnideep 6Pro bottle" class="gal-img">
-          <div class="gal-overlay">
-            <span class="gal-badge">⭐ Verified Customer</span>
-          </div>
-        </div>
-        <div class="gal-item">
-          <img src="https://cdn.avnideepayurveda.in/Avnideep-shilajit/rev2.jpg" width="280" height="280" loading="lazy" decoding="async" alt="Happy customer with Avnideep 6Pro bottle" class="gal-img">
-          <div class="gal-overlay">
-            <span class="gal-badge">⭐ Verified Customer</span>
-          </div>
-        </div>
-        <div class="gal-item">

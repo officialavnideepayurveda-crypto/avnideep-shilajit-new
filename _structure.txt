@@ -1,44 +1,0 @@
-L1126: </head>
-L1127: <body>
-L1128: <a href="#checkout" class="skip">Skip to order</a>
-L1129: 
-L1130: <noscript><div style="background:#ff5252;color:#fff;padding:14px;text-align:center;font-weight:700">कृपया JavaScript enable करें या <a href="tel:+917060101043" style="color:#fff;text-decoration:underline">+91 7060101043</a> पर call करें</div></noscript>
-L1131: 
-L1132: <div class="wrap">
-L1133: 
-L1134:   <div class="ticker" role="region" aria-label="Offer announcements">
-L1135:     <div class="ticker__t">
-L1136:       <span>🔥 50% OFF Today Only</span>
-L1137:       <span>🚚 FREE Delivery All India</span>
-L1138:       <span>💵 Cash on Delivery</span>
-L1139:       <span>⚡ Prepaid पर Rs.251 बचाएं</span>
-L1140:       <span>✅ 10 Days Money Back</span>
-L1141:       <span>🌿 100% Ayurvedic</span>
-L1142:     </div>
-L1143:   </div>
-L1144: 
-L1145:   <header class="topbar">
-L1146:     <div class="logo">
-L1147:       <div class="logo-mark">6A</div>
-L1148:       <div class="logo-text">Avnideep<small>6Pro Ayurveda</small></div>
-L1149:     </div>
-L1150:     <a class="topbar-call" href="tel:+917060101043">Call</a>
-L1151:   </header>
-L1152: <main>
-L1153: 
-L1154:   <section class="hero">
-L1155:     <div class="hero-badge">India's Trusted Ayurvedic Supplement</div>
-L1156:     <h1>कमजोरी खत्म, अब पाएं <span class="hl">पूरा जोश और ताकत</span></h1>
-L1157:     <p class="sub">✅ 14 आयुर्वेदिक जड़ी-बूटियाँ • ✅ 100% Natural • ✅ Doctor Recommended</p>
-L1158: 
-L1159:     <div class="hero-img-wrap">
-L1160:       <div class="hero-badge-corner">50%<br>OFF</div>
-L1161:       <picture>
-L1162:         <source srcset="https://cdn.avnideepayurveda.in/Avnideep-shilajit/mainimagee.webp" type="image/webp">
-L1163:         <img src="https://cdn.avnideepayurveda.in/Avnideep-shilajit/mainimagee.webp" width="280" height="373" alt="Avnideep 6Pro Vitality Shilajit Capsules - 50% OFF Offer" class="hero-img" fetchpriority="high" decoding="async" >
-L1164:       </picture>
-L1165:     </div>
-
-=== HTML structure ===
-L1607: <div class="checkout-container">
-L1673: <div class="tc-container" id="tcContainer" style="background:transparent;padding:0;margin-bottom:0;border:none;">

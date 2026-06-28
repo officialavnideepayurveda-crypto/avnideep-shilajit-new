@@ -1,204 +1,0 @@
-            <span class="gal-badge">⭐ Verified Customer</span>
-          </div>
-        </div>
-        <div class="gal-item">
-          <img src="https://cdn.avnideepayurveda.in/Avnideep-shilajit/rev2.jpg" width="280" height="280" loading="lazy" decoding="async" alt="Happy customer with Avnideep 6Pro bottle" class="gal-img">
-          <div class="gal-overlay">
-            <span class="gal-badge">⭐ Verified Customer</span>
-          </div>
-        </div>
-        <div class="gal-item">
-          <img src="https://cdn.avnideepayurveda.in/Avnideep-shilajit/rev4.jpg" width="280" height="280" loading="lazy" decoding="async" alt="Happy customer with Avnideep 6Pro bottle" class="gal-img">
-          <div class="gal-overlay">
-            <span class="gal-badge">⭐ Verified Customer</span>
-          </div>
-        </div>
-        <div class="gal-item">
-          <img src="https://cdn.avnideepayurveda.in/Avnideep-shilajit/rev5.jpg" width="280" height="280" loading="lazy" decoding="async" alt="Happy customer with Avnideep 6Pro bottle" class="gal-img">
-          <div class="gal-overlay">
-            <span class="gal-badge">⭐ Verified Customer</span>
-          </div>
-        </div>
-        <div class="gal-item">
-          <img src="https://cdn.avnideepayurveda.in/Avnideep-shilajit/review%20(1).jpg" width="280" height="280" loading="lazy" decoding="async" alt="Happy customer with Avnideep 6Pro bottle" class="gal-img">
-          <div class="gal-overlay">
-            <span class="gal-badge">⭐ Verified Customer</span>
-          </div>
-        </div>
-        <div class="gal-item">
-          <img src="https://cdn.avnideepayurveda.in/Avnideep-shilajit/1%20(1).jpg" width="280" height="280" loading="lazy" decoding="async" alt="Happy customer with Avnideep 6Pro bottle" class="gal-img">
-          <div class="gal-overlay">
-            <span class="gal-badge">⭐ Verified Customer</span>
-          </div>
-        </div>
-        <div class="gal-item">
-          <img src="https://cdn.avnideepayurveda.in/Avnideep-shilajit/2%20(1).jpg" width="280" height="280" loading="lazy" decoding="async" alt="Happy customer with Avnideep 6Pro bottle" class="gal-img">
-          <div class="gal-overlay">
-            <span class="gal-badge">⭐ Verified Customer</span>
-          </div>
-        </div>
-        <div class="gal-item">
-          <img src="https://cdn.avnideepayurveda.in/Avnideep-shilajit/3%20(1).jpg" width="280" height="280" loading="lazy" decoding="async" alt="Happy customer with Avnideep 6Pro bottle" class="gal-img">
-          <div class="gal-overlay">
-            <span class="gal-badge">⭐ Verified Customer</span>
-          </div>
-        </div>
-        <div class="gal-item">
-          <img src="https://cdn.avnideepayurveda.in/Avnideep-shilajit/4.jpg" width="280" height="280" loading="lazy" decoding="async" alt="Happy customer with Avnideep 6Pro bottle" class="gal-img">
-          <div class="gal-overlay">
-            <span class="gal-badge">⭐ Verified Customer</span>
-          </div>
-        </div>
-        <div class="gal-item">
-          <img src="https://cdn.avnideepayurveda.in/Avnideep-shilajit/6.jpg" width="280" height="280" loading="lazy" decoding="async" alt="Happy customer with Avnideep 6Pro bottle" class="gal-img">
-          <div class="gal-overlay">
-            <span class="gal-badge">⭐ Verified Customer</span>
-          </div>
-        </div>
-      </div>
-      <p class="gallery-foot">👆 फोटो पर टैप करें बड़ा देखने के लिए</p>
-    </div>
-  </section>
-
-  <!-- Lightbox -->
-  <div class="glightbox" id="glightbox" role="dialog" aria-modal="true" aria-hidden="true">
-    <button class="glightbox-close" id="glClose" aria-label="Close">✕</button>
-    <button class="glightbox-nav glightbox-prev" id="glPrev" aria-label="Previous">‹</button>
-    <button class="glightbox-nav glightbox-next" id="glNext" aria-label="Next">›</button>
-    <div class="glightbox-content">
-      <img id="glImage" src="" alt="Customer photo" class="glightbox-img">
-    </div>
-    <div class="glightbox-counter" id="glCounter">1 / 5</div>
-  </div>
-
-  <section>
-    <div class="text-center">
-      <span class="section-kicker">सवाल-जवाब</span>
-      <h2 class="section-h">FAQ</h2>
-    </div>
-    <div class="faq-list">
-      <div class="faq-item open">
-        <button type="button" class="faq-q"><span>क्या ये प्रोडक्ट सुरक्षित है?</span><span class="faq-icon">+</span></button>
-        <div class="faq-a">हाँ, यह 100% प्राकृतिक आयुर्वेदिक फ़ॉर्मूला है। बिना किसी केमिकल के बनाया गया है और उचित मात्रा में सेवन सुरक्षित है।</div>
-      </div>
-      <div class="faq-item">
-        <button type="button" class="faq-q"><span>इसके लाभ कितने दिन में महसूस होते हैं?</span><span class="faq-icon">+</span></button>
-        <div class="faq-a">नियमित इस्तेमाल से धीरे-धीरे शरीर में सकारात्मक बदलाव आ सकते हैं। व्यक्तिगत अनुभव भिन्न हो सकते हैं।</div>
-      </div>
-      <div class="faq-item">
-        <button type="button" class="faq-q"><span>क्या इसके कोई साइड इफेक्ट हैं?</span><span class="faq-icon">+</span></button>
-        <div class="faq-a">यह पूर्णतः natural herbs से बना है। किसी भी नए supplement की तरह, डॉक्टर से सलाह लेना उचित है।</div>
-      </div>
-      <div class="faq-item">
-        <button type="button" class="faq-q"><span>इसे कैसे इस्तेमाल करना है?</span><span class="faq-icon">+</span></button>
-        <div class="faq-a">दिन में 1-2 कैप्सूल पर्याप्त मात्रा में पानी के साथ लें। आराम से खाने के बाद लेना अच्छा रहता है।</div>
-      </div>
-      <div class="faq-item">
-        <button type="button" class="faq-q"><span>क्या ये गोपनीय तरीके से डिलीवर होगा?</span><span class="faq-icon">+</span></button>
-        <div class="faq-a">हाँ, पैकेजिंग पूरी तरह discreet होती है। बिल और पैकेज पर किसी तरह का product नाम नहीं लिखा जाता।</div>
-      </div>
-      <div class="faq-item">
-        <button type="button" class="faq-q"><span>पेमेंट कैसे कर सकते हैं?</span><span class="faq-icon">+</span></button>
-        <div class="faq-a">COD और prepaid दोनों available हैं। prepaid में UPI/Card/NetBanking से payment कर सकते हैं और ₹251 की बचत भी है।</div>
-      </div>
-    </div>
-  </section>
-
-  
-</main><footer class="footer">
-    <div class="f-brand">Avnideep Ayurveda</div>
-    <div class="f-tag">असली आयुर्वेदिक वेलनेस</div>
-    <p class="f-desc">प्राकृतिक ingredients और पारंपरिक ज्ञान से बने trusted product।</p>
-    <div class="f-contact">
-      <span>📍 Haridwar, Uttarakhand, India</span>
-      <a href="tel:+917060101043">📞 +91 7060101043</a>
-      <a href="mailto:support@avnideepayurveda.in">✉️ support@avnideepayurveda.in</a>
-      <a href="https://wa.me/917060101043" target="_blank" rel="noopener">📱 +91 7060101043 (WhatsApp)</a>
-    </div>
-    <div class="f-links">
-      <a href="privacy-policy.html">Privacy Policy</a>
-      <a href="refund-policy.html">Refund Policy</a>
-      <a href="disclaimer.html">Disclaimer</a>
-      <a href="shipping-policy.html">Shipping Policy</a>
-      <a href="terms-and-conditions.html">Terms & Conditions</a>
-      <a href="contact-us.html">Contact Us</a>
-      <a href="about-us.html">About Us</a>
-    </div>
-    <p class="f-copy">© 2026 Avnideep Ayurveda. All Rights Reserved.</p>
-  </footer>
-</div>
-
-<div class="sbar" id="sbar" aria-hidden="true">
-  <div class="sbar-info">
-    <p>₹1250</p>
-    <span>COD उपलब्ध</span>
-  </div>
-  
-  <div class="sbar-actions">
-    <a class="sbar-call" href="tel:+917060101043" aria-label="Call">📞 Call</a>
-    <a class="sbar-order" href="#checkout" data-scroll="checkout" aria-label="Order">ऑर्डर करें</a>
-  </div>
-</div>
-
-
-<div class="smodal" id="sModal" role="dialog" aria-labelledby="sTitle" aria-modal="true">
-  <div class="smodal-box">
-    <div class="smodal-check">✓</div>
-    <h3 id="sTitle">ऑर्डर सफल!</h3>
-    <p id="sMsg">आपका COD ऑर्डर सेव हो गया। हमारी टीम जल्द कॉल करेगी।</p>
-    <div class="smodal-order-id" id="sOrderId" hidden>
-      <small>Your Order ID:</small>
-      <strong id="sOrderIdText">-</strong>
-    </div>
-    <div class="smodal-actions">
-      <a class="smodal-wa" id="sWaBtn" href="https://wa.me/917060101043?utm_source=facebook&utm_medium=cpc&utm_campaign=avnideep_6pro" target="_blank" rel="noopener">💬 WhatsApp पर Track करें</a>
-      <button class="smodal-btn" type="button" id="sClose">आगे बढ़ें</button>
-    </div>
-  </div>
-</div>  
-
-  <div style="max-width:600px;margin:0 auto;padding:20px 16px;text-align:center">
-    <p style="font-size:11px;color:#999;line-height:1.6;margin-bottom:14px"><strong>अस्वीकरण:</strong> इस सेक्शन में प्रदर्शित कुछ चित्र एवं समीक्षाएं AI द्वारा निर्मित या उदाहरणात्मक हैं। इनका उद्देश्य केवल जानकारी प्रदान करना है। वास्तविक परिणाम व्यक्ति अनुसार अलग-अलग हो सकते हैं।</p>
-    <p style="font-size:11px;color:#888;line-height:1.6"><strong>Disclaimer:</strong> These statements have not been evaluated by the Food and Drug Administration (FDA). This product is not intended to diagnose, treat, cure, or prevent any disease. Results may vary. Consult a healthcare professional before use.</p>
-    <p style="font-size:11px;color:#666;line-height:1.6;margin-top:8px">Ayurvedic dietary supplement. Manufactured in a GMP-certified facility.</p>
-  </div>
-
-<!-- Social Proof Popup -->
-<div class="sp-notif" id="spNotif" role="status" aria-live="polite">
-  <button class="sp-notif-close" id="spClose" aria-label="Close">&times;</button>
-  <img class="sp-notif-img" id="spImg" src="https://cdn.avnideepayurveda.in/Avnideep-shilajit/mainimagee.webp" alt="" loading="lazy" decoding="async">
-  <div class="sp-notif-body">
-    <div class="sp-notif-name" id="spName"><span class="city" id="spCity"></span></div>
-    <div class="sp-notif-msg" id="spMsg">ne abhi-abhi <strong>6Pro Vitality Shilajit</strong> order kiya</div>
-    <span class="sp-notif-time" id="spTime"></span>
-  </div>
-</div>
-
-
-<!-- ===== STICKY BOTTOM ORDER BAR ===== -->
-<div class="sticky-order-bar" id="stickyBar">
-  <div class="sticky-inner">
-    <div class="sticky-left">
-      <div class="sticky-price">
-        <span class="sticky-current">₹1,250</span>
-        <span class="sticky-mrp">₹2,499</span>
-        <span class="sticky-badge">50% OFF</span>
-      </div>
-      <div class="sticky-urgency">
-        <span class="urgency-dot"></span>
-        <span class="urgency-text">Only few left</span>
-      </div>
-    </div>
-    <div class="sticky-right">
-      <button class="sticky-order-btn" id="stickyOrderBtn">
-        <span class="sticky-btn-text">ORDER NOW</span>
-        <span class="sticky-btn-sub">⚡ Free Delivery</span>
-      </button>
-    </div>
-  </div>
-</div>
-</body>
-</html>
-
-
-
