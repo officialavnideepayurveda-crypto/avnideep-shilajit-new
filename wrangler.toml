@@ -7,7 +7,7 @@ compatibility_flags = ["nodejs_compat"]
 [vars]
 GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbwIQtmQROUYf0Mtbx5wfagLROAObzYFAPG3mL80RtQnTFYcEk1s9V7HNGAf0Wz5XyRP/exec"
 NOTIFY_EMAIL = "support@avnideepayurveda.in"
-ALLOWED_ORIGIN = "https://shop.avnideepayurveda.in"
+ALLOWED_ORIGIN = "https://shilajit.avnideepayurveda.in"
 
 # API keys - set these via Cloudflare Dashboard secrets:
 # wrangler secret put BREVO_API_KEY

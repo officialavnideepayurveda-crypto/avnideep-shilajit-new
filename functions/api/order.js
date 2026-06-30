@@ -514,7 +514,7 @@ async function sendFacebookCAPI(order, env, eventName = 'Purchase', requestUa = 
       eventId: String(order.order_id || ''),
       userData,
       customData,
-      eventSourceUrl: order.page_url || 'https://shop.avnideepayurveda.in/',
+      eventSourceUrl: order.page_url || 'https://shilajit.avnideepayurveda.in/',
       actionSource: 'website',
       timeout: 4000,
       retries: 1
@@ -671,7 +671,7 @@ export async function onRequestPost({ request, env, waitUntil }) {
   // ============================================================
   try {
     const origin = request.headers.get("Origin") || request.headers.get("Referer") || "";
-    const allowedHosts = ["shop.avnideepayurveda.in", "localhost", "127.0.0.1"];
+    const allowedHosts = ["shilajit.avnideepayurveda.in", "shop.avnideepayurveda.in", "avnideep-shilajit-new.pages.dev", "localhost", "127.0.0.1"];
     if (origin) {
       const originHost = new URL(origin).hostname.toLowerCase();
       const allowed = allowedHosts.some(h => originHost === h || originHost.endsWith("." + h));

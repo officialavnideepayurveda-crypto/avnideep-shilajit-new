@@ -938,7 +938,116 @@ input, textarea, [contenteditable] {
   -moz-user-select: auto;
   -ms-user-select: auto;
   user-select: auto;
-}</style>
+}
+/* === Order Form Popup Modal === */
+.order-popup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.85);
+  z-index: 9999999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  opacity: 0;
+  transition: opacity .3s ease;
+  overflow-y: auto;
+}
+.order-popup-overlay.active {
+  display: flex;
+  opacity: 1;
+}
+.order-popup {
+  background: linear-gradient(180deg, #0d0505, #0a0606);
+  border: 2px solid rgba(255,213,79,.25);
+  border-radius: 20px;
+  max-width: 520px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 28px 20px 24px;
+  position: relative;
+  box-shadow: 0 30px 80px rgba(0,0,0,.8), 0 0 0 1px rgba(255,213,79,.1);
+  animation: popupIn .35s ease;
+}
+@keyframes popupIn {
+  from { opacity: 0; transform: scale(.92) translateY(20px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+.order-popup .popup-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.12);
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: background .2s, transform .2s;
+  z-index: 10;
+  line-height: 1;
+}
+.order-popup .popup-close:hover {
+  background: rgba(255,82,82,.3);
+  border-color: #ff5252;
+  transform: scale(1.1);
+}
+.order-popup .popup-header {
+  text-align: center;
+  margin-bottom: 18px;
+  padding-right: 30px;
+}
+.order-popup .popup-header h3 {
+  color: #ffd54f;
+  font-size: 18px;
+  font-weight: 900;
+  margin-bottom: 4px;
+}
+.order-popup .popup-header p {
+  color: #aaa;
+  font-size: 13px;
+}
+.order-popup .checkout {
+  background: none;
+  padding: 0;
+  border: none;
+  box-shadow: none;
+}
+.order-popup .step-bar { margin-bottom: 16px; }
+.order-popup .form-field { margin-bottom: 14px; }
+.order-popup .pay-label { margin-top: 4px; }
+.order-popup .summary { margin: 14px 0; }
+.order-popup .cta-order { margin-top: 4px; }
+.order-popup .trust-foot { margin-top: 14px; }
+.order-popup::-webkit-scrollbar { width: 4px; }
+.order-popup::-webkit-scrollbar-track { background: transparent; }
+.order-popup::-webkit-scrollbar-thumb { background: rgba(255,213,79,.3); border-radius: 4px; }
+@media (max-width:480px) {
+  .order-popup-overlay { padding: 8px; align-items: flex-end; }
+  .order-popup {
+    padding: 22px 16px 20px;
+    border-radius: 16px 16px 0 0;
+    max-height: 92vh;
+    animation: popupUp .35s ease;
+  }
+  @keyframes popupUp {
+    from { opacity: 0; transform: translateY(40px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .order-popup .popup-header h3 { font-size: 16px; }
+}
+@media (max-width:360px) {
+  .order-popup { padding: 18px 12px 16px; }
+}
+
+</style>
 <script>window.dataLayer = window.dataLayer || [];</script>
   <!-- Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-HTH3FR9SF6"></script>
@@ -1505,81 +1614,12 @@ function sendCAPIEvent(eventName, eventID, customData) {
         <div class="step"><span>3</span>Confirmed</div>
       </div>
 
-      <form id="oForm" novalidate autocomplete="on">
-        <div class="form-field">
-          <label for="cName">पूरा नाम *</label>
-          <input id="cName" name="name" type="text" placeholder="जैसे: Aaditya" minlength="2" autocomplete="name" required>
-          <span class="field-check" data-for="cName">✓</span>
-        </div>
-        <div class="row2">
-          <div class="form-field">
-            <label for="tcPhoneInput">📱 मोबाइल नंबर *</label>
-            <input id="tcPhoneInput" name="phone" type="tel" placeholder="9876543210" inputmode="numeric" autocomplete="tel" pattern="[6-9][0-9]{9}" maxlength="10" required>
-            <span class="field-check" data-for="tcPhoneInput">✓</span>
-          </div>
-        </div>
-
-        <div class="pay-label">💳 Payment Method चुनें:</div>
-        <div class="pay-grid" role="radiogroup" aria-label="Payment method">
-          <label class="pay-card recommended">
-            <input type="radio" name="paymentMethod" value="prepaid">
-            <div class="pay-top">
-              <div>
-                <strong>⚡ Prepaid Online <span class="save-badge">SAVE ₹251</span></strong>
-                <small>UPI / Card / NetBanking • Fast Delivery</small>
-              </div>
-              <div class="pay-prices">
-                <b>₹999</b>
-                <small style="text-decoration:line-through;color:#888">₹1250</small>
-              </div>
-            </div>
-          </label>
-          <label class="pay-card selected">
-            <input type="radio" name="paymentMethod" value="cod" checked>
-            <div class="pay-top">
-              <div>
-                <strong>💵 Cash on Delivery</strong>
-                <small>घर पहुंचने पर भुगतान करें (No advance)</small>
-              </div>
-              <b>₹1250</b>
-            </div>
-          </label>
-        </div>
-
-        <div class="summary">
-          <div class="s-row"><span>Avnideep 6Pro (1 Pack)</span><b id="sAmt">₹1250</b></div>
-          <div class="s-row"><span>🚚 Delivery</span><b class="green">FREE</b></div>
-          <div class="s-row"><span>🎁 Doctor Consultation</span><b class="green">FREE</b></div>
-          <div class="s-row" id="sSave" hidden><span>⚡ Prepaid Discount</span><b class="green">- ₹251</b></div>
-          <div class="s-row s-total"><span>कुल राशि</span><b id="sTot">₹1250</b></div>
-          <div class="s-savings">🎉 आप बचा रहे हैं: <strong id="sSaveAmt">₹1250</strong> + ₹650 bonuses!</div>
-        </div>
-
-        <div class="form-err" id="fErr" role="alert"></div>
-
-        <button class="cta-order" id="oBtn" type="submit">
-          <span>⚡ अभी COD Order करें - ₹1250</span>
-          <small>🔒 Safe Checkout • No advance payment</small>
+                  <div class="popup-trigger">
+        <button class="cta-order" type="button" onclick="openOrderPopup()">
+          <span>⚡ अभी ऑर्डर करें - ₹1250</span>
+          <small>🔐 Safe Checkout • No advance payment</small>
         </button>
-
-
-                  <p class="age-notice">This product is for adults aged 18 years and above.</p>
-<div class="pay-logos">
-          <span>UPI</span><span>VISA</span><span>Mastercard</span><span>RuPay</span><span>NetBanking</span>
-        </div>
-
-        <div class="secure-foot">
-          <span>🔒 256-bit SSL</span>
-          <span>🛡️ Privacy Protected</span>
-          <span>✅ 12,000+ Verified Orders</span>
-        </div>
-
-        <div class="below-cta-trust">
-          <div>✅ <strong>10-Day Money Back</strong> Guarantee</div>
-          <div>✅ Express Delivery (3-5 days)</div>
-          <div>✅ कोई Hidden Charges नहीं</div>
-        </div>
-      </form>
+      </div>
     </div>
   </section>
 
@@ -2030,17 +2070,11 @@ function initScroll(){
     b.addEventListener('click', function(e){
       if(window._lastIC && Date.now() - window._lastIC < 3000) return; window._lastIC = Date.now();
       e.preventDefault();
-      var t = $('#'+b.dataset.scroll);
-      if(!t) return;
       dataLayer.push({event:'InitiateCheckout', value:1250, currency:'INR'});
       var icoEventId = 'ico_' + Date.now() + '_' + Math.random().toString(36).substring(2,8);
       try{ if(typeof fbq === 'function') fbq('track', 'InitiateCheckout', {value:1250, currency:'INR', content_name:'AVN-6PRO-001', eventID:icoEventId}); }catch(e){}
       sendCAPIEvent('InitiateCheckout', icoEventId, {value:1250, currency:'INR', content_name:'AVN-6PRO-001'});
-      t.scrollIntoView({behavior:'smooth', block:'start'});
-      setTimeout(function(){
-        var n = $('#cName');
-        if(n) n.focus({preventScroll:true});
-      }, 700);
+      openOrderPopup();
     });
   });
 }
@@ -2711,6 +2745,8 @@ function initSuccessModal(){
       if(m && m.hasAttribute('open')) closeSuccess();
       var ex = $('.emodal.show');
       if(ex) ex.classList.remove('show');
+      var op = document.getElementById('orderPopupOverlay');
+      if(op && op.classList.contains('active')) closeOrderPopup();
     }
   });
 }
@@ -2831,6 +2867,31 @@ function setupVisibility(){
     }
   });
 }
+
+// Order Form Popup functions
+function openOrderPopup(){
+  var overlay = document.getElementById('orderPopupOverlay');
+  if(!overlay) return;
+  overlay.classList.add('active');
+  document.body.style.overflow = 'hidden';
+  var form = document.getElementById('oForm');
+  if(form) form.reset();
+  if(typeof updatePay === 'function') updatePay();
+  setTimeout(function(){
+    var n = document.getElementById('cName');
+    if(n) n.focus({preventScroll:true});
+  }, 400);
+}
+function closeOrderPopup(e){
+  if(e && e.target !== e.currentTarget) return;
+  var overlay = document.getElementById('orderPopupOverlay');
+  if(!overlay) return;
+  overlay.classList.remove('active');
+  document.body.style.overflow = '';
+  var err = document.getElementById('fErr');
+  if(err) err.classList.remove('show');
+}
+
 function init(){
   setupVisibility();
   // Critical (immediate)
@@ -2967,14 +3028,7 @@ function initSocialProof(){
   notif.addEventListener('click', function(e){
     if(e.target === closeBtn) return;
     hideNotif();
-    var checkout = document.getElementById('checkout');
-    if(checkout){
-      checkout.scrollIntoView({behavior:'smooth', block:'start'});
-      setTimeout(function(){
-        var nameInput = document.getElementById('cName');
-        if(nameInput) nameInput.focus({preventScroll:true});
-      }, 700);
-    }
+    openOrderPopup();
   });
 
   setTimeout(function(){ showNotif(); }, 4000);
@@ -3129,6 +3183,86 @@ document.addEventListener('dragstart', function(e) {
     return false;
   }
 });</script>
+<!-- Order Form Popup Modal -->
+<div class="order-popup-overlay" id="orderPopupOverlay" onclick="closeOrderPopup(event)">
+  <div class="order-popup" id="orderPopup" onclick="event.stopPropagation()">
+    <button class="popup-close" onclick="closeOrderPopup()" aria-label="Close popup">&times;</button>
+    <div class="popup-header">
+      <h3>⚡ अभी अपना Order करें</h3>
+      <p>नीचे अपनी जानकारी भरें और 30 सेकंड में ऑर्डर करें</p>
+    </div>
+    <div class="checkout" style="background:none;padding:0;border:none;box-shadow:none">
+      <div class="step-bar">
+        <div class="step active"><span class="step-num">1</span><span class="step-lbl">Details</span></div>
+        <div class="step-bar-ln active"></div>
+        <div class="step active"><span class="step-num">2</span><span class="step-lbl">Payment</span></div>
+        <div class="step-bar-ln"></div>
+        <div class="step"><span class="step-num">3</span><span class="step-lbl">Confirmed</span></div>
+      </div>
+<form id="oForm" novalidate autocomplete="on">
+        <div class="form-field">
+          <label for="cName">पूरा नाम *</label>
+          <input id="cName" name="name" type="text" placeholder="जैसे: Aaditya" minlength="2" autocomplete="name" required>
+          <span class="field-check" data-for="cName">✓</span>
+        </div>
+        <div class="row2">
+          <div class="form-field">
+            <label for="tcPhoneInput">📱 मोबाइल नंबर *</label>
+            <input id="tcPhoneInput" name="phone" type="tel" placeholder="9876543210" inputmode="numeric" autocomplete="tel" pattern="[6-9][0-9]{9}" maxlength="10" required>
+            <span class="field-check" data-for="tcPhoneInput">✓</span>
+          </div>
+        </div>
+        <div class="pay-label">💳 Payment Method चुनें:</div>
+        <div class="pay-grid" role="radiogroup" aria-label="Payment method">
+          <label class="pay-card recommended">
+            <input type="radio" name="paymentMethod" value="prepaid">
+            <div class="pay-top">
+              <div>
+                <strong>⚡ Prepaid Online <span class="save-badge">SAVE ₹251</span></strong>
+                <small>UPI / Card / NetBanking • Fast Delivery</small>
+              </div>
+              <div class="pay-prices">
+                <b>₹999</b>
+                <small style="text-decoration:line-through;color:#888">₹1250</small>
+              </div>
+            </div>
+          </label>
+          <label class="pay-card selected">
+            <input type="radio" name="paymentMethod" value="cod" checked>
+            <div class="pay-top">
+              <div>
+                <strong>💵 Cash on Delivery</strong>
+                <small>घर पहुंचने पर भुगतान करें (No advance)</small>
+              </div>
+              <b>₹1250</b>
+            </div>
+          </label>
+        </div>
+        <div class="summary">
+          <div class="s-row"><span>Avnideep 6Pro (1 Pack)</span><b id="sAmt">₹1250</b></div>
+          <div class="s-row"><span>🚚 Delivery</span><b class="green">FREE</b></div>
+          <div class="s-row"><span>🎁 Doctor Consultation</span><b class="green">FREE</b></div>
+          <div class="s-row" id="sSave" hidden><span>⚡ Prepaid Discount</span><b class="green">- ₹251</b></div>
+          <div class="s-row s-total"><span>कुल राशि</span><b id="sTot">₹1250</b></div>
+          <div class="s-savings">🎉 आप बचा रहे हैं: <strong id="sSaveAmt">₹1250</strong> + ₹650 bonuses!</div>
+        </div>
+        <div class="form-err" id="fErr" role="alert"></div>
+        <button class="cta-order" id="oBtn" type="submit">
+          <span>⚡ अभी COD Order करें - ₹1250</span>
+          <small>🔐 Safe Checkout • No advance payment</small>
+        </button>
+      </form>
+      <div class="trust-foot">
+        <div class="trust-strip" style="grid-template-columns:repeat(3,1fr);gap:8px;padding:14px;border-radius:14px">
+          <div class="trust-item" style="padding:10px 6px;font-size:10px"><span class="ico" style="font-size:18px">🔒</span> 256-bit SSL</div>
+          <div class="trust-item" style="padding:10px 6px;font-size:10px"><span class="ico" style="font-size:18px">🛡</span> Privacy Protected</div>
+          <div class="trust-item" style="padding:10px 6px;font-size:10px"><span class="ico" style="font-size:18px">✓</span> Verified Orders</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
 
