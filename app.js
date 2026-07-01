@@ -15,6 +15,40 @@
 
 
 
+// ===== Live Analytics Tracking =====
+// Tracks page views, form opens, and sends heartbeat for live visitors
+var _sessionId = _genEventId('ses');
+var _pageTracked = false;
+
+function _sendAnalytics(eventType) {
+  try {
+    var payload = {
+      event_type: eventType,
+      session_id: _sessionId,
+      page_url: window.location.href
+    };
+    // Add UTM params if available
+    var sp = new URLSearchParams(window.location.search);
+    if (sp.get('utm_source')) payload.utm_source = sp.get('utm_source');
+    if (sp.get('utm_medium')) payload.utm_medium = sp.get('utm_medium');
+    if (sp.get('utm_campaign')) payload.utm_campaign = sp.get('utm_campaign');
+    navigator.sendBeacon('/api/track', new Blob([JSON.stringify(payload)], {type: 'application/json'}));
+  } catch(e) {}
+}
+
+// Start heartbeat for live visitor tracking
+function _startHeartbeat() {
+  _sendAnalytics('page_view');
+  setInterval(function() { _sendAnalytics('heartbeat'); }, 60000);
+}
+
+// Fire page_view on load
+if (document.readyState === 'complete') {
+  setTimeout(_startHeartbeat, 1000);
+} else {
+  window.addEventListener('load', function() { setTimeout(_startHeartbeat, 1000); });
+}
+
 // ===== Facebook CAPI Server-Side Event Forwarding =====
 // Sends events to /api/events with matching event_id for Facebook dedup
 var _capiQueue = [];
@@ -513,6 +547,8 @@ function initCheckoutUI() {
 
 
     trackFbEvent('InitiateCheckout', { content_name: 'AVN-6PRO-001', content_type: 'product', value: amount, currency: 'INR' });
+n    // Live analytics: form_open
+    _sendAnalytics('form_open');
 
 
 
@@ -553,6 +589,61 @@ function initCheckoutUI() {
 
       window.location.href = '/payment.html?amount=999&order_id=' + payload.orderId + '&name=' + encodeURIComponent(payload.name) + '&phone=' + payload.phone;
 
+
+    } else if (paymentMethod === 'razorpay') {
+
+
+      // RAZORPAY: Online payment via Razorpay Checkout
+
+
+      try {
+
+
+        var rzpResult = await openRazorpayCheckout(payload);
+
+
+        if (rzpResult.success) {
+
+
+          sessionStorage.setItem('orderId', rzpResult.orderId);
+
+
+          sessionStorage.setItem('orderName', payload.name);
+
+
+n    _sendAnalytics('purchase');
+
+          try { trackFbEvent('Purchase', { content_name: 'AVN-6PRO-001', value: payload.amount, currency: 'INR' }); } catch(e) {}
+
+
+          window.location.href = '/thank-you.html?order_id=' + encodeURIComponent(rzpResult.orderId);
+
+
+        }
+
+
+      } catch(e) {
+
+
+        console.error('RZR_ERR', e);
+
+
+        var errEl = document.getElementById('orderError') || document.getElementById('fErr');
+
+
+        if (errEl) { errEl.textContent = e.message || 'Payment failed. Try again or choose COD.'; errEl.hidden = false; }
+
+
+        submitBtn.classList.remove('loading');
+
+
+        submitBtn.disabled = false;
+
+
+        return;
+
+
+      }
 
     } else {
 
@@ -912,6 +1003,8 @@ function initScroll(){
       if(!t) return;
 
 
+n    _sendAnalytics('form_open');
+
       dataLayer.push({event:'InitiateCheckout', value:payload.amount, currency:'INR'});
 
 
@@ -1189,7 +1282,7 @@ function updatePay(){
   var m = getPay();
 
 
-  var amt = m==='prepaid' ? 999 : 1250;
+  var amt = m==='prepaid' ? 999 : (m==='razorpay' ? 999 : 1250);
 
 
   $('#sAmt').textContent = '₹'+amt;
@@ -1207,10 +1300,10 @@ function updatePay(){
   if(btn){
 
 
-    var mainText = m==='prepaid' ? '⚡ अभी Pay करें - ₹999' : '⚡ अभी Order करें - ₹1250';
+    var mainText = m==='prepaid' ? '⚡ अभी Pay करें - ₹999' : (m==='razorpay' ? '💳 Pay Online - ₹999' : '⚡ अभी Order करें - ₹1250');
 
 
-    var subText = m==='prepaid' ? '🔒 Secure Online Payment' : '🔒 No advance payment • COD';
+    var subText = m==='prepaid' ? '🔒 Secure Online Payment' : (m==='razorpay' ? '🔒 UPI • Card • NetBanking' : '🔒 No advance payment • COD');
 
 
     btn.innerHTML = '<span>'+mainText+'</span><small>'+subText+'</small>';
@@ -1228,7 +1321,7 @@ function updatePay(){
   if(sv){
 
 
-    var total = m === 'prepaid' ? 1501 : 1250;
+    var total = m === 'prepaid' || m === 'razorpay' ? 1501 : 1250;
 
 
     sv.textContent = '₹' + total;
@@ -3888,6 +3981,92 @@ function showWelcome(name) {
 
 
 
+
+
+
+// ============================================================
+// RAZORPAY CHECKOUT
+// ============================================================
+function loadRazorpaySDK() {
+  return new Promise(function(resolve, reject) {
+    if (window.Razorpay) { resolve(window.Razorpay); return; }
+    var s = document.createElement('script');
+    s.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    s.async = true;
+    s.onload = function() { resolve(window.Razorpay); };
+    s.onerror = function() { reject(new Error('Failed to load Razorpay SDK')); };
+    document.body.appendChild(s);
+  });
+}
+var RZR_API = 'https://avnideep-admin-api.officialavnideepayurveda.workers.dev/api/admin';
+async function getPayConfig() {
+  try {
+    var r = await fetch(RZR_API + '/payment-config');
+    var d = await r.json();
+    return d.ok ? d.data : { razorpay_enabled: false, cod_enabled: true, key_id: '' };
+  } catch(e) { return { razorpay_enabled: false, cod_enabled: true, key_id: '' }; }
+}
+async function createRzrOrder(amt, curr, receipt, cust) {
+  var r = await fetch(RZR_API + '/razorpay/create-order', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ amount: amt, currency: curr || 'INR', receipt: receipt, customer: cust })
+  });
+  var d = await r.json();
+  if (!d.ok) throw new Error(d.error || 'Failed');
+  return d.data;
+}
+async function verifyRzrPay(oid, pid, sig) {
+  var r = await fetch(RZR_API + '/razorpay/verify', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ razorpay_order_id: oid, razorpay_payment_id: pid, razorpay_signature: sig })
+  });
+  var d = await r.json();
+  if (!d.ok) throw new Error(d.error || 'Verify failed');
+  return d.data;
+}
+async function saveRzrOrder(od) {
+  var r = await fetch(RZR_API + '/razorpay/save-order', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(od)
+  });
+  var d = await r.json();
+  if (!d.ok) throw new Error(d.error || 'Save failed');
+  return d.data;
+}
+async function openRazorpayCheckout(payload) {
+  var config = await getPayConfig();
+  if (!config.razorpay_enabled) throw new Error('Online payment disabled');
+  if (!config.key_id) throw new Error('Gateway not configured');
+  await loadRazorpaySDK();
+  var cust = { name: payload.name, phone: payload.phone };
+  var rzpOrder = await createRzrOrder(payload.amount, 'INR', payload.orderId, cust);
+  return new Promise(function(resolve, reject) {
+    var opts = {
+      key: rzpOrder.key_id || config.key_id,
+      amount: rzpOrder.amount, currency: rzpOrder.currency || 'INR',
+      name: 'Avnideep Ayurveda',
+      description: 'Avnideep 6Pro Vitality Shilajit Capsules',
+      order_id: rzpOrder.id,
+      prefill: { name: payload.name, contact: payload.phone },
+      theme: { color: '#7A0C0C' },
+      handler: async function(response) {
+        try {
+          var v = await verifyRzrPay(response.razorpay_order_id, response.razorpay_payment_id, response.razorpay_signature);
+          if (v.verified) {
+            payload.razorpay_order_id = response.razorpay_order_id;
+            payload.razorpay_payment_id = response.razorpay_payment_id;
+            payload.razorpay_signature = response.razorpay_signature;
+            await saveRzrOrder(payload);
+            resolve({ success: true, orderId: payload.orderId });
+          } else reject(new Error('Verification failed'));
+        } catch(e) { reject(e); }
+      },
+      modal: { ondismiss: function() { reject(new Error('Cancelled')); } }
+    };
+    var rzp = new Razorpay(opts);
+    rzp.on('payment.failed', function(r) { reject(new Error((r.error && r.error.description) || 'Payment failed')); });
+    rzp.open();
+  });
+}
 
 // Initialize on DOM ready
 try{initCheckoutUI()}catch(e){}
