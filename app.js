@@ -85,6 +85,37 @@ function trackFbEvent(eventName, params, eventId) {
   _sendCapiEvent(eventName, eventId, params);
 }
 
+function openOrderPopup(){
+  var overlay = document.getElementById('orderPopupOverlay');
+  if(!overlay) return;
+  overlay.classList.add('active');
+  document.body.style.overflow = 'hidden';
+  var form = document.getElementById('oForm');
+  if(form) form.reset();
+  if(typeof updatePay === 'function') updatePay();
+  setTimeout(function(){
+    var n = document.getElementById('cName');
+    if(n) n.focus({preventScroll:true});
+  }, 400);
+}
+function closeOrderPopup(e){
+  if(e){
+    var target = e.target;
+    var clickedElement = target && target.nodeType === 1 ? target : target && target.parentElement;
+    var isOverlayClick = target === e.currentTarget;
+    var isCloseButton = clickedElement && clickedElement.closest('.popup-close');
+    if(!isOverlayClick && !isCloseButton) return;
+  }
+  var overlay = document.getElementById('orderPopupOverlay');
+  if(!overlay) return;
+  overlay.classList.remove('active');
+  document.body.style.overflow = '';
+  var err = document.getElementById('fErr');
+  if(err) err.classList.remove('show');
+}
+window.openOrderPopup = openOrderPopup;
+window.closeOrderPopup = closeOrderPopup;
+
 
 (function(){
 
@@ -557,37 +588,88 @@ n    // Live analytics: form_open
     if (paymentMethod === 'prepaid') {
 
 
-      sessionStorage.setItem('orderPayload', JSON.stringify(payload));
-
-
-      // Fire-and-forget save
+      // PREPAID: Open Razorpay checkout for online payment
 
 
       try {
 
 
-        var keepaliveRes = await fetch('/api/order', {
+        var rzpResult = await openRazorpayCheckout(payload);
 
 
-          method: 'POST',
+        if (rzpResult.success) {
 
 
-          headers: { 'Content-Type': 'application/json' },
+          sessionStorage.setItem('orderId', rzpResult.orderId);
 
 
-          body: JSON.stringify(payload),
+          sessionStorage.setItem('orderName', payload.name);
 
 
-          keepalive: true
+          try {
 
 
-        });
+            _sendAnalytics('purchase');
 
 
-      } catch(e) {}
+            if (typeof trackFbEvent === 'function') {
 
 
-      window.location.href = '/payment.html?amount=999&order_id=' + payload.orderId + '&name=' + encodeURIComponent(payload.name) + '&phone=' + payload.phone;
+              trackFbEvent('Purchase', { value: payload.amount || 1250, currency: 'INR', content_ids: [payload.productId || 'AVN6PRO'], content_type: 'product' });
+
+
+            }
+
+
+          } catch(an) {}
+
+
+          window.location.href = '/thank-you.html?order_id=' + rzpResult.orderId;
+
+
+        } else {
+
+
+          var errEl = document.getElementById('orderError') || document.getElementById('fErr');
+
+
+          if(errEl) {
+
+
+            errEl.hidden = false;
+
+
+            errEl.textContent = rzpResult.error || 'Payment failed. Try again or choose COD.';
+
+
+          }
+
+
+        }
+
+
+      } catch(rzrErr) {
+
+
+        console.error('RZR_ERR', rzrErr);
+
+
+        var errEl = document.getElementById('orderError') || document.getElementById('fErr');
+
+
+        if(errEl) {
+
+
+          errEl.hidden = false;
+
+
+          errEl.textContent = 'Payment failed. Try again or choose COD.';
+
+
+        }
+
+
+      }
 
 
     } else if (paymentMethod === 'razorpay') {
@@ -611,7 +693,7 @@ n    // Live analytics: form_open
           sessionStorage.setItem('orderName', payload.name);
 
 
-n    _sendAnalytics('purchase');
+          _sendAnalytics('purchase');
 
           try { trackFbEvent('Purchase', { content_name: 'AVN-6PRO-001', value: payload.amount, currency: 'INR' }); } catch(e) {}
 
@@ -1003,7 +1085,7 @@ function initScroll(){
       if(!t) return;
 
 
-n    _sendAnalytics('form_open');
+      _sendAnalytics('form_open');
 
       dataLayer.push({event:'InitiateCheckout', value:payload.amount, currency:'INR'});
 
@@ -1267,7 +1349,7 @@ function initVideo(){
 function getPay(){
 
 
-  var c = $('input[name="pay"]:checked');
+  var c = $('input[name="paymentMethod"]:checked');
 
 
   return c ? c.value : 'cod';
@@ -1282,7 +1364,7 @@ function updatePay(){
   var m = getPay();
 
 
-  var amt = m==='prepaid' ? 999 : (m==='razorpay' ? 999 : 1250);
+  var amt = m === 'prepaid' ? 999 : 1250;
 
 
   $('#sAmt').textContent = '₹'+amt;
@@ -1300,10 +1382,10 @@ function updatePay(){
   if(btn){
 
 
-    var mainText = m==='prepaid' ? '⚡ अभी Pay करें - ₹999' : (m==='razorpay' ? '💳 Pay Online - ₹999' : '⚡ अभी Order करें - ₹1250');
+    var mainText = m==='prepaid' ? '⚡ अभी Order करें - ₹999' : '⚡ अभी COD Order करें - ₹1250';
 
 
-    var subText = m==='prepaid' ? '🔒 Secure Online Payment' : (m==='razorpay' ? '🔒 UPI • Card • NetBanking' : '🔒 No advance payment • COD');
+    var subText = m==='prepaid' ? '🔒 Secure Online Payment' : '🔒 No advance payment • COD';
 
 
     btn.innerHTML = '<span>'+mainText+'</span><small>'+subText+'</small>';
@@ -1321,7 +1403,7 @@ function updatePay(){
   if(sv){
 
 
-    var total = m === 'prepaid' || m === 'razorpay' ? 1501 : 1250;
+    var total = 1250;
 
 
     sv.textContent = '₹' + total;
@@ -1333,7 +1415,7 @@ function updatePay(){
   $$('.pay-card').forEach(function(c){
 
 
-    var i = $('input[name="pay"]', c);
+    var i = $('input[name="paymentMethod"]', c);
 
 
     c.classList.toggle('selected', !!(i && i.checked));
@@ -1348,7 +1430,7 @@ function updatePay(){
 function initPay(){
 
 
-  $$('input[name="pay"]').forEach(function(i){i.addEventListener('change', updatePay)});
+  $$('input[name="paymentMethod"]').forEach(function(i){i.addEventListener('change', updatePay)});
 
 
   $$('.pay-card').forEach(function(c){
@@ -1357,7 +1439,7 @@ function initPay(){
     c.addEventListener('click', function(){
 
 
-      var r = $('input[name="pay"]', c);
+      var r = $('input[name="paymentMethod"]', c);
 
 
       if(r){ r.checked = true; updatePay(); }
@@ -1528,7 +1610,7 @@ function build(status){
     paymentMethod: m,
 
 
-    amount: m==='prepaid'?999:1250,
+    amount: 1250,
 
 
     product: 'Avnideep 6Pro Vitality Shilajit Capsules',
@@ -1987,7 +2069,24 @@ function initForm(){
 
 
 
-      window.location.href = 'payment.html?order_id=' + encodeURIComponent(payload.orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.name) + '&phone=' + encodeURIComponent(payload.phone);
+      // Open Razorpay checkout directly instead of redirecting to payment.html
+      try {
+        var rzpResult = await openRazorpayCheckout(payload);
+        if (rzpResult.success) {
+          window.location.href = '/thank-you.html?order_id=' + encodeURIComponent(rzpResult.orderId);
+        } else {
+          showErr(err, rzpResult.error || 'Payment failed. Please try again.');
+          btn.innerHTML = origHTML;
+          btn.disabled = false;
+          submitting = false;
+        }
+      } catch(rzrErr) {
+        console.error('RZP_ERR', rzrErr);
+        showErr(err, rzrErr.message || 'Payment initiation failed. Try again or choose COD.');
+        btn.innerHTML = origHTML;
+        btn.disabled = false;
+        submitting = false;
+      }
 
 
       return;
@@ -2068,7 +2167,24 @@ function initForm(){
       if(apiSuccess){
 
 
-        window.location.href = 'payment.html?order_id=' + encodeURIComponent(payload.orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.name) + '&phone=' + encodeURIComponent(payload.phone);
+        // Open Razorpay checkout directly instead of redirecting to payment.html
+        try {
+          var rzpResult = await openRazorpayCheckout(payload);
+          if (rzpResult.success) {
+            window.location.href = '/thank-you.html?order_id=' + encodeURIComponent(rzpResult.orderId);
+          } else {
+            showErr(err, rzpResult.error || 'Payment failed. Please try again.');
+            btn.innerHTML = origHTML;
+            btn.disabled = false;
+            submitting = false;
+          }
+        } catch(rzrErr) {
+          console.error('RZP_ERR', rzrErr);
+          showErr(err, rzrErr.message || 'Payment initiation failed. Try again or choose COD.');
+          btn.innerHTML = origHTML;
+          btn.disabled = false;
+          submitting = false;
+        }
 
 
         return;
@@ -2599,6 +2715,9 @@ function init(){
     initPay();
 
 
+    updatePay();
+
+
     initForm();
 
 
@@ -2788,7 +2907,7 @@ function initSocialProof(){
     'ne <strong>COD</strong> par order kiya',
 
 
-    'ne <strong>Prepaid</strong> karke <strong>Rs 251</strong> bachaye',
+    'ne <strong>Prepaid</strong> karke <strong>Secure</strong> payment kare',
 
 
     'ne doctor ki salah ke baad <strong>6Pro</strong> order kiya',
@@ -4067,6 +4186,7 @@ async function openRazorpayCheckout(payload) {
     rzp.open();
   });
 }
+window.openRazorpayCheckout = openRazorpayCheckout;
 
 // Initialize on DOM ready
 try{initCheckoutUI()}catch(e){}

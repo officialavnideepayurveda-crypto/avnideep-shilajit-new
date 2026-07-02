@@ -46,7 +46,7 @@
 <link rel="apple-touch-icon" sizes="180x180" href="https://cdn.avnideepayurveda.in/Avnideep-shilajit/shilajit%20for%20web.jpg">
 <link rel="shortcut icon" href="https://cdn.avnideepayurveda.in/Avnideep-shilajit/shilajit%20for%20web.jpg">
 
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"Product","name":"Avnideep 6Pro Vitality Shilajit Capsules","image":"https://cdn.avnideepayurveda.in/Avnideep-shilajit/og-image.webp","description":"100% Ayurvedic Shilajit capsules with 14 herbs for vitality, energy and daily wellness.","brand":{"@type":"Brand","name":"Avnideep Ayurveda"},"sku":"AVN-6PRO-001","offers":{"@type":"Offer","url":"https://shop.avnideepayurveda.in/","priceCurrency":"INR","price":"999","priceValidUntil":"2026-12-31","availability":"https://schema.org/InStock","itemCondition":"https://schema.org/NewCondition","shippingDetails":{"@type":"OfferShippingDetails","shippingRate":{"@type":"MonetaryAmount","value":"0","currency":"INR"},"shippingDestination":{"@type":"DefinedRegion","addressCountry":"IN"}}},"aggregateRating":{"@type":"AggregateRating","ratingValue":"4.8","reviewCount":"12000","bestRating":"5"}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Product","name":"Avnideep 6Pro Vitality Shilajit Capsules","image":"https://cdn.avnideepayurveda.in/Avnideep-shilajit/og-image.webp","description":"100% Ayurvedic Shilajit capsules with 14 herbs for vitality, energy and daily wellness.","brand":{"@type":"Brand","name":"Avnideep Ayurveda"},"sku":"AVN-6PRO-001","offers":{"@type":"Offer","url":"https://shop.avnideepayurveda.in/","priceCurrency":"INR","price":"1250","priceValidUntil":"2026-12-31","availability":"https://schema.org/InStock","itemCondition":"https://schema.org/NewCondition","shippingDetails":{"@type":"OfferShippingDetails","shippingRate":{"@type":"MonetaryAmount","value":"0","currency":"INR"},"shippingDestination":{"@type":"DefinedRegion","addressCountry":"IN"}}},"aggregateRating":{"@type":"AggregateRating","ratingValue":"4.8","reviewCount":"12000","bestRating":"5"}}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"क्या ये प्रोडक्ट सुरक्षित है?","acceptedAnswer":{"@type":"Answer","text":"हाँ, यह 100% प्राकृतिक आयुर्वेदिक फ़ॉर्मूला है और किसी भी खराब केमिकल के बिना बनाया गया है। व्यक्तिगत परिणाम भिन्न हो सकते हैं।"}},{"@type":"Question","name":"इसके लाभ कितने दिन में महसूस होते हैं?","acceptedAnswer":{"@type":"Answer","text":"नियमित उपयोग से धीरे-धीरे शरीर में सकारात्मक बदलाव महसूस हो सकते हैं। व्यक्तिगत अनुभव अलग-अलग हो सकता है।"}},{"@type":"Question","name":"क्या इसके कोई साइड इफेक्ट हैं?","acceptedAnswer":{"@type":"Answer","text":"यह प्राकृतिक herbs पर आधारित है। किसी भी नए supplement की तरह, संवेदनशील लोग डॉक्टर से सलाह लें।"}},{"@type":"Question","name":"इसे कैसे इस्तेमाल करना है?","acceptedAnswer":{"@type":"Answer","text":"दिन में 1-2 कैप्सूल पानी के साथ लें। खाने के बाद लेना सही रहता है।"}},{"@type":"Question","name":"क्या ये गोपनीय तरीके से डिलीवर होगा?","acceptedAnswer":{"@type":"Answer","text":"हाँ, डिलीवरी पूरी तरह से discreet होती है और पैकेज पर product का नाम नहीं लिखा जाता।"}},{"@type":"Question","name":"पेमेंट कैसे कर सकते हैं?","acceptedAnswer":{"@type":"Answer","text":"COD और prepaid दोनों उपलब्ध हैं। prepaid में UPI/Card/NetBanking से आसानी से भुगतान कर सकते हैं।"}}]}</script>
 
 <style>
@@ -462,10 +462,11 @@ body.sb-on{padding-bottom:78px}
 @keyframes pulse-urg{0%,100%{box-shadow:0 4px 12px rgba(255,61,0,.3)}50%{box-shadow:0 4px 22px rgba(255,61,0,.6)}}
 
 .step-bar{display:flex;align-items:center;justify-content:center;gap:6px;margin:14px 0 18px;font-size:11px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
-.step{display:flex;align-items:center;gap:4px;opacity:.5}
+.step{display:flex;align-items:center;gap:6px;opacity:.5;white-space:nowrap}
 .step.active{opacity:1;color:#ffd54f}
-.step span{width:20px;height:20px;border-radius:50%;background:#222;color:#aaa;display:grid;place-items:center;font-size:11px;font-weight:900}
-.step.active span{background:linear-gradient(135deg,#ffd54f,#ff9800);color:#000}
+.step span.step-num{width:20px;height:20px;border-radius:50%;background:#222;color:#aaa;display:grid;place-items:center;font-size:11px;font-weight:900}
+.step.active span.step-num{background:linear-gradient(135deg,#ffd54f,#ff9800);color:#000}
+.step .step-lbl{color:inherit;font-size:11px;font-weight:700;line-height:1.2}
 .step:not(:last-child)::after{content:"";display:inline-block;width:18px;height:1px;background:#333;margin:0 4px}
 
 .form-field{position:relative}
@@ -2169,13 +2170,13 @@ function updatePay(){
   $('#sSave').hidden = m !== 'prepaid';
   var btn = $('#oBtn');
   if(btn){
-    var mainText = m === 'prepaid' ? '⚡ अभी Pay करें - ₹999' : '⚡ अभी Order करें - ₹1250';
+    var mainText = m === 'prepaid' ? '⚡ अभी Order करें - ₹999' : '⚡ अभी COD Order करें - ₹1250';
     var subText = m === 'prepaid' ? '🔒 Secure Online Payment' : '🔒 No advance payment • COD';
     btn.innerHTML = '<span>' + mainText + '</span><small>' + subText + '</small>';
   }
   var sv = $('#sSaveAmt');
   if(sv){
-    var total = m === 'prepaid' ? 1501 : 1250;
+    var total = 1250;
     sv.textContent = '₹' + total;
   }
   $$('.pay-card').forEach(function(c){
@@ -2657,7 +2658,24 @@ function initForm(){
         }).catch(function(e){ console.warn('background order save failed', e); });
       }catch(e){ console.warn('background order save error', e); }
 
-      window.location.href = 'payment.html?order_id=' + encodeURIComponent(payload.orderId) + '&amount=' + encodeURIComponent(payload.amount);
+      // Open Razorpay checkout directly instead of redirecting to payment.html
+      try {
+        var rzpResult = await openRazorpayCheckout(payload);
+        if (rzpResult.success) {
+          window.location.href = '/thank-you.html?order_id=' + encodeURIComponent(rzpResult.orderId);
+        } else {
+          showErr(err, rzpResult.error || 'Payment failed. Please try again.');
+          btn.innerHTML = origHTML;
+          btn.disabled = false;
+          submitting = false;
+        }
+      } catch(rzrErr) {
+        console.error('RZP_ERR', rzrErr);
+        showErr(err, rzrErr.message || 'Payment initiation failed. Try again or choose COD.');
+        btn.innerHTML = origHTML;
+        btn.disabled = false;
+        submitting = false;
+      }
       return;
     }
 
@@ -2683,7 +2701,24 @@ function initForm(){
 
     if(m === 'prepaid'){
       if(apiSuccess){
-        window.location.href = 'payment.html?order_id=' + encodeURIComponent(payload.orderId) + '&amount=' + encodeURIComponent(payload.amount);
+        // Open Razorpay checkout directly instead of redirecting to payment.html
+        try {
+          var rzpResult = await openRazorpayCheckout(payload);
+          if (rzpResult.success) {
+            window.location.href = '/thank-you.html?order_id=' + encodeURIComponent(rzpResult.orderId);
+          } else {
+            showErr(err, rzpResult.error || 'Payment failed. Please try again.');
+            btn.innerHTML = origHTML;
+            btn.disabled = false;
+            submitting = false;
+          }
+        } catch(rzrErr) {
+          console.error('RZP_ERR', rzrErr);
+          showErr(err, rzrErr.message || 'Payment initiation failed. Try again or choose COD.');
+          btn.innerHTML = origHTML;
+          btn.disabled = false;
+          submitting = false;
+        }
         return;
       }
       if(apiError){
@@ -2883,7 +2918,13 @@ function openOrderPopup(){
   }, 400);
 }
 function closeOrderPopup(e){
-  if(e && e.target !== e.currentTarget) return;
+  if(e){
+    var target = e.target;
+    var clickedElement = target && target.nodeType === 1 ? target : target && target.parentElement;
+    var isOverlayClick = target === e.currentTarget;
+    var isCloseButton = clickedElement && clickedElement.closest('.popup-close');
+    if(!isOverlayClick && !isCloseButton) return;
+  }
   var overlay = document.getElementById('orderPopupOverlay');
   if(!overlay) return;
   overlay.classList.remove('active');
@@ -2891,6 +2932,9 @@ function closeOrderPopup(e){
   var err = document.getElementById('fErr');
   if(err) err.classList.remove('show');
 }
+
+window.openOrderPopup = openOrderPopup;
+window.closeOrderPopup = closeOrderPopup;
 
 function init(){
   setupVisibility();
@@ -3042,6 +3086,8 @@ function initSocialProof(){
 
 </script>
 
+<script src="./app.js?cb=20260702"></script>
+
   <div style="max-width:600px;margin:0 auto;padding:20px 16px;text-align:center"><p style="font-size:11px;color:#888;line-height:1.6"><strong>Disclaimer:</strong> These statements have not been evaluated by the Food and Drug Administration (FDA). This product is not intended to diagnose, treat, cure, or prevent any disease. Results may vary. Consult a healthcare professional before use.</p><p style="font-size:11px;color:#666;line-height:1.6;margin-top:8px">Ayurvedic dietary supplement. Manufactured in a GMP-certified facility.</p></div>
 
 <!-- Social Proof Popup -->
@@ -3186,7 +3232,7 @@ document.addEventListener('dragstart', function(e) {
 <!-- Order Form Popup Modal -->
 <div class="order-popup-overlay" id="orderPopupOverlay" onclick="closeOrderPopup(event)">
   <div class="order-popup" id="orderPopup" onclick="event.stopPropagation()">
-    <button class="popup-close" onclick="closeOrderPopup()" aria-label="Close popup">&times;</button>
+    <button class="popup-close" onclick="closeOrderPopup(event)" aria-label="Close popup">&times;</button>
     <div class="popup-header">
       <h3>⚡ अभी अपना Order करें</h3>
       <p>नीचे अपनी जानकारी भरें और 30 सेकंड में ऑर्डर करें</p>
