@@ -42,6 +42,22 @@ export async function onRequestPost(context) {
 
     // D1: Store non-heartbeat events persistently
     if (event_type !== 'heartbeat' && env.DB) {
+      // Ensure table exists (self-healing)
+      await env.DB.prepare(
+        `CREATE TABLE IF NOT EXISTS analytics_events (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          event_type TEXT NOT NULL,
+          session_id TEXT NOT NULL,
+          page_url TEXT DEFAULT '',
+          utm_source TEXT DEFAULT '',
+          utm_medium TEXT DEFAULT '',
+          utm_campaign TEXT DEFAULT '',
+          ip_address TEXT DEFAULT '',
+          user_agent TEXT DEFAULT '',
+          created_at TEXT DEFAULT (datetime('now'))
+        )`
+      ).run();
+
       await env.DB.prepare(
         `INSERT INTO analytics_events (event_type, session_id, page_url, utm_source, utm_medium, utm_campaign, ip_address, user_agent)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`

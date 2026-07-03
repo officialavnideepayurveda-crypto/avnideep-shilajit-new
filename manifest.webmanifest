@@ -11,13 +11,13 @@
   "scope": "/",
   "icons": [
     {
-      "src": "https://cdn.avnideepayurveda.in/Avnideep-shilajit/mainimagee.webp",
+      "src": "https://cdn.avnideepayurveda.in/Avnideep-shilajit/shilajit%20for%20web.jpg",
       "sizes": "192x192",
       "type": "image/webp",
       "purpose": "any"
     },
     {
-      "src": "https://cdn.avnideepayurveda.in/Avnideep-shilajit/mainimagee.webp",
+      "src": "https://cdn.avnideepayurveda.in/Avnideep-shilajit/shilajit%20for%20web.jpg",
       "sizes": "512x512",
       "type": "image/webp",
       "purpose": "any maskable"
