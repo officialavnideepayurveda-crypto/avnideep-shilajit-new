@@ -218,7 +218,7 @@ section{padding:24px 16px}
   .cert-strip{grid-template-columns:repeat(2,1fr)}
 }
 
-/* === AYUSH Certificate Card === */
+
 .cert-card{background:linear-gradient(180deg,#1a0808,#0d0303);border:2px solid rgba(255,82,82,.35);border-radius:18px;padding:20px;margin-top:16px;text-align:center;position:relative;overflow:hidden;transition:border-color .3s,box-shadow .3s}
 .cert-card:hover{border-color:#ff5252;box-shadow:0 12px 40px rgba(255,82,82,.15)}
 .cert-card-badge{display:inline-block;background:linear-gradient(135deg,rgba(255,82,82,.15),rgba(245,0,0,.08));border:1px solid rgba(255,82,82,.35);color:#ff8a8a;font-size:11px;font-weight:800;padding:6px 14px;border-radius:50px;margin-bottom:14px;letter-spacing:.5px;text-transform:uppercase}
@@ -243,7 +243,7 @@ section{padding:24px 16px}
   .cert-card-img{max-height:240px}
 }
 
-/* === Customer Gallery === */
+
 .cust-gallery{margin-top:14px}
 .gallery-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 .gal-item{position:relative;border-radius:14px;overflow:hidden;cursor:pointer;aspect-ratio:1;border:2px solid rgba(255,255,255,.08);transition:transform .25s,border-color .25s,box-shadow .25s}
@@ -263,7 +263,7 @@ section{padding:24px 16px}
   .gallery-grid{gap:8px}
 }
 
-/* === Lightbox === */
+
 .glightbox{position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:10000002;display:none;align-items:center;justify-content:center;padding:20px;-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);opacity:0;transition:opacity .3s}
 .glightbox.active{display:flex;opacity:1}
 .glightbox-content{max-width:90vw;max-height:85vh;display:flex;align-items:center;justify-content:center;animation:glZoom .35s ease}
@@ -548,7 +548,7 @@ body.sb-on{padding-bottom:78px}
   .cta-primary{padding:13px 18px}
   .cta-primary span{font-size:16px}
   .cta-primary small{font-size:10.5px}
-  
+
   .urgent{padding:10px 12px;font-size:13px}
   .section-kicker{font-size:10px;letter-spacing:1.5px}
   .section-h{font-size:22px}
@@ -559,9 +559,9 @@ body.sb-on{padding-bottom:78px}
   .trust-strip{gap:6px;padding:14px 8px}
   .trust-item{font-size:10px}
   .trust-item .ico{font-size:20px}
-  
-  
-  
+
+
+
   .bcard img{height:110px}
   .bcard-body{padding:10px}
   .bcard-body h4{font-size:13px}
@@ -634,7 +634,7 @@ body.sb-on{padding-bottom:78px}
   right:0;padding:8px 10px;gap:6px}
   .sbar-info p{font-size:16px}
   .sbar-info span{font-size:9px;padding:2px 5px}
-  
+
   .sbar-order{padding:11px;font-size:13px}
   body.sb-on{padding-bottom:72px}
 }
@@ -658,13 +658,9 @@ body.sb-on{padding-bottom:78px}
   .bcard img{height:140px}
 }
 
-/* Desktop: keep mobile view centered */
 
-
-
-/* Desktop: force mobile view centered */
 @media (min-width: 769px) {
-  /* Root: constrain all body direct children to narrow column */
+
   body > *:not(script):not(style):not(.skip):not(noscript):not(.sbar):not(.smodal):not(.glightbox) {
     max-width: 390px;
     margin-left: auto !important;
@@ -672,7 +668,7 @@ body.sb-on{padding-bottom:78px}
     width: 100% !important;
     box-sizing: border-box;
   }
-  /* Override for elements that should stay full or fixed */
+
   .sbar{max-width:390px!important;width:390px!important;left:50%!important;margin-left:-195px!important;right:auto!important}
   .smodal{position:fixed;left:0;right:0;width:100%;margin:0}
   .glightbox{position:fixed;left:0;right:0;width:100%;margin:0}
@@ -689,7 +685,7 @@ body.sb-on{padding-bottom:78px}
   .compare-grid{grid-template-columns:1fr!important}
   .ba-grid{grid-template-columns:1fr!important}
   .issue-section .issue-grid{grid-template-columns:1fr!important}
-  /* Desktop: fix image cropping - remove fixed heights, use natural aspect */
+
   .bcard img{height:auto!important;object-fit:contain!important}
   .cmp-img{height:auto!important;object-fit:contain!important}
   .gal-img{height:auto!important;max-height:390px!important;object-fit:contain!important}
@@ -703,7 +699,7 @@ body.sb-on{padding-bottom:78px}
   .steps-grid{grid-template-columns:1fr!important}
 }
 
-/* === Social Proof Notification Popup === */
+
 .sp-notif{position:fixed;top:55px;left:24px;z-index:999999;max-width:240px;width:auto;background:linear-gradient(135deg,#1a1a1a,#0d0d0d);border:1px solid rgba(255,213,79,.2);border-radius:14px;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 12px 40px rgba(0,0,0,.6),0 0 30px rgba(255,213,79,.08);transform:translateY(-10px);opacity:0;pointer-events:none;transition:all .5s cubic-bezier(.22,.61,.36,1)}
 .sp-notif.show{transform:translateY(0);opacity:1;pointer-events:auto}
 .sp-notif-img{width:36px;height:36px;border-radius:8px;object-fit:cover;flex-shrink:0;border:1px solid rgba(255,213,79,.15);background:#000}
@@ -727,17 +723,12 @@ body.sb-on{padding-bottom:78px}
 }
 
 
-
-
 .f-disclaimer strong{color:#7A0C0C}
 
 
-
-
-/* Age Notice */
 .age-notice{text-align:center;font-size:12px;color:#888;margin:8px 0 4px}
 
-/* ===== WHATSAPP CAROUSEL ===== */
+
 .whatsapp-carousel {
   background: linear-gradient(180deg, #0d0d0d 0%, #0a0a0a 100%);
   border-top: 1px solid var(--border-color);
@@ -918,7 +909,7 @@ body.sb-on{padding-bottom:78px}
     max-width: calc(33.333% - 11px);
   }
 }
-/* Prevent image dragging */
+
 img, picture, video, canvas {
   -webkit-user-drag: none;
   -khtml-user-drag: none;
@@ -927,7 +918,7 @@ img, picture, video, canvas {
   user-drag: none;
   -webkit-touch-callout: none;
 }
-/* Prevent text selection */
+
 body {
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -940,7 +931,7 @@ input, textarea, [contenteditable] {
   -ms-user-select: auto;
   user-select: auto;
 }
-/* === Order Form Popup Modal === */
+
 .order-popup-overlay {
   position: fixed;
   inset: 0;
@@ -1036,7 +1027,7 @@ input, textarea, [contenteditable] {
     padding: 16px 16px 14px;
     border-radius: 16px;
     max-height: 85vh;
-    
+
   }
 }
 @media (max-width:360px) {
@@ -1045,7 +1036,7 @@ input, textarea, [contenteditable] {
 
 </style>
 <script>window.dataLayer = window.dataLayer || [];</script>
-  <!-- Google Analytics -->
+
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-HTH3FR9SF6"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -1053,9 +1044,9 @@ input, textarea, [contenteditable] {
     gtag('js', new Date());
     gtag('config', 'G-HTH3FR9SF6');
   </script>
-  <!-- End Google Analytics -->
 
-  <!-- Meta Pixel Code -->
+
+
 <script>
 !function(f,b,e,v,n,t,s)
 {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -1088,11 +1079,11 @@ function sendCAPIEvent(eventName, eventID, customData) {
   } catch(e){}
 }
 </script>
-  <!-- Meta Pixel Noscript (fallback for JS-disabled browsers) -->
+
   <noscript><img height="1" width="1" style="display:none"
     src="https://www.facebook.com/tr?id=1715387275770711&ev=PageView&noscript=1"
   /></noscript>
-<!-- End Meta Pixel Code -->
+
   <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1715387275770711&ev=PageView&noscript=1" /></noscript>
 </head>
 <body>
@@ -1148,8 +1139,6 @@ function sendCAPIEvent(eventName, eventID, customData) {
       <span>✅ 10 Days Money Back</span>
       <span>🌿 100% Ayurvedic</span>
     </div>
-
-<!-- ===== WHATSAPP CHAT GALLERY ===== -->
 
 
   <div class="trust-strip">
@@ -1448,7 +1437,7 @@ function sendCAPIEvent(eventName, eventID, customData) {
             <path d="M20 4L6 10v9c0 8.6 5.8 16.7 14 19 8.2-2.3 14-10.4 14-19v-9L20 4z" fill="#00e676" opacity=".15"/>
             <path d="M20 6L8 11.5v7.5c0 7.5 5 14.6 12 16.7 7-2.1 12-9.2 12-16.7v-7.5L20 6z" stroke="#00e676" stroke-width="1.2" fill="none"/>
             <path d="M20 8L10 13v6c0 6.7 4.3 13 10 14.9 5.7-1.9 10-8.2 10-14.9v-6L20 8z" fill="url(#labG)" opacity=".3"/>
-            <!-- Flask icon -->
+
             <path d="M16 14v4l-4 7c-.5.8.1 2 1 2h14c.9 0 1.5-1.2 1-2l-4-7v-4" stroke="#00e676" stroke-width="1.3" fill="none" stroke-linecap="round"/>
             <line x1="18" y1="14" x2="22" y2="14" stroke="#00e676" stroke-width="1.3"/>
             <circle cx="20" cy="22" r="1.5" fill="#00e676" opacity=".5"/>
@@ -1479,7 +1468,7 @@ function sendCAPIEvent(eventName, eventID, customData) {
             <path d="M20 4L6 10v9c0 8.6 5.8 16.7 14 19 8.2-2.3 14-10.4 14-19v-9L20 4z" fill="#ce93d8" opacity=".15"/>
             <path d="M20 6L8 11.5v7.5c0 7.5 5 14.6 12 16.7 7-2.1 12-9.2 12-16.7v-7.5L20 6z" stroke="#ce93d8" stroke-width="1.2" fill="none"/>
             <path d="M20 8L10 13v6c0 6.7 4.3 13 10 14.9 5.7-1.9 10-8.2 10-14.9v-6L20 8z" fill="url(#clnG)" opacity=".3"/>
-            <!-- Clinical cross -->
+
             <rect x="17" y="15" width="6" height="12" rx="1" fill="#ce93d8"/>
             <rect x="14" y="18" width="12" height="6" rx="1" fill="#ce93d8"/>
             <path d="M24 26l4 4" stroke="#00e676" stroke-width="1.5" stroke-linecap="round"/>
@@ -1496,7 +1485,7 @@ function sendCAPIEvent(eventName, eventID, customData) {
             <path d="M20 4L6 10v9c0 8.6 5.8 16.7 14 19 8.2-2.3 14-10.4 14-19v-9L20 4z" fill="#69f0ae" opacity=".15"/>
             <path d="M20 6L8 11.5v7.5c0 7.5 5 14.6 12 16.7 7-2.1 12-9.2 12-16.7v-7.5L20 6z" stroke="#69f0ae" stroke-width="1.2" fill="none"/>
             <path d="M20 8L10 13v6c0 6.7 4.3 13 10 14.9 5.7-1.9 10-8.2 10-14.9v-6L20 8z" fill="url(#ayurG)" opacity=".3"/>
-            <!-- Ayurvedic leaf -->
+
             <path d="M20 24c-4 0-7-3-7-7s3-7 7-7c4 0 7 3 7 7s-3 7-7 7z" stroke="#69f0ae" stroke-width="1" fill="none"/>
             <path d="M20 16c-1.5 1.5-3 4-2.5 7" stroke="#69f0ae" stroke-width="1" fill="none" stroke-linecap="round"/>
             <path d="M20 16c1.5 1.5 3 4 2.5 7" stroke="#69f0ae" stroke-width="1" fill="none" stroke-linecap="round"/>
@@ -1529,7 +1518,7 @@ function sendCAPIEvent(eventName, eventID, customData) {
     </div>
   </section>
 
-  <!-- AYUSH Certificate Showcase -->
+
   <section id="ayush-cert">
     <div class="text-center">
       <span class="section-kicker">🇮🇳 सरकारी मान्यता</span>
@@ -1823,7 +1812,7 @@ function sendCAPIEvent(eventName, eventID, customData) {
     </div>
   </section>
 
-  <!-- Lightbox -->
+
   <div class="glightbox" id="glightbox" role="dialog" aria-modal="true" aria-hidden="true">
     <button class="glightbox-close" id="glClose" aria-label="Close">✕</button>
     <button class="glightbox-nav glightbox-prev" id="glPrev" aria-label="Previous">‹</button>
@@ -1867,10 +1856,10 @@ function sendCAPIEvent(eventName, eventID, customData) {
     </div>
   </section>
 
-  
+
 </main>
 
-<!-- ===== WHATSAPP CHAT CAROUSEL ===== -->
+
 <section class="section whatsapp-carousel" id="whatsapp-orders">
   <div class="section-container">
     <h2 class="section-title">हमारे <span style="color:var(--gold)">WhatsApp ऑर्डर्स</span></h2>
@@ -1962,7 +1951,7 @@ function sendCAPIEvent(eventName, eventID, customData) {
       <a href="about-us.html">About Us</a>
     </div>
     <p class="f-copy">© 2026 Avnideep Ayurveda. All Rights Reserved.</p>
-  
+
   <div class="f-disclaimer">
     <p><strong>Regulatory Disclaimer:</strong> This product is not intended to diagnose, treat, cure, or prevent any disease. The information on this website is for educational and informational purposes only and has not been evaluated by the Ministry of AYUSH, Government of India, or the Food Safety and Standards Authority of India (FSSAI). Individual results may vary. Always consult a qualified healthcare professional before starting any supplement, especially if you are pregnant, nursing, have a medical condition, or are taking medication. Avnideep 6Pro Vitality Shilajit is an Ayurvedic supplement, not a medicine. This product is for use by adults aged 18 years and above.</p>
   </div>
@@ -1974,7 +1963,7 @@ function sendCAPIEvent(eventName, eventID, customData) {
     <p>₹1250</p>
     <span>COD उपलब्ध</span>
   </div>
-  
+
   <a class="sbar-call" href="tel:+917060101043">📞 कॉल करें</a>
   <button class="sbar-order" type="button" data-scroll="checkout">⚡ ऑर्डर करें</button>
 </div>
@@ -1994,7 +1983,7 @@ function sendCAPIEvent(eventName, eventID, customData) {
       <button class="smodal-btn" type="button" id="sClose">आगे बढ़ें</button>
     </div>
   </div>
-</div>  
+</div>
 <script>
 (function(){
 "use strict";
@@ -2046,7 +2035,7 @@ function initTimer(){
       localStorage.setItem(key, String(endT));
     }
   }catch(e){ endT = Math.floor(Date.now()/1000)+dur; }
-  
+
   function render(){
     var r = Math.max(0, endT - Math.floor(Date.now()/1000));
     if(r<=0){
@@ -2206,9 +2195,9 @@ function initRewardWheel(){
   const spinBtn = document.getElementById("rewardSpinBtn");
   const prizeDisplay = document.getElementById("rewardPrizeDisplay");
   const prizeText = document.getElementById("rewardPrizeText");
-  
+
   drawWheel(ctx, 0);
-  
+
   phoneInput.addEventListener("input", function(){
     const phone = this.value.replace(/\D/g, "").slice(0, 10);
     this.value = phone;
@@ -2255,7 +2244,7 @@ function initRewardWheel(){
       spinBtn.textContent = phone.length > 0 ? "Enter 10 digits" : "🎯 Enter mobile to spin";
     }
   });
-  
+
   spinBtn.addEventListener("click", function(){
     if(rewardState.spinning || rewardState.hasSpun) return;
     const phone = rewardState.phone;
@@ -2268,13 +2257,13 @@ function initRewardWheel(){
     spinBtn.textContent = "🎯 Spinning...";
     prizeText.innerHTML = '<span class="reward-loader"></span> शुभकामनाएं';
     prizeDisplay.className = "reward-prize-display";
-    
+
     const weights = [70, 25, 5, 0, 0, 0, 0, 0];
     const totalWeight = weights.reduce(function(a,b){return a+b}, 0);
     let r = Math.random() * totalWeight;
     let targetIdx = 0;
     for(let i = 0; i < weights.length; i++){ r -= weights[i]; if(r <= 0){ targetIdx = i; break; } }
-    
+
     const segment = REWARD_SEGMENTS[targetIdx];
     const segAngle = (2 * Math.PI) / REWARD_SEGMENTS.length;
     const segCenterAngle = targetIdx * segAngle + segAngle / 2;
@@ -2284,7 +2273,7 @@ function initRewardWheel(){
     rewardState.winningSegment = targetIdx;
     rewardState.winningAmount = segment.amount;
     rewardState.winningLabel = segment.label;
-    
+
     function animateSpin(){
       const remaining = rewardState.targetAngle - rewardState.currentAngle;
       if(Math.abs(remaining) < 0.01){
@@ -2398,7 +2387,6 @@ function buildReward(){
   }
   return { reward: info || { rewardId: "", rewardAmount: 0 }, label: info && info.rewardAmount ? "₹" + info.rewardAmount + " Cash Reward" : "अब Spin करें" };
 }
-
 
 
 function build(status){
@@ -2745,7 +2733,7 @@ function initForm(){
         try{ if(typeof fbq === 'function') fbq('track', 'Purchase', {value:1250, currency:'INR', content_name:'AVN-6PRO-001', content_type:'product', order_id:payload.orderId, eventID:purchFallbackId}); }catch(e){}
         sendCAPIEvent('Purchase', purchFallbackId, {value:1250, currency:'INR', content_name:'AVN-6PRO-001', content_type:'product', order_id:payload.orderId});
         try{ sessionStorage.setItem('avn_purchase_fired_' + payload.orderId, '1'); }catch(e){}
-  
+
         window.location.href = '/thank-you?order_id=' + encodeURIComponent(payload.orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.name) + '&method=cod_whatsapp&wa_url=' + encodeURIComponent(waOrderUrl);
         form.reset();
         updatePay();
@@ -2952,12 +2940,12 @@ function init(){
   var idle = window.requestIdleCallback || function(fn){ return setTimeout(fn, 1) };
 
   idle(function(){
-  
+
     initCheckoutTimer();
   });
 
   idle(function(){
-  
+
   }, { timeout: 2000 });
 
   // Delayed non-essential
@@ -3085,7 +3073,7 @@ function initSocialProof(){
 
   <div style="max-width:600px;margin:0 auto;padding:20px 16px;text-align:center"><p style="font-size:11px;color:#888;line-height:1.6"><strong>Disclaimer:</strong> These statements have not been evaluated by the Food and Drug Administration (FDA). This product is not intended to diagnose, treat, cure, or prevent any disease. Results may vary. Consult a healthcare professional before use.</p><p style="font-size:11px;color:#666;line-height:1.6;margin-top:8px">Ayurvedic dietary supplement. Manufactured in a GMP-certified facility.</p></div>
 
-<!-- Social Proof Popup -->
+
 <div class="sp-notif" id="spNotif" role="status" aria-live="polite">
   <button class="sp-notif-close" id="spClose" aria-label="Close">&times;</button>
   <img class="sp-notif-img" id="spImg" src="https://cdn.avnideepayurveda.in/Avnideep-shilajit/shilajit%20for%20web.jpg" alt="" loading="lazy" decoding="async">
@@ -3095,8 +3083,6 @@ function initSocialProof(){
     <span class="sp-notif-time" id="spTime"></span>
   </div>
 </div>
-
-
 
 
 <script>
@@ -3224,7 +3210,7 @@ document.addEventListener('dragstart', function(e) {
     return false;
   }
 });</script>
-<!-- Order Form Popup Modal -->
+
 <div class="order-popup-overlay" id="orderPopupOverlay" onclick="closeOrderPopup(event)">
   <div class="order-popup" id="orderPopup" onclick="event.stopPropagation()">
     <button class="popup-close" onclick="closeOrderPopup(event)" aria-label="Close popup">&times;</button>
@@ -3306,5 +3292,3 @@ document.addEventListener('dragstart', function(e) {
 
 </body>
 </html>
-
-
