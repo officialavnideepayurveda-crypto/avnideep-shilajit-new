@@ -538,122 +538,6 @@ async function sendFacebookCAPI(order, env, eventName = 'Purchase', requestUa = 
 // 4️⃣ GOOGLE SHEETS (Apps Script Web App)
 // Saves order to your Google Sheet automatically
 // ============================================================
-async function saveGoogleSheets(order, env) {
-  if (!env.GOOGLE_SHEETS_URL) {
-    return { skipped: true, reason: "sheets_url_missing" };
-  }
-
-  // Build the request body once
-  function buildSheetsBody() {
-    return new URLSearchParams({
-      order_id: order.order_id,
-      name: order.name,
-      phone: order.phone,
-      pincode: order.pincode,
-      address: order.address,
-      payment_method: order.payment_method.toUpperCase(),
-      amount: String(order.amount),
-      product: order.product,
-      status: order.status,
-      page_url: order.page_url,
-      ip_address: order.ip_address,
-      created_at: order.created_at,
-      utm_source: order.utm_source,
-      utm_medium: order.utm_medium,
-      utm_campaign: order.utm_campaign,
-      reward_id: order.reward_id || '',
-      reward_amount: String(order.reward_amount || 0),
-      source: order.source || '',
-      ist_time: new Date(order.created_at).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }),
-    }).toString();
-  }
-
-  // Retry up to 3 times with exponential backoff
-  const MAX_RETRIES = 1;
-  let lastError = null;
-
-  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
-    try {
-      // Google Apps Script web apps return 302 after POST.
-      // We follow the redirect (default) to read the ACTUAL JSON response body.
-      const res = await withTimeout(fetch(env.GOOGLE_SHEETS_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: buildSheetsBody(),
-      }), 6000, "google_sheets");
-
-      // Read the actual response body from the redirected page
-      const bodyText = await res.text().catch(() => "");
-      
-      // Try to parse as JSON (Google Apps Script ContentService returns raw JSON)
-      let jsonBody;
-      try {
-        jsonBody = JSON.parse(bodyText);
-      } catch (parseErr) {
-        jsonBody = null;
-      }
-      
-      // If we got valid JSON and it says ok: true, data saved successfully!
-      if (jsonBody && jsonBody.ok === true) {
-        return { ok: true, status: res.status, message: jsonBody.message, attempt };
-      }
-      
-      // If we got valid JSON but it says ok: false, Apps Script had an error
-      if (jsonBody && jsonBody.ok === false) {
-        // If it's a quota error, retry after a delay
-        const errMsg = (jsonBody.error || "").toLowerCase();
-        if (errMsg.indexOf("quota") !== -1 || errMsg.indexOf("timeout") !== -1 || errMsg.indexOf("limit") !== -1) {
-          lastError = { ok: false, status: res.status, error: jsonBody.error, attempt };
-          if (attempt < MAX_RETRIES) {
-            const delay = attempt * 2000; // 2s, 4s, 6s backoff
-            console.log("GOOGLE_SHEETS_RETRY", { attempt, delay, error: jsonBody.error });
-            await new Promise(r => setTimeout(r, delay));
-            continue;
-          }
-        }
-        return { ok: false, status: res.status, error: jsonBody.error || "Sheets API error", attempt };
-      }
-      
-      // Fallback: if status is in 200-399 range but no JSON, still count as success
-      const errBody = bodyText.slice(0, 500);
-      if (res.status >= 200 && res.status < 400) {
-        if (errBody.toLowerCase().indexOf("not found") !== -1 || errBody.toLowerCase().indexOf("error") !== -1) {
-          lastError = { ok: false, status: res.status, error: errBody.slice(0, 200), attempt };
-          if (attempt < MAX_RETRIES) {
-            const delay = attempt * 2000;
-            console.log("GOOGLE_SHEETS_RETRY", { attempt, delay, error: errBody.slice(0, 100) });
-            await new Promise(r => setTimeout(r, delay));
-            continue;
-          }
-          return lastError;
-        }
-        return { ok: true, status: res.status, note: "non_json_response", attempt };
-      }
-      
-      // Status >= 400 — retry with backoff
-      lastError = { ok: false, status: res.status, error: bodyText.slice(0, 200), attempt };
-      if (attempt < MAX_RETRIES) {
-        const delay = attempt * 2000;
-        console.log("GOOGLE_SHEETS_RETRY", { attempt, delay, status: res.status });
-        await new Promise(r => setTimeout(r, delay));
-        continue;
-      }
-      return lastError;
-    } catch (err) {
-      lastError = { ok: false, error: String(err.message || err), attempt };
-      if (attempt < MAX_RETRIES) {
-        const delay = attempt * 2000;
-        console.log("GOOGLE_SHEETS_RETRY_ERR", { attempt, delay, error: String(err.message || err) });
-        await new Promise(r => setTimeout(r, delay));
-        continue;
-      }
-    }
-  }
-
-  return lastError || { ok: false, error: "All retry attempts failed" };
-}
-
-// ============================================================
 // CORS PRE-FLIGHT
 // ============================================================
 export async function onRequestOptions({ env }) {
@@ -710,6 +594,7 @@ export async function onRequestPost({ request, env, waitUntil }) {
           if (rawPhone.length >= 10) {
             seenPhone = rawPhone.slice(-10);
             const phoneKey = `seen_phone:${seenPhone}`;
+            console.log('[KV-VERIFY] order read', { key: phoneKey, type: 'phone_seen' });
             const phoneSeen = await env.RATE_LIMIT_KV.get(phoneKey).catch(() => null);
             if (phoneSeen === '1') {
               phoneBypass = true;
@@ -718,48 +603,39 @@ export async function onRequestPost({ request, env, waitUntil }) {
         }
       } catch (e) {}
 
-      if (phoneBypass && seenPhone) {
-        // Known phone - extend expiry and skip IP rate limiting
-        await env.RATE_LIMIT_KV.put(`seen_phone:${seenPhone}`, '1', { expirationTtl: 3600 }).catch(() => {});
-        // Also add current timestamp so they don't get stuck if they switch IPs
-        const rateKey = `rate_limit:${ip}`;
-        const nowRecord = await env.RATE_LIMIT_KV.get(rateKey, { type: 'json' }).catch(() => null);
-        if (nowRecord && Array.isArray(nowRecord.timestamps)) {
-          nowRecord.timestamps = nowRecord.timestamps.filter(t => (now - t) < WINDOW_MS);
-          nowRecord.timestamps.push(now);
-          await env.RATE_LIMIT_KV.put(rateKey, JSON.stringify(nowRecord), { expirationTtl: 120 }).catch(() => {});
-        }
+      const rateKey = `rate_limit:${ip}`;
+      const phoneKey = seenPhone ? `seen_phone:${seenPhone}` : null;
+
+      if (phoneBypass && phoneKey) {
+        // Known phone: mark it active once and skip the IP burst check.
+        await env.RATE_LIMIT_KV.put(phoneKey, '1', { expirationTtl: 3600 }).catch(() => {});
       } else {
-        // IP-based rate limiting for unknown visitors
-        const rateKey = `rate_limit:${ip}`;
-        const record = await env.RATE_LIMIT_KV.get(rateKey, { type: 'json' });
-        
-        if (record && Array.isArray(record.timestamps)) {
-          record.timestamps = record.timestamps.filter(t => (now - t) < WINDOW_MS);
-          
-          if (record.timestamps.length >= MAX_REQUESTS) {
-            console.log("RATE_LIMIT_EXCEEDED", { ip, count: record.timestamps.length });
-            return new Response(
-              JSON.stringify({ 
-                ok: false, 
-                error: "Too many requests. WhatsApp par order karein: https://wa.me/917060101043",
-                retry_after: 60,
-                whatsapp: "https://wa.me/917060101043?text=Mujhe order karna hai"
-              }),
-              { status: 429, headers: jsonHeaders(env) }
-            );
-          }
-          
-          record.timestamps.push(now);
-          record.count = record.timestamps.length;
-          await env.RATE_LIMIT_KV.put(rateKey, JSON.stringify(record), { expirationTtl: 120 });
-        } else {
-          await env.RATE_LIMIT_KV.put(rateKey, JSON.stringify({ count: 1, timestamps: [now] }), { expirationTtl: 120 });
-        }
-        
-        // Mark this phone for future bypass (next request won't be rate limited)
-        if (seenPhone) {
-          await env.RATE_LIMIT_KV.put(`seen_phone:${seenPhone}`, '1', { expirationTtl: 3600 }).catch(() => {});
+        // IP-based rate limiting for unknown visitors.
+        console.log('[KV-VERIFY] order read', { key: rateKey, type: 'rate_limit' });
+        const record = await env.RATE_LIMIT_KV.get(rateKey, { type: 'json' }).catch(() => null);
+      const timestamps = Array.isArray(record?.timestamps)
+        ? record.timestamps.filter(t => (now - t) < WINDOW_MS)
+        : [];
+
+      if (timestamps.length >= MAX_REQUESTS) {
+        console.log("RATE_LIMIT_EXCEEDED", { ip, count: timestamps.length });
+        return new Response(
+          JSON.stringify({
+            ok: false,
+            error: "Too many requests. WhatsApp par order karein: https://wa.me/917060101043",
+            retry_after: 60,
+            whatsapp: "https://wa.me/917060101043?text=Mujhe order karna hai"
+          }),
+          { status: 429, headers: jsonHeaders(env) }
+        );
+      }
+console.log('[KV-VERIFY] order write', { key: rateKey, type: 'rate_limit' });
+      
+      timestamps.push(now);
+      await env.RATE_LIMIT_KV.put(rateKey, JSON.stringify({ count: timestamps.length, timestamps }), { expirationTtl: 120 }).catch(() => {});
+
+        if (phoneKey) {
+          await env.RATE_LIMIT_KV.put(phoneKey, '1', { expirationTtl: 3600 }).catch(() => {});
         }
       }
     } catch (rateErr) {
@@ -844,7 +720,6 @@ export async function onRequestPost({ request, env, waitUntil }) {
     // Telegram + Email fire-and-forget (just notifications, not business-critical)
     const allResults = await Promise.allSettled([
       saveToD1(order, env),
-      saveGoogleSheets(order, env),
       sendFacebookCAPI(order, env, order.payment_method === 'prepaid' ? 'InitiateCheckout' : 'Purchase', request.headers.get('User-Agent') || ''),
     ]);
     const [d1result, sheets, facebookCapi] = allResults.map(r =>
@@ -932,7 +807,6 @@ export async function onRequestGet({ env }) {
           env.RESEND_API_KEY ? "resend (100/day FREE)" :
           false
         ) : false,
-        google_sheets: !!env.GOOGLE_SHEETS_URL,
         facebook_capi: !!env.META_ACCESS_TOKEN && !!env.META_PIXEL_ID,
         rate_limit_kv: !!env.RATE_LIMIT_KV,
         allowed_origin: env.ALLOWED_ORIGIN || "* (not set)",

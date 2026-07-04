@@ -5,7 +5,6 @@ compatibility_date = "2026-05-19"
 compatibility_flags = ["nodejs_compat"]
 
 [vars]
-GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbwIQtmQROUYf0Mtbx5wfagLROAObzYFAPG3mL80RtQnTFYcEk1s9V7HNGAf0Wz5XyRP/exec"
 NOTIFY_EMAIL = "support@avnideepayurveda.in"
 ALLOWED_ORIGIN = "https://shop.avnideepayurveda.in"
 

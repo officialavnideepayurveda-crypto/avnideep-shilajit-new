@@ -29,11 +29,10 @@ export async function onRequestPost({ request, env }) {
     const source = String(body.source || "truecaller").trim().slice(0, 50);
     const ip = request.headers.get("CF-Connecting-IP") || "unknown";
 
-    // Save to D1
+    // Save to D1 once per valid lead event.
     let d1Result = { skipped: true };
     if (env.DB) {
       try {
-        // Create leads table if not exists (first time)
         await env.DB.prepare(
           `CREATE TABLE IF NOT EXISTS leads (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -45,22 +44,25 @@ export async function onRequestPost({ request, env }) {
           )`
         ).run();
 
-        await env.DB.prepare(
-          `INSERT INTO leads (name, phone, source, ip_address, created_at)
-           VALUES (?, ?, ?, ?, datetime('now'))`
-        ).bind(name, phone, source, ip).run();
-        d1Result = { ok: true };
-      } catch (e) {
-        if (String(e.message || "").indexOf("UNIQUE") >= 0) {
-          // Duplicate phone - update
+        const existing = await env.DB.prepare('SELECT id, name, source, ip_address FROM leads WHERE phone = ?').bind(phone).first();
+
+        if (!existing) {
+          await env.DB.prepare(
+            `INSERT INTO leads (name, phone, source, ip_address, created_at)
+             VALUES (?, ?, ?, ?, datetime('now'))`
+          ).bind(name, phone, source, ip).run();
+          d1Result = { ok: true };
+        } else if (existing.name !== name || existing.source !== source || existing.ip_address !== ip) {
           await env.DB.prepare(
             `UPDATE leads SET name = ?, source = ?, ip_address = ?, created_at = datetime('now')
              WHERE phone = ?`
           ).bind(name, source, ip, phone).run();
           d1Result = { ok: true, note: "updated" };
         } else {
-          d1Result = { ok: false, error: String(e.message || e).slice(0, 100) };
+          d1Result = { ok: true, note: "unchanged" };
         }
+      } catch (e) {
+        d1Result = { ok: false, error: String(e.message || e).slice(0, 100) };
       }
     }
 

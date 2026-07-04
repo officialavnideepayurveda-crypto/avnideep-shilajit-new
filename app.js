@@ -15,40 +15,6 @@
 
 
 
-// ===== Live Analytics Tracking =====
-// Tracks page views, form opens, and sends heartbeat for live visitors
-var _sessionId = _genEventId('ses');
-var _pageTracked = false;
-
-function _sendAnalytics(eventType) {
-  try {
-    var payload = {
-      event_type: eventType,
-      session_id: _sessionId,
-      page_url: window.location.href
-    };
-    // Add UTM params if available
-    var sp = new URLSearchParams(window.location.search);
-    if (sp.get('utm_source')) payload.utm_source = sp.get('utm_source');
-    if (sp.get('utm_medium')) payload.utm_medium = sp.get('utm_medium');
-    if (sp.get('utm_campaign')) payload.utm_campaign = sp.get('utm_campaign');
-    navigator.sendBeacon('/api/track', new Blob([JSON.stringify(payload)], {type: 'application/json'}));
-  } catch(e) {}
-}
-
-// Start heartbeat for live visitor tracking
-function _startHeartbeat() {
-  _sendAnalytics('page_view');
-  setInterval(function() { _sendAnalytics('heartbeat'); }, 60000);
-}
-
-// Fire page_view on load
-if (document.readyState === 'complete') {
-  setTimeout(_startHeartbeat, 1000);
-} else {
-  window.addEventListener('load', function() { setTimeout(_startHeartbeat, 1000); });
-}
-
 // ===== Facebook CAPI Server-Side Event Forwarding =====
 // Sends events to /api/events with matching event_id for Facebook dedup
 var _capiQueue = [];
