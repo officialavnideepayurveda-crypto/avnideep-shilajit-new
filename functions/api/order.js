@@ -249,11 +249,6 @@ async function saveToD1(order, env) {
     }
     return { ok: false, error: "D1 insert failed after 3 retries" };
   } catch (err) {
-    // Handle duplicate order_id gracefully (return success if already exists)
-    if (String(err.message || err).indexOf("UNIQUE constraint") >= 0) {
-      console.log("D1_DUPLICATE_ORDER_ID", { order_id: order.order_id });
-      return { ok: true, status: 200, note: "duplicate_order_id" };
-    }
     return { ok: false, error: String(err.message || err) };
   }
 }
