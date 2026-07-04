@@ -192,44 +192,62 @@ async function saveToD1(order, env) {
       console.log("D1_TABLE_CREATE_SKIPPED", String(tableErr.message || tableErr).slice(0, 100));
     }
 
-    const query = await env.DB.prepare(
-      `INSERT INTO orders (
-        order_id, name, phone, pincode, address, 
-        payment_method, amount, product, status, source, page_url,
-        created_at, ip_address, user_agent, 
-        utm_source, utm_medium, utm_campaign,
-        utr, payment_note, reward_id, reward_amount, fbp, fbc
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-    ).bind(
-      order.order_id,
-      order.name,
-      order.phone,
-      order.pincode,
-      order.address,
-      order.payment_method,
-      order.amount,
-      order.product,
-      order.status,
-      order.source || '',
-      order.page_url,
-      order.created_at,
-      order.ip_address,
-      order.user_agent,
-      order.utm_source,
-      order.utm_medium,
-      order.utm_campaign,
-      order.utr || '',
-      order.payment_note || '',
-      order.reward_id || '',
-      order.reward_amount || 0,
-      order.fbp || '',
-      order.fbc || ''
-    ).run();
-
-    if (query.success) {
-      return { ok: true, status: 200, message: "Order saved to D1" };
+    // Retry D1 write up to 3 times
+    let query = null;
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        query = await env.DB.prepare(
+          `INSERT INTO orders (
+            order_id, name, phone, pincode, address, 
+            payment_method, amount, product, status, source, page_url,
+            created_at, ip_address, user_agent, 
+            utm_source, utm_medium, utm_campaign,
+            utr, payment_note, reward_id, reward_amount, fbp, fbc
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        ).bind(
+          order.order_id,
+          order.name,
+          order.phone,
+          order.pincode,
+          order.address,
+          order.payment_method,
+          order.amount,
+          order.product,
+          order.status,
+          order.source || '',
+          order.page_url,
+          order.created_at,
+          order.ip_address,
+          order.user_agent,
+          order.utm_source,
+          order.utm_medium,
+          order.utm_campaign,
+          order.utr || '',
+          order.payment_note || '',
+          order.reward_id || '',
+          order.reward_amount || 0,
+          order.fbp || '',
+          order.fbc || ''
+        ).run();
+        if (query && query.success) {
+          return { ok: true, status: 200, message: "Order saved to D1" };
+        }
+        // If attempt < 3, wait before retrying
+        if (attempt < 3) {
+          await new Promise(r => setTimeout(r, 200 * attempt));
+        }
+      } catch (retryErr) {
+        // On UNIQUE constraint, return success immediately (no retry needed)
+        if (String(retryErr.message || retryErr).indexOf("UNIQUE constraint") >= 0) {
+          console.log("D1_DUPLICATE_ORDER_ID", { order_id: order.order_id });
+          return { ok: true, status: 200, note: "duplicate_order_id" };
+        }
+        // If last attempt, rethrow
+        if (attempt === 3) throw retryErr;
+        await new Promise(r => setTimeout(r, 200 * attempt));
+      }
     }
-    return { ok: false, error: "D1 insert failed" };
+    return { ok: false, error: "D1 insert failed after 3 retries" };
   } catch (err) {
     // Handle duplicate order_id gracefully (return success if already exists)
     if (String(err.message || err).indexOf("UNIQUE constraint") >= 0) {
