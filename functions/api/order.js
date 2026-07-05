@@ -503,11 +503,7 @@ async function sendFacebookCAPI(order, env, eventName = 'Purchase', requestUa = 
     if (!rawPhone) {
       return { skipped: true, reason: 'no_phone_for_matching' };
     }
-    // Skip tracking for admin test orders
-    const ADMIN_PHONES = ['7060101043'];
-    if (ADMIN_PHONES.includes(rawPhone)) {
-      return { skipped: true, reason: 'admin_test_order' };
-    }
+
 
     const userData = await buildUserData({
       name: order.name,
