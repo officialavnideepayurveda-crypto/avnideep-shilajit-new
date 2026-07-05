@@ -724,7 +724,7 @@ console.log('[KV-VERIFY] order write', { key: rateKey, type: 'rate_limit' });
           orderId: existingOrderId,
           duplicate: true,
           message: "Order already exists",
-          channels: { d1: true, sheets: true, facebook_capi: true },
+          channels: { d1: true, facebook_capi: true },
         }),
         { status: 200, headers: jsonHeaders(env) }
       );
@@ -736,7 +736,7 @@ console.log('[KV-VERIFY] order write', { key: rateKey, type: 'rate_limit' });
       saveToD1(order, env),
       sendFacebookCAPI(order, env, order.payment_method === 'prepaid' ? 'InitiateCheckout' : 'Purchase', request.headers.get('User-Agent') || ''),
     ]);
-    const [d1result, sheets, facebookCapi] = allResults.map(r =>
+    const [d1result, facebookCapi] = allResults.map(r =>
       r.status === "fulfilled" ? r.value : { ok: false, skipped: false, error: String(r.reason?.message || r.reason || "Channel failed") }
     );
 
@@ -755,14 +755,14 @@ console.log('[KV-VERIFY] order write', { key: rateKey, type: 'rate_limit' });
       payment: order.payment_method,
       amount: order.amount,
       duplicate: isDup,
-      channels: { d1: d1result, sheets, facebook_capi: facebookCapi },
+      channels: { d1: d1result, facebook_capi: facebookCapi },
     }));
 
     // Step 8: Success only if at least one channel worked
     // Critical channels: D1 + Google Sheets determine order success
-    const successCount = [d1result, sheets, facebookCapi].filter((c) => c.ok).length;
-    const skippedCount = [d1result, sheets].filter((c) => c.skipped).length;
-    const allChannelsSkipped = skippedCount === 2;
+    const successCount = [d1result, facebookCapi].filter((c) => c.ok).length;
+    const skippedCount = [d1result].filter((c) => c.skipped).length;
+    const allChannelsSkipped = skippedCount === 1;
 
     if (successCount === 0) {
       const errorMessage = allChannelsSkipped
@@ -772,7 +772,7 @@ console.log('[KV-VERIFY] order write', { key: rateKey, type: 'rate_limit' });
       return new Response(
         JSON.stringify({
           ok: false,        error: errorMessage,
-        debug: { d1: d1result, sheets, facebook_capi: facebookCapi },
+        debug: { d1: d1result, facebook_capi: facebookCapi },
       }),
         { status: 500, headers: jsonHeaders(env) }
       );
@@ -785,10 +785,9 @@ console.log('[KV-VERIFY] order write', { key: rateKey, type: 'rate_limit' });
         duplicate: isDup,
         channels: {
           d1: d1result.ok || d1result.skipped || false,
-          sheets: sheets.ok || sheets.skipped || false,
           facebook_capi: facebookCapi.ok || facebookCapi.skipped || false,
         },
-        debug: { d1: d1result, sheets },
+        debug: { d1: d1result },
       }),
       { status: 200, headers: jsonHeaders(env) }
     );
