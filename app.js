@@ -1574,7 +1574,7 @@ function build(status){
     name: $('#cName').value.trim(),
 
 
-    phone: $('#cPhone').value.trim(),
+    phone: $('#tcPhoneInput').value.trim(),
 
 
     paymentMethod: m,
@@ -1628,7 +1628,7 @@ function validate(p){
   if(p.name.length < 2){ $('#cName').focus(); return 'पूरा नाम दर्ज करें।'; }
 
 
-  if(!/^[6-9]\d{9}$/.test(p.phone)){ $('#cPhone').focus(); return 'सही 10 अंकों का मोबाइल नंबर दर्ज करें।'; }
+  if(!/^[6-9]\d{9}$/.test(p.phone)){ $('#tcPhoneInput').focus(); return 'सही 10 अंकों का मोबाइल नंबर दर्ज करें।'; }
 
 
   return '';
