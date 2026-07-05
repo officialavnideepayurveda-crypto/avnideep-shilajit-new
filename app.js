@@ -1582,7 +1582,7 @@ function build(status){
     paymentMethod: m,
 
 
-    amount: 1250,
+    amount: m === 'prepaid' ? 999 : 1250,
 
 
     product: 'Avnideep 6Pro Vitality Shilajit Capsules',
