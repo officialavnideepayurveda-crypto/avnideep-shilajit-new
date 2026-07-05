@@ -190,7 +190,7 @@
     // Check sessionStorage dedup flag
     var dedupKey = 'avn_purchase_fired_' + orderId;
     var alreadyFired = false;
-    try { alreadyFired = !!sessionStorage.getItem(dedupKey); } catch(e){}
+    try { alreadyFired = !!sessionStorage.getItem(dedupKey) || !!localStorage.getItem(dedupKey); } catch(e){}
 
     // Recover prepaid order data from sessionStorage
     var storedPhone = '';
@@ -259,7 +259,7 @@
 
       // 3) Mark dedup flag for this order
       purchaseTracked = true;
-      try { sessionStorage.setItem(dedupKey, '1'); } catch(e){}
+      try { sessionStorage.setItem(dedupKey, '1'); localStorage.setItem(dedupKey, '1'); } catch(e){}
     }
 
     if (shouldTrackPurchase) {
