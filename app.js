@@ -455,8 +455,7 @@ function initCheckoutUI() {
     dataLayerPush({event:'Lead'});
 
 
-function dataLayerPush(obj) {
-  try { if (typeof dataLayer !== 'undefined' && dataLayer) dataLayer.push(obj); } catch(e) {}}
+
 
 
 
@@ -843,6 +842,10 @@ var WA_URL = "https://wa.me/917060101043?text=Hello%20I%20want%20to%20order%20Av
 
 
 var submitting = false;
+
+function dataLayerPush(obj) {
+  try { if (typeof dataLayer !== 'undefined' && Array.isArray(dataLayer)) { dataLayer.push(obj); } } catch(e) {}}
+
 
 
 var UTM_DEFAULTS = {source:'facebook', medium:'cpc', campaign:'avnideep_6pro'};
