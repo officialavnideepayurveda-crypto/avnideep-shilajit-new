@@ -2187,7 +2187,7 @@ function initForm(){
       showSuccess('prepaid_whatsapp', payload.orderId);
 
 
-      try{ if (!_isAdminPhone(payload.phone)) fbq('track', 'Purchase', {value:payload.amount, currency:'INR', content_name:'AVN-6PRO-001', content_type:'product', order_id:payload.orderId, eventID:payload.orderId, method:'whatsapp_fallback'}); }catch(e){}
+      
 
 
 
@@ -2214,7 +2214,7 @@ function initForm(){
       if(apiSuccess){
 
 
-        try{ if (!_isAdminPhone(payload.phone)) fbq('track', 'Purchase', {value:payload.amount, currency:'INR', content_name:'AVN-6PRO-001', content_type:'product', order_id:payload.orderId, eventID:payload.orderId}); }catch(e){}
+        
 
 
         window.location.href = '/thank-you?order_id=' + encodeURIComponent(payload.orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.name) + '&method=cod';
@@ -2232,7 +2232,7 @@ function initForm(){
         }
 
 
-        try{ if (!_isAdminPhone(payload.phone)) fbq('track', 'Purchase', {value:payload.amount, currency:'INR', content_name:'AVN-6PRO-001', content_type:'product', order_id:payload.orderId, eventID:payload.orderId, method:'whatsapp_fallback'}); }catch(e){}
+        
 
 
         window.location.href = '/thank-you?order_id=' + encodeURIComponent(payload.orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.name) + '&method=cod_whatsapp&wa_url=' + encodeURIComponent(waOrderUrl);
