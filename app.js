@@ -372,10 +372,9 @@ function initCheckoutUI() {
 
 
   form.addEventListener('submit', async function(e) {
-
+    return; // Order processing handled by main handler
 
     e.preventDefault();
-
 
     if (!validateStep(3)) return;
 
@@ -724,9 +723,6 @@ n    // Live analytics: form_open
 
           sessionStorage.setItem('orderMethod', 'cod');
           try { sessionStorage.setItem('avn_purchase_fired_' + orderId, '1'); localStorage.setItem('avn_purchase_fired_' + orderId, '1'); } catch(e) {}
-
-
-          try { if (typeof fbq === 'function' ) fbq('track', 'Purchase', { value: amount, currency: 'INR', content_name: 'AVN-6PRO-001', content_type: 'product', order_id: orderId, eventID: orderId }); } catch(e) {}
 
 
           window.location.href = '/thank-you.html?order_id=' + orderId + '&name=' + encodeURIComponent(payload.name) + '&amount=' + amount + '&method=cod';
@@ -1675,7 +1671,7 @@ function fetchT(url, opt, ms){
 async function sendOrder(payload, retries){
 
 
-  retries = retries || 2;
+  retries = retries ?? 2;
 
 
   var lastErr = null;
@@ -2204,13 +2200,12 @@ function initForm(){
 
 
       if(apiSuccess){
-
-
-        
-
-
-        try { sessionStorage.setItem('avn_purchase_fired_' + payload.orderId, '1'); localStorage.setItem('avn_purchase_fired_' + payload.orderId, '1'); } catch(e) {}
-        window.location.href = '/thank-you?order_id=' + encodeURIComponent(payload.orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.name) + '&method=cod';
+        var orderId = result.orderId || payload.orderId;
+        dataLayer.push({event:'Purchase', value:1250, currency:'INR'});
+        try{ if(typeof fbq === 'function') fbq('track', 'Purchase', {value:1250, currency:'INR', content_name:'AVN-6PRO-001', content_type:'product', order_id:orderId, eventID:orderId}); }catch(e){}
+        sendCAPIEvent('Purchase', orderId, {value:1250, currency:'INR', content_name:'AVN-6PRO-001', content_type:'product', order_id:orderId});
+        try { sessionStorage.setItem('avn_purchase_fired_' + orderId, '1'); localStorage.setItem('avn_purchase_fired_' + orderId, '1'); } catch(e) {}
+        window.location.href = '/thank-you?order_id=' + encodeURIComponent(orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.name) + '&method=cod';
 
 
       } else {
@@ -2228,6 +2223,9 @@ function initForm(){
         
 
 
+        dataLayer.push({event:'Purchase', value:1250, currency:'INR', method:'whatsapp_fallback'});
+        try{ if(typeof fbq === 'function') fbq('track', 'Purchase', {value:1250, currency:'INR', content_name:'AVN-6PRO-001', content_type:'product', order_id:payload.orderId, eventID:payload.orderId}); }catch(e){}
+        sendCAPIEvent('Purchase', payload.orderId, {value:1250, currency:'INR', content_name:'AVN-6PRO-001', content_type:'product', order_id:payload.orderId});
         try { sessionStorage.setItem('avn_purchase_fired_' + payload.orderId, '1'); localStorage.setItem('avn_purchase_fired_' + payload.orderId, '1'); } catch(e) {}
         window.location.href = '/thank-you?order_id=' + encodeURIComponent(payload.orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.name) + '&method=cod_whatsapp&wa_url=' + encodeURIComponent(waOrderUrl);
 

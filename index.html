@@ -1621,6 +1621,7 @@ function initForm(){
   }
 
   form.addEventListener('submit', async function(e){
+    return; // Checkout handled by app.js
     try{
     e.preventDefault();
     if(submitting) return;
@@ -1646,16 +1647,6 @@ function initForm(){
       sendCAPIEvent('Lead', leadEventId, {value:payload.amount, currency:'INR', content_name:'AVN-6PRO-001'});
 
     if(m === 'prepaid'){
-      // Fire-and-forget send to backend so D1 receives an initial record for prepaid orders
-      try{
-        fetch('/api/order', {
-          method: 'POST',
-          headers: {'Content-Type':'application/json'},
-          body: JSON.stringify(payload),
-          keepalive: true
-        }).catch(function(e){ console.warn('background order save failed', e); });
-      }catch(e){ console.warn('background order save error', e); }
-
       // Open Razorpay checkout directly instead of redirecting to payment.html
       try {
         var rzpResult = await openRazorpayCheckout(payload);
@@ -1675,23 +1666,6 @@ function initForm(){
         submitting = false;
       }
       return;
-    }
-
-    // Try backend API next
-    var apiSuccess = false;
-    var apiError = '';
-    try{
-      var result = await sendOrder(payload, 1); // Only 1 retry to fail fast
-      if(result && result.ok !== false){
-        apiSuccess = true;
-        try{ sessionStorage.setItem('avn_last_order', result.orderId || ''); }catch(e){}
-      } else if(result && result.error){
-        apiError = String(result.error);
-      }
-    }catch(ex){
-      apiError = String(ex.message || ex || 'Unknown API error');
-      console.warn('API unavailable, using WhatsApp fallback:', apiError);
-      apiSuccess = false;
     }
 
     // Build WhatsApp pre-filled URL with order details
@@ -1724,7 +1698,6 @@ function initForm(){
         showErr(err, 'Payment order backend पर सेव नहीं हुआ: ' + apiError + '। WhatsApp fallback भेजा जा रहा है।');
       }
       showSuccess('prepaid_whatsapp', payload.orderId);
-      dataLayer.push({event:'Purchase', value:payload.amount, currency:'INR', method:'whatsapp_fallback'});
 
       setTimeout(function(){ window.open(waOrderUrl, '_blank', 'noopener'); }, 1000);
       form.reset();
@@ -1733,22 +1706,11 @@ function initForm(){
     } else {
       // COD flow: Show success when backend saved, otherwise use WhatsApp fallback
       if(apiSuccess){
-        dataLayer.push({event:'Purchase', value:1250, currency:'INR'});
-        var purchEventId = 'purch_' + Date.now() + '_' + Math.random().toString(36).substring(2,8);
-        try{ if(typeof fbq === 'function') fbq('track', 'Purchase', {value:1250, currency:'INR', content_name:'AVN-6PRO-001', content_type:'product', order_id:payload.orderId, eventID:purchEventId}); }catch(e){}
-        sendCAPIEvent('Purchase', purchEventId, {value:1250, currency:'INR', content_name:'AVN-6PRO-001', content_type:'product', order_id:payload.orderId});
-        try{ sessionStorage.setItem('avn_purchase_fired_' + payload.orderId, '1'); }catch(e){}
         window.location.href = '/thank-you?order_id=' + encodeURIComponent(payload.orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.name) + '&method=cod';
       } else {
         if(apiError){
           showErr(err, 'ऑर्डर backend पर सेव नहीं हुआ: ' + apiError + '। WhatsApp fallback भेजा जा रहा है।');
         }
-        dataLayer.push({event:'Purchase', value:1250, currency:'INR', method:'whatsapp_fallback'});
-        var purchFallbackId = 'purch_fb_' + Date.now() + '_' + Math.random().toString(36).substring(2,8);
-        try{ if(typeof fbq === 'function') fbq('track', 'Purchase', {value:1250, currency:'INR', content_name:'AVN-6PRO-001', content_type:'product', order_id:payload.orderId, eventID:purchFallbackId}); }catch(e){}
-        sendCAPIEvent('Purchase', purchFallbackId, {value:1250, currency:'INR', content_name:'AVN-6PRO-001', content_type:'product', order_id:payload.orderId});
-        try{ sessionStorage.setItem('avn_purchase_fired_' + payload.orderId, '1'); }catch(e){}
-
         window.location.href = '/thank-you?order_id=' + encodeURIComponent(payload.orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.name) + '&method=cod_whatsapp&wa_url=' + encodeURIComponent(waOrderUrl);
         form.reset();
         updatePay();

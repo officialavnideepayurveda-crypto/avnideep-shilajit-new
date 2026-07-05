@@ -224,7 +224,7 @@
     function trackFacebookPurchase() {
       if (purchaseTracked || !shouldTrackPurchase) return;
 
-      var eventId = razorpayPaymentId || genEventId('purch_thanks');
+      var eventId = orderId || razorpayPaymentId || genEventId('purch_thanks');
       var eventParams = {
         value: amount,
         currency: 'INR',
