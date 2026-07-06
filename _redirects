@@ -20,3 +20,6 @@
 /buy     /#checkout    301
 /order   /#checkout    301
 # /thank-you handled by Workers clean URL (auto serves thank-you.html)
+
+# Redirect old shop.html to homepage - contains old Purchase tracking code
+/shop.html  /  301
