@@ -1070,7 +1070,6 @@ function initScroll(){
     b.addEventListener('click', function(e){
       if(window._lastIC && Date.now() - window._lastIC < 3000) return; window._lastIC = Date.now();
       e.preventDefault();
-      dataLayer.push({event:'InitiateCheckout', value:1250, currency:'INR'});
       var icoEventId = 'ico_' + Date.now() + '_' + Math.random().toString(36).substring(2,8);
       try{ if(typeof fbq === 'function') fbq('track', 'InitiateCheckout', {value:1250, currency:'INR', content_name:'AVN-6PRO-001', eventID:icoEventId}); }catch(e){}
       sendCAPIEvent('InitiateCheckout', icoEventId, {value:1250, currency:'INR', content_name:'AVN-6PRO-001'});
@@ -1148,7 +1147,6 @@ function initVideo(){
       b.innerHTML = '';
       b.style.aspectRatio = '16/9';
       b.appendChild(f);
-      dataLayer.push({event:'ViewContent', content_name:'Doctor Video'});
       var vcEventId = 'vc_' + Date.now() + '_' + Math.random().toString(36).substring(2,8);
       try{ if(typeof fbq === 'function') fbq('track', 'ViewContent', {content_name:'Doctor Video', content_type:'video', eventID:vcEventId}); }catch(e){}
       sendCAPIEvent('ViewContent', vcEventId, {content_name:'Doctor Video', content_type:'video'});
@@ -1641,7 +1639,6 @@ function initForm(){
     var origHTML = btn.innerHTML;
     btn.innerHTML = '<span>⏳ Processing... कृपया रुकें</span>';
 
-    dataLayer.push({event:'Lead', value:payload.amount, currency:'INR'});
       var leadEventId = 'lead_' + Date.now() + '_' + Math.random().toString(36).substring(2,8);
       try{ if(typeof fbq === 'function') fbq('track', 'Lead', {value:payload.amount, currency:'INR', content_name:'AVN-6PRO-001', eventID:leadEventId}); }catch(e){}
       sendCAPIEvent('Lead', leadEventId, {value:payload.amount, currency:'INR', content_name:'AVN-6PRO-001'});

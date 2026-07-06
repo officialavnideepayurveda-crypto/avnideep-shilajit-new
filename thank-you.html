@@ -179,6 +179,7 @@
     var name = params.get('name') || '';
     var method = params.get('method') || '';
     var waUrl = params.get('wa_url') || '';
+    var isDuplicate = params.get('duplicate') === 'true';
 
     // Razorpay redirect params
     var razorpayPaymentId = params.get('razorpay_payment_id') || '';
@@ -213,7 +214,7 @@
     if (amount === null || isNaN(amount)) amount = isRazorpaySuccess ? 999 : 1250;
 
     // Skip if already fired by index.html
-    var shouldTrackPurchase = (isRazorpaySuccess || isConfirmedCod) && !alreadyFired;
+    var shouldTrackPurchase = (isRazorpaySuccess || isConfirmedCod) && !alreadyFired && !isDuplicate;
 
     function genEventId(prefix) {
       return (prefix || 'purch') + '_' + Date.now() + '_' + Math.random().toString(36).substring(2,10);
@@ -243,19 +244,7 @@
         console.warn('FB Pixel error:', e);
       }
 
-      // 2) Server-side CAPI (same eventID = dedup by Meta)
-      try {
-        fetch('/api/events', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            event_name: 'Purchase',
-            event_id: eventId,
-            event_source_url: window.location.href.split('?')[0],
-            custom_data: eventParams
-          })
-        }).catch(function(){});
-      } catch(e){}
+
 
       // 3) Mark dedup flag for this order
       purchaseTracked = true;
@@ -271,7 +260,6 @@
     // === GTM / dataLayer Purchase Event ===
     if (shouldTrackPurchase) {
       try {
-        dataLayer.push({event:'Purchase', value:amount, currency:'INR', order_id:orderId});
       } catch(e) {}
     }
 

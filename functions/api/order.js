@@ -510,7 +510,7 @@ async function sendFacebookCAPI(order, env, eventName = 'Purchase', requestUa = 
       phone: order.phone,
       fbp: order.fbp,
       fbc: order.fbc,
-      ip: (order.ip_address && order.ip_address !== 'unknown') ? order.ip_address : '0.0.0.0',
+      ip: (order.ip_address && order.ip_address !== 'unknown') ? order.ip_address : '',
       ua: order.user_agent || requestUa || '',
       orderId: order.order_id
     });
@@ -549,10 +549,57 @@ async function sendFacebookCAPI(order, env, eventName = 'Purchase', requestUa = 
 }
 
 // ============================================================
-// 4️⃣ GOOGLE SHEETS (Apps Script Web App)
-// Saves order to your Google Sheet automatically
+// 4a️⃣ PURCHASE CAPI IDEMPOTENCY
+// Ensures Purchase CAPI is sent exactly once per order_id
 // ============================================================
-// CORS PRE-FLIGHT
+
+/**
+ * Read-only check: has Purchase CAPI already been sent for this order_id?
+ * Step 1 in the idempotency flow. Does NOT mark as sent.
+ * Returns { canSend: boolean, reason: string }
+ */
+async function canSendPurchaseCAPI(orderId, env) {
+  try {
+    const row = await env.DB.prepare(
+      'SELECT purchase_capi_sent FROM orders WHERE order_id = ?'
+    ).bind(orderId).first();
+
+    if (!row) {
+      console.warn('CAPI_CHECK_ORDER_NOT_FOUND', orderId);
+      return { canSend: false, reason: 'order_not_found' };
+    }
+
+    if (row.purchase_capi_sent === 1) {
+      return { canSend: false, reason: 'already_sent' };
+    }
+
+    return { canSend: true, reason: 'not_sent' };
+  } catch (err) {
+    console.error('CAPI_CHECK_FAILED', orderId, err.message);
+    // Column might not exist yet (pre-migration) - fail-safe: don't send
+    return { canSend: false, reason: 'check_error', error: err.message };
+  }
+}
+
+/**
+ * Mark Purchase CAPI as sent in D1.
+ * Step 4 in the idempotency flow - only call AFTER Meta API confirms success.
+ * If Meta fails, do NOT call this - keep purchase_capi_sent = 0 for retry.
+ */
+async function markPurchaseCAPISent(orderId, env) {
+  try {
+    await env.DB.prepare(
+      'UPDATE orders SET purchase_capi_sent = 1 WHERE order_id = ?'
+    ).run();
+    console.log('CAPI_PURCHASE_MARKED_SENT', orderId);
+  } catch (err) {
+    console.error('CAPI_MARK_FAILED', orderId, err.message);
+  }
+}
+
+// ============================================================
+// 5️⃣ GOOGLE SHEETS (Apps Script Web App)
+// Saves order to your Google Sheet automatically
 // ============================================================
 export async function onRequestOptions({ env }) {
   return new Response(null, { status: 204, headers: jsonHeaders(env) });
@@ -689,29 +736,42 @@ console.log('[KV-VERIFY] order write', { key: rateKey, type: 'rate_limit' });
       );
     }
 
-    // Step 5: Duplicate detection — check D1 for existing order with same phone+amount in last 60s
-    // Prevents double counting when client retries after network timeout
+    // Step 5: 🛡️ DUPLICATE DETECTION - Two-layer check
+    // Layer 1: Exact order_id match in D1 (handles retries with same ID)
+    // Layer 2: Same phone + amount within 30 seconds (handles retries with different IDs)
     let isDup = false;
     let existingOrderId = null;
     try {
       if (env.DB) {
-        const dupResult = await env.DB.prepare(
-          `SELECT order_id, amount, created_at FROM orders WHERE phone = ? ORDER BY created_at DESC LIMIT 1`
-        ).bind(order.phone).first();
-        
-        if (dupResult) {
-          const lastTime = new Date(dupResult.created_at).getTime();
-          const now = Date.now();
-          // If same amount and within 60 seconds, it's a duplicate
-          if (String(dupResult.amount) === String(order.amount) && (now - lastTime) < 60000) {
+        // LAYER 1: Check if exact order_id already exists in D1 (most reliable)
+        if (order.order_id) {
+          const idCheck = await env.DB.prepare(
+            `SELECT order_id FROM orders WHERE order_id = ?`
+          ).bind(order.order_id).first();
+          if (idCheck) {
             isDup = true;
-            existingOrderId = dupResult.order_id;
-            console.log("DUPLICATE_DETECTED", { existing: dupResult.order_id, new: order.order_id, phone: order.phone });
+            existingOrderId = idCheck.order_id;
+            console.log("DUPLICATE_BY_ORDER_ID", { existing: existingOrderId, new: order.order_id });
+          }
+        }
+        
+        // Layer 2 (fallback): Phone + amount within 60s (when no KV)
+        if (!isDup) {
+          const dupResult = await env.DB.prepare(
+            `SELECT order_id, amount, created_at FROM orders WHERE phone = ? ORDER BY created_at DESC LIMIT 1`
+          ).bind(order.phone).first();
+          if (dupResult) {
+            const lastTime = new Date(dupResult.created_at).getTime();
+            const now = Date.now();
+            if (String(dupResult.amount) === String(order.amount) && (now - lastTime) < 30000) {
+              isDup = true;
+              existingOrderId = dupResult.order_id;
+              console.log("DUPLICATE_BY_PHONE_AMOUNT", { existing: existingOrderId, phone: order.phone });
+            }
           }
         }
       }
     } catch (dupErr) {
-      // Dedup check failed silently — proceed with normal flow
       console.warn("DEDUP_CHECK_FAILED", String(dupErr.message || dupErr));
     }
 
@@ -730,15 +790,36 @@ console.log('[KV-VERIFY] order write', { key: rateKey, type: 'rate_limit' });
       );
     }
 
-    // Step 6: 🚀 FIRE ALL CHANNELS — D1 + Sheets + Facebook CAPI awaited (critical)
-    // Telegram + Email fire-and-forget (just notifications, not business-critical)
-    const allResults = await Promise.allSettled([
-      saveToD1(order, env),
-      sendFacebookCAPI(order, env, order.payment_method === 'prepaid' ? 'InitiateCheckout' : 'Purchase', request.headers.get('User-Agent') || ''),
-    ]);
-    const [d1result, facebookCapi] = allResults.map(r =>
-      r.status === "fulfilled" ? r.value : { ok: false, skipped: false, error: String(r.reason?.message || r.reason || "Channel failed") }
-    );
+    // Step 6: 🚀 SAVE TO D1 FIRST (source of truth - UNIQUE constraint on order_id)
+    // Facebook CAPI only fires AFTER D1 confirms new order, preventing duplicate FB events
+    const d1result = await saveToD1(order, env);
+
+    // Only send Facebook CAPI if D1 saved successfully (not a duplicate)
+    let facebookCapi = { skipped: true, reason: "d1_not_confirmed" };
+    if (d1result.ok && !d1result.note?.includes('duplicate')) {
+      const eventName = order.payment_method === 'prepaid' ? 'InitiateCheckout' : 'Purchase';
+      if (eventName === 'Purchase') {
+        // Idempotency check: has Purchase CAPI already been sent for this order?
+        const capiCheck = await canSendPurchaseCAPI(order.order_id, env);
+        if (capiCheck.canSend) {
+          facebookCapi = await sendFacebookCAPI(order, env, 'Purchase', request.headers.get('User-Agent') || '');
+          // Step 4: Only mark as sent if Meta API confirmed success
+          if (facebookCapi && facebookCapi.ok) {
+            await markPurchaseCAPISent(order.order_id, env);
+          }
+        } else {
+          console.log('CAPI_PURCHASE_SKIPPED', { order_id: order.order_id, reason: capiCheck.reason });
+        }
+      } else {
+        // InitiateCheckout: no idempotency needed (fires before payment for prepaid)
+        facebookCapi = await sendFacebookCAPI(order, env, 'InitiateCheckout', request.headers.get('User-Agent') || '');
+      }
+    } else if (d1result.note?.includes('duplicate')) {
+      // D1 UNIQUE constraint caught duplicate order_id
+      isDup = true;
+      existingOrderId = order.order_id;
+      console.log("DUPLICATE_BY_D1_UNIQUE", { order_id: order.order_id });
+    }
 
     // Fire Telegram + Email in background — don't block the response
     waitUntil(sendTelegram(order, env).catch(() => {}));
@@ -762,12 +843,7 @@ console.log('[KV-VERIFY] order write', { key: rateKey, type: 'rate_limit' });
     // Critical channels: D1 + Google Sheets determine order success
     const successCount = [d1result, facebookCapi].filter((c) => c.ok).length;
     const skippedCount = [d1result].filter((c) => c.skipped).length;
-    const allChannelsSkipped = skippedCount === 1;
-
-    if (successCount === 0) {
-      const errorMessage = allChannelsSkipped
-        ? "Order backend not configured. कृपया site settings जांचें।"
-        : "Order save failed. कृपया WhatsApp पर contact करें।";
+      const errorMessage = "Order save failed. D1 database error. कृपया WhatsApp पर contact करें।";
 
       return new Response(
         JSON.stringify({
@@ -784,8 +860,8 @@ console.log('[KV-VERIFY] order write', { key: rateKey, type: 'rate_limit' });
         orderId: order.order_id,
         duplicate: isDup,
         channels: {
-          d1: d1result.ok || d1result.skipped || false,
-          facebook_capi: facebookCapi.ok || facebookCapi.skipped || false,
+          d1: d1result.ok || false,
+          facebook_capi: facebookCapi.ok || false,
         },
         debug: { d1: d1result },
       }),
@@ -903,7 +979,19 @@ export async function onRequestPatch({ request, env }) {
     const emailResult = await sendEmail(confirmOrder, env);
     
     // For prepaid: POST only sent InitiateCheckout, send Purchase on payment confirmation
-    const facebookCapiResult = await sendFacebookCAPI(confirmOrder, env, 'Purchase', request.headers.get('User-Agent') || '');
+    // Idempotency: check purchase_capi_sent first - only send once per order_id
+    let facebookCapiResult = { skipped: true, reason: 'already_sent_or_check_failed' };
+    const capiCheck = await canSendPurchaseCAPI(confirmOrder.order_id, env);
+    if (capiCheck.canSend) {
+      facebookCapiResult = await sendFacebookCAPI(confirmOrder, env, 'Purchase', request.headers.get('User-Agent') || '');
+      // Step 4: Only mark as sent if Meta API confirmed success
+      if (facebookCapiResult && facebookCapiResult.ok) {
+        await markPurchaseCAPISent(confirmOrder.order_id, env);
+        console.log('CAPI_PURCHASE_SENT', { order_id: confirmOrder.order_id });
+      }
+    } else {
+      console.log('CAPI_PURCHASE_SKIPPED', { order_id: confirmOrder.order_id, reason: capiCheck.reason });
+    }
     
     return new Response(
       JSON.stringify({

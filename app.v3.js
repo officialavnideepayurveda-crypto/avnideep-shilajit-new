@@ -452,7 +452,6 @@ function initCheckoutUI() {
     trackFbEvent('Lead', { content_name: 'AVN-6PRO-001', value: amount, currency: 'INR' });
 
 
-    try{ dataLayer.push({event:'Lead'}); }catch(e){}
 
 
 
@@ -584,7 +583,7 @@ n    // Live analytics: form_open
             if (typeof trackFbEvent === 'function') {
 
 
-              trackFbEvent('Purchase', { value: payload.amount || 1250, currency: 'INR', content_ids: [payload.productId || 'AVN6PRO'], content_type: 'product' }, rzpResult.orderId);
+      
 
 
             }
@@ -665,7 +664,7 @@ n    // Live analytics: form_open
 
           _sendAnalytics('purchase');
 
-          try { trackFbEvent('Purchase', { content_name: 'AVN-6PRO-001', value: payload.amount, currency: 'INR' }, rzpResult.orderId); } catch(e) {}
+  
 
 
           try { sessionStorage.setItem('avn_purchase_fired_' + rzpResult.orderId, '1'); localStorage.setItem('avn_purchase_fired_' + rzpResult.orderId, '1'); } catch(e) {}
@@ -729,7 +728,8 @@ n    // Live analytics: form_open
           try { sessionStorage.setItem('avn_purchase_fired_' + orderId, '1'); localStorage.setItem('avn_purchase_fired_' + orderId, '1'); } catch(e) {}
 
 
-          window.location.href = '/thank-you.html?order_id=' + orderId + '&name=' + encodeURIComponent(payload.name) + '&amount=' + amount + '&method=cod';
+          var dupParam = (typeof result !== 'undefined' && result && result.duplicate) ? '&duplicate=true' : '';
+          window.location.href = '/thank-you.html?order_id=' + orderId + '&name=' + encodeURIComponent(payload.name) + '&amount=' + amount + '&method=cod' + dupParam;
 
 
         } else {
@@ -1059,7 +1059,6 @@ function initScroll(){
 
       _sendAnalytics('form_open');
 
-      try{ dataLayer.push({event:'InitiateCheckout', value:payload.amount, currency:'INR'}); }catch(e){}
 
 
       trackFbEvent('InitiateCheckout', {value:payload.amount, currency:'INR', content_name:'AVN-6PRO-001'});
@@ -1297,7 +1296,6 @@ function initVideo(){
       b.appendChild(f);
 
 
-      try{ dataLayer.push({event:'ViewContent', content_name:'Avnideep 6Pro Vitality Shilajit'}); }catch(e){}
 
 
       trackFbEvent('ViewContent', {content_name:'Avnideep 6Pro Vitality Shilajit', content_type:'product'});
@@ -1999,7 +1997,6 @@ function initForm(){
 
 
 
-    try{ dataLayer.push({event:'Lead', value:payload.amount, currency:'INR'}); }catch(e){}
 
 
       trackFbEvent('Lead', {value:payload.amount, currency:'INR', content_name:'AVN-6PRO-001'});
@@ -2208,11 +2205,14 @@ function initForm(){
 
       if(apiSuccess){
         var orderId = result.orderId || payload.orderId;
-        try{ dataLayer.push({event:'Purchase', value:1250, currency:'INR'}); }catch(e){}
-        try{ if(typeof fbq === 'function') fbq('track', 'Purchase', {value:1250, currency:'INR', content_name:'AVN-6PRO-001', content_type:'product', order_id:orderId, eventID:orderId}); }catch(e){}
-        sendCAPIEvent('Purchase', orderId, {value:1250, currency:'INR', content_name:'AVN-6PRO-001', content_type:'product', order_id:orderId});
+        var isDup = result && result.duplicate === true;
+        if (!isDup) {
+  
+  
+        }
         try { sessionStorage.setItem('avn_purchase_fired_' + orderId, '1'); localStorage.setItem('avn_purchase_fired_' + orderId, '1'); } catch(e) {}
-        window.location.href = '/thank-you?order_id=' + encodeURIComponent(orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.name) + '&method=cod';
+        var dupParam = isDup ? '&duplicate=true' : '';
+        window.location.href = '/thank-you?order_id=' + encodeURIComponent(orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.name) + '&method=cod' + dupParam;
 
 
       } else {
@@ -2230,9 +2230,8 @@ function initForm(){
         
 
 
-        try{ dataLayer.push({event:'Purchase', value:1250, currency:'INR', method:'whatsapp_fallback'}); }catch(e){}
-        try{ if(typeof fbq === 'function') fbq('track', 'Purchase', {value:1250, currency:'INR', content_name:'AVN-6PRO-001', content_type:'product', order_id:payload.orderId, eventID:payload.orderId}); }catch(e){}
-        sendCAPIEvent('Purchase', payload.orderId, {value:1250, currency:'INR', content_name:'AVN-6PRO-001', content_type:'product', order_id:payload.orderId});
+
+
         try { sessionStorage.setItem('avn_purchase_fired_' + payload.orderId, '1'); localStorage.setItem('avn_purchase_fired_' + payload.orderId, '1'); } catch(e) {}
         window.location.href = '/thank-you?order_id=' + encodeURIComponent(payload.orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.name) + '&method=cod_whatsapp&wa_url=' + encodeURIComponent(waOrderUrl);
 
