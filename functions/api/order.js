@@ -843,6 +843,7 @@ console.log('[KV-VERIFY] order write', { key: rateKey, type: 'rate_limit' });
     // Critical channels: D1 + Google Sheets determine order success
     const successCount = [d1result, facebookCapi].filter((c) => c.ok).length;
     const skippedCount = [d1result].filter((c) => c.skipped).length;
+    if (!d1result.ok) {
       const errorMessage = "Order save failed. D1 database error. कृपया WhatsApp पर contact करें।";
 
       return new Response(
