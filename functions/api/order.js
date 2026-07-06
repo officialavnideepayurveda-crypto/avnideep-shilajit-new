@@ -588,10 +588,10 @@ async function canSendPurchaseCAPI(orderId, env) {
  */
 async function markPurchaseCAPISent(orderId, env) {
   try {
-    await env.DB.prepare(
+    const markResult = await env.DB.prepare(
       'UPDATE orders SET purchase_capi_sent = 1 WHERE order_id = ?'
-    ).run();
-    console.log('CAPI_PURCHASE_MARKED_SENT', orderId);
+    ).bind(orderId).run();
+    console.log('CAPI_PURCHASE_MARKED_SENT', { order_id: orderId, changes: markResult?.meta?.changes });
   } catch (err) {
     console.error('CAPI_MARK_FAILED', orderId, err.message);
   }
