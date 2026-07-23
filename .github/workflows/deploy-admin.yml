@@ -1,0 +1,83 @@
+name: Deploy Admin Panel to Cloudflare Workers
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'admin-panel/admin-frontend/**'
+      - '.github/workflows/deploy-admin.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-production:
+    name: Deploy Admin Panel (Production)
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm install
+      
+      - name: Deploy Admin Frontend to Workers
+        working-directory: admin-panel/admin-frontend
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          npm install -D wrangler@latest
+          npx wrangler deploy --name avnideep-admin --env production
+      
+      - name: Deployment Status
+        if: success()
+        run: |
+          echo "✅ Admin Panel deployed successfully!"
+          echo "URL: https://admin.avnideepayurveda.in"
+      
+      - name: Deployment Failed
+        if: failure()
+        run: echo "❌ Admin Panel deployment failed!"
+
+  deploy-staging:
+    name: Deploy Admin Panel (Staging)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm install
+      
+      - name: Deploy Admin Frontend to Staging
+        working-directory: admin-panel/admin-frontend
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          npm install -D wrangler@latest
+          npx wrangler deploy --name avnideep-admin-staging --env staging
+      
+      - name: Staging Deployment Status
+        if: success()
+        run: echo "✅ Admin Panel Staging deployed successfully!"

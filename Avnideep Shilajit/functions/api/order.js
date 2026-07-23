@@ -1,0 +1,1059 @@
+// ============================================================
+// AVNIDEEP ORDER API v5 - EDGE OPTIMIZED
+// Storage: D1 (primary) + Google Sheets (backup) + Telegram + Email
+// Handles 1000+ concurrent users on Cloudflare free tier
+// ============================================================
+
+import { sendCAPIEvent, buildUserData, buildCustomData } from './_capi';
+
+const jsonHeaders = (env) => ({
+  "Access-Control-Allow-Origin": env.ALLOWED_ORIGIN || "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS, GET, PATCH",
+  "Access-Control-Allow-Headers": "Content-Type",
+  "Access-Control-Max-Age": "86400",
+  "Content-Type": "application/json; charset=utf-8", 
+  "Cache-Control": "no-store, no-cache, must-revalidate",
+});
+
+// Timeout wrapper for external calls (prevents hung requests)
+async function withTimeout(promise, ms = 5000, name = "request") {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error(`${name} timeout after ${ms}ms`)), ms))
+  ]);
+}
+
+const REQUIRED = ["name", "phone", "paymentMethod", "amount"];
+
+// ============================================================
+// HELPERS
+// ============================================================
+function escHtml(s) {
+  return String(s || "").replace(/[&<>"']/g, (c) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  }[c]));
+}
+
+function normalizeOrder(body, ip) {
+  return {
+    order_id: body.orderId || `AVN-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    name: String(body.name || "").trim().slice(0, 100),
+    phone: String(body.phone || "").trim().slice(0, 15),
+    pincode: String(body.pincode || "").trim().slice(0, 6),
+    address: String(body.address || "").trim().slice(0, 500),
+    payment_method: String(body.paymentMethod || "cod").trim().toLowerCase(),
+    amount: Number(body.amount || 0),
+    product: String(body.product || "Avnideep 6Pro Vitality Shilajit Capsules").slice(0, 100),
+    status: String(body.status || "cod_order").slice(0, 50),
+    page_url: String(body.pageUrl || "").slice(0, 300),
+    utr: String(body.utr || "").trim().slice(0, 50),
+    payment_note: String(body.paymentNote || "").trim().slice(0, 200),
+    reward_id: String(body.rewardId || "").trim().slice(0, 100),
+    reward_amount: Number(body.rewardAmount || 0),
+    created_at: body.createdAt || new Date().toISOString(),
+    ip_address: ip || "unknown",
+    user_agent: String(body.userAgent || "").slice(0, 200),
+    utm_source: String(body.utm_source || "").slice(0, 100),
+    utm_medium: String(body.utm_medium || "").slice(0, 100),
+    utm_campaign: String(body.utm_campaign || "").slice(0, 100),
+    source: String(body.source || "").trim().slice(0, 50),
+    fbp: String(body.fbp || "").slice(0, 100),
+    fbc: String(body.fbc || ""),
+  };
+}
+
+// ============================================================
+// 1️⃣ TELEGRAM NOTIFICATION (Instant Lead Alert)
+// ============================================================
+async function sendTelegram(order, env) {
+  if (!env.TELEGRAM_BOT_TOKEN || !env.TELEGRAM_CHAT_ID) {
+    return { skipped: true, reason: "telegram_credentials_missing" };
+  }
+
+  const isPrepaid = order.payment_method === "prepaid";
+  const emoji = isPrepaid ? "💳" : "💵";
+  const istTime = new Date(order.created_at).toLocaleString("en-IN", {
+    timeZone: "Asia/Kolkata",
+    day: "2-digit", month: "short", year: "numeric",
+    hour: "2-digit", minute: "2-digit", hour12: true
+  });
+
+  const text = [
+    `🛒 *NEW ORDER RECEIVED* ${emoji}`,
+    `━━━━━━━━━━━━━━━━━━`,
+    `🆔 Order: \`${order.order_id}\``,
+    `👤 Name: *${order.name}*`,
+    `📞 Phone: \`${order.phone}\``,
+    `📍 Pincode: ${order.pincode}`,
+    `🏠 Address: ${order.address}`,
+    `${emoji} Payment: *${order.payment_method.toUpperCase()}*`,
+    `💰 Amount: *₹${order.amount}*`,
+    `📦 Status: ${order.status}`,
+    order.utr ? `🔎 UTR: \`${order.utr}\`` : '',
+    order.payment_note ? `📝 Note: ${order.payment_note}` : '',
+    `🕒 Time: ${istTime}`,
+    `━━━━━━━━━━━━━━━━━━`,
+    `⚡ *ACTION:* Call ${order.phone} to confirm`,
+  ].filter(Boolean).join("\n");
+
+  try {
+    const res = await withTimeout(fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: env.TELEGRAM_CHAT_ID,
+        text: text,
+        parse_mode: "Markdown",
+        disable_web_page_preview: true,
+      }),
+    }), 4000, "telegram");
+
+    if (!res.ok) {
+      // Retry without markdown if Markdown parsing fails
+      const retryRes = await withTimeout(fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: env.TELEGRAM_CHAT_ID,
+          text: text.replace(/[*_`]/g, ""),
+          disable_web_page_preview: true,
+        }),
+      }), 4000, "telegram_retry");
+      return { ok: retryRes.ok, status: retryRes.status };
+    }
+    return { ok: true, status: res.status };
+  } catch (err) {
+    return { ok: false, error: String(err.message || err) };
+  }
+}
+
+// ============================================================
+// 2️⃣ D1 DATABASE (Primary Storage - Cloudflare Edge)
+// Fast SQLite at the edge - no external API calls needed
+// ============================================================
+async function saveToD1(order, env) {
+  if (!env.DB) {
+    return { skipped: true, reason: "d1_not_configured" };
+  }
+
+  try {
+    // Auto-create orders table if not exists (handles first run after deploy)
+    try {
+      await env.DB.prepare(
+        `CREATE TABLE IF NOT EXISTS orders (
+          order_id TEXT PRIMARY KEY,
+          name TEXT NOT NULL,
+          phone TEXT NOT NULL,
+          pincode TEXT DEFAULT '',
+          address TEXT DEFAULT '',
+          payment_method TEXT DEFAULT 'cod',
+          amount REAL DEFAULT 0,
+          product TEXT DEFAULT 'Avnideep 6Pro Vitality Shilajit Capsules',
+          status TEXT DEFAULT 'cod_order',
+          source TEXT DEFAULT '',
+          page_url TEXT DEFAULT '',
+          utr TEXT DEFAULT '',
+          payment_note TEXT DEFAULT '',
+          reward_id TEXT DEFAULT '',
+          reward_amount REAL DEFAULT 0,
+          created_at TEXT DEFAULT (datetime('now')),
+          ip_address TEXT DEFAULT '',
+          user_agent TEXT DEFAULT '',
+          utm_source TEXT DEFAULT '',
+          utm_medium TEXT DEFAULT '',
+          utm_campaign TEXT DEFAULT '',
+          fbp TEXT DEFAULT '',
+          fbc TEXT DEFAULT ''
+        )`
+      ).run();
+      try {
+        await env.DB.prepare(`ALTER TABLE orders ADD COLUMN source TEXT DEFAULT ''`).run();
+      } catch (alterErr) {
+        // ignore if column already exists or if D1 does not support alter in this context
+        if (String(alterErr.message || alterErr).indexOf('duplicate column name') < 0 && String(alterErr.message || alterErr).indexOf('already exists') < 0) {
+          console.log("D1_ALTER_COLUMN_FAILED", String(alterErr.message || alterErr).slice(0, 100));
+        }
+      }
+      try {
+        await env.DB.prepare(`ALTER TABLE orders ADD COLUMN reward_id TEXT DEFAULT ''`).run();
+      } catch (alterErr) {
+        if (String(alterErr.message || alterErr).indexOf('duplicate column name') < 0 && String(alterErr.message || alterErr).indexOf('already exists') < 0) {
+          console.log("D1_ALTER_COLUMN_FAILED", String(alterErr.message || alterErr).slice(0, 100));
+        }
+      }
+      try {
+        await env.DB.prepare(`ALTER TABLE orders ADD COLUMN reward_amount REAL DEFAULT 0`).run();
+      } catch (alterErr) {
+        if (String(alterErr.message || alterErr).indexOf('duplicate column name') < 0 && String(alterErr.message || alterErr).indexOf('already exists') < 0) {
+          console.log("D1_ALTER_COLUMN_FAILED", String(alterErr.message || alterErr).slice(0, 100));
+        }
+      }
+    } catch (tableErr) {
+      console.log("D1_TABLE_CREATE_SKIPPED", String(tableErr.message || tableErr).slice(0, 100));
+    }
+
+    // Retry D1 write up to 3 times
+    let query = null;
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        query = await env.DB.prepare(
+          `INSERT INTO orders (
+            order_id, name, phone, pincode, address, 
+            payment_method, amount, product, status, source, page_url,
+            created_at, ip_address, user_agent, 
+            utm_source, utm_medium, utm_campaign,
+            utr, payment_note, reward_id, reward_amount, fbp, fbc
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        ).bind(
+          order.order_id,
+          order.name,
+          order.phone,
+          order.pincode,
+          order.address,
+          order.payment_method,
+          order.amount,
+          order.product,
+          order.status,
+          order.source || '',
+          order.page_url,
+          order.created_at,
+          order.ip_address,
+          order.user_agent,
+          order.utm_source,
+          order.utm_medium,
+          order.utm_campaign,
+          order.utr || '',
+          order.payment_note || '',
+          order.reward_id || '',
+          order.reward_amount || 0,
+          order.fbp || '',
+          order.fbc || ''
+        ).run();
+        if (query && query.success) {
+          return { ok: true, status: 200, message: "Order saved to D1" };
+        }
+        // If attempt < 3, wait before retrying
+        if (attempt < 3) {
+          await new Promise(r => setTimeout(r, 200 * attempt));
+        }
+      } catch (retryErr) {
+        // On UNIQUE constraint, return success immediately (no retry needed)
+        if (String(retryErr.message || retryErr).indexOf("UNIQUE constraint") >= 0) {
+          console.log("D1_DUPLICATE_ORDER_ID", { order_id: order.order_id });
+          return { ok: true, status: 200, note: "duplicate_order_id" };
+        }
+        // If last attempt, rethrow
+        if (attempt === 3) throw retryErr;
+        await new Promise(r => setTimeout(r, 200 * attempt));
+      }
+    }
+    return { ok: false, error: "D1 insert failed after 3 retries" };
+  } catch (err) {
+    return { ok: false, error: String(err.message || err) };
+  }
+}
+
+// ============================================================
+// 3️⃣ EMAIL NOTIFICATION - 3 FREE PROVIDERS SUPPORTED
+// Auto-detects which provider to use based on env variables
+//   - Brevo (300 emails/day FREE forever) ⭐ RECOMMENDED
+//   - MailerSend (3000 emails/month FREE)
+//   - Web3Forms (250 emails/day FREE, no signup needed!)
+//   - Resend (only 100/day free - fallback)
+// ============================================================
+function buildEmailHtml(order) {
+  const isPrepaid = order.payment_method === "prepaid";
+  const paymentColor = isPrepaid ? "#00b248" : "#ff9800";
+  const paymentLabel = isPrepaid ? "💳 PREPAID" : "💵 COD";
+  const istTime = new Date(order.created_at).toLocaleString("en-IN", {
+    timeZone: "Asia/Kolkata",
+    day: "2-digit", month: "short", year: "numeric",
+    hour: "2-digit", minute: "2-digit", hour12: true
+  });
+
+  return `<!doctype html>
+<html><head><meta charset="utf-8"><title>New Order</title></head>
+<body style="margin:0;padding:0;background:#f4f4f4;font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f4f4f4;padding:20px 0">
+<tr><td align="center">
+<table width="600" cellpadding="0" cellspacing="0" border="0" style="background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,0.1);max-width:600px">
+  <tr><td style="background:linear-gradient(135deg,#7A0C0C,#B94A48);padding:24px;text-align:center">
+    <h1 style="color:#ffd54f;margin:0;font-size:24px;font-weight:900">🛒 NEW ORDER RECEIVED</h1>
+    <p style="color:#fff;margin:6px 0 0;font-size:14px;opacity:0.9">Avnideep Ayurveda</p>
+  </td></tr>
+  <tr><td style="padding:24px">
+    <div style="background:${paymentColor};color:#fff;padding:8px 16px;border-radius:50px;display:inline-block;font-weight:800;font-size:13px;margin-bottom:18px">
+      ${paymentLabel} • ₹${order.amount}
+    </div>
+    <h2 style="color:#333;margin:0 0 8px;font-size:20px">Order #${escHtml(order.order_id)}</h2>
+    <p style="color:#888;font-size:13px;margin:0 0 20px">${istTime}</p>
+    <table width="100%" cellpadding="10" cellspacing="0" border="0" style="background:#fafafa;border-radius:8px">
+      <tr><td width="120" style="color:#666;font-weight:600;font-size:13px;border-bottom:1px solid #eee">👤 Name</td>
+          <td style="color:#222;font-weight:700;font-size:14px;border-bottom:1px solid #eee">${escHtml(order.name)}</td></tr>
+      <tr><td style="color:#666;font-weight:600;font-size:13px;border-bottom:1px solid #eee">📞 Phone</td>
+          <td style="border-bottom:1px solid #eee">
+            <a href="tel:${escHtml(order.phone)}" style="color:#7A0C0C;font-weight:700;font-size:15px;text-decoration:none">${escHtml(order.phone)}</a>
+            &nbsp;•&nbsp;
+            <a href="https://wa.me/91${escHtml(order.phone)}?text=Hi%20${encodeURIComponent(order.name)}%2C%20your%20order%20${escHtml(order.order_id)}%20is%20being%20processed." style="color:#25D366;font-weight:700;font-size:13px;text-decoration:none">💬 WhatsApp</a>
+          </td></tr>
+      ${order.pincode ? `<tr><td style="color:#666;font-weight:600;font-size:13px;border-bottom:1px solid #eee">📍 Pincode</td>
+          <td style="color:#222;font-weight:600;font-size:14px;border-bottom:1px solid #eee">${escHtml(order.pincode)}</td></tr>` : ''}
+      ${order.address ? `<tr><td style="color:#666;font-weight:600;font-size:13px;border-bottom:1px solid #eee;vertical-align:top">🏠 Address</td>
+          <td style="color:#222;font-size:13px;line-height:1.5;border-bottom:1px solid #eee">${escHtml(order.address)}</td></tr>` : ''}
+      <tr><td style="color:#666;font-weight:600;font-size:13px;border-bottom:1px solid #eee">📦 Product</td>
+          <td style="color:#222;font-size:13px;border-bottom:1px solid #eee">${escHtml(order.product)}</td></tr>
+      ${order.utr ? `<tr><td style="color:#666;font-weight:600;font-size:13px;border-bottom:1px solid #eee">🔎 UTR</td><td style="color:#222;font-weight:700;font-size:14px;border-bottom:1px solid #eee">${escHtml(order.utr)}</td></tr>` : ''}
+      ${order.payment_note ? `<tr><td style="color:#666;font-weight:600;font-size:13px;border-bottom:1px solid #eee">📝 Note</td><td style="color:#222;font-weight:600;font-size:14px;border-bottom:1px solid #eee">${escHtml(order.payment_note)}</td></tr>` : ''}
+      <tr><td style="color:#666;font-weight:600;font-size:13px">💰 Total</td>
+          <td style="color:#7A0C0C;font-weight:900;font-size:18px">₹${order.amount}</td></tr>
+    </table>
+    <div style="background:#fff7e6;border-left:4px solid #ff9800;padding:14px;margin-top:20px;border-radius:6px">
+      <strong style="color:#7A0C0C;font-size:14px">⚡ ACTION REQUIRED:</strong>
+      <p style="color:#333;font-size:13px;margin:6px 0 0;line-height:1.5">Call <a href="tel:${escHtml(order.phone)}" style="color:#7A0C0C;font-weight:700">${escHtml(order.phone)}</a> to confirm this order ASAP. ${isPrepaid ? "Payment already received as prepaid order." : "Verify COD address before dispatch."}</p>
+    </div>
+    <p style="color:#aaa;font-size:11px;margin-top:24px;text-align:center">
+      Order ID: ${escHtml(order.order_id)} • IP: ${escHtml(order.ip_address)}
+    </p>
+  </td></tr>
+  <tr><td style="background:#222;color:#aaa;padding:14px;text-align:center;font-size:11px">
+    Avnideep Ayurveda Order System
+  </td></tr>
+</table></td></tr></table>
+</body></html>`;
+}
+
+function buildEmailText(order) {
+  const isPrepaid = order.payment_method === "prepaid";
+  const istTime = new Date(order.created_at).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
+  return `NEW ORDER - Avnideep Ayurveda
+
+Order ID: ${order.order_id}
+Time: ${istTime}
+
+Name: ${order.name}
+Phone: ${order.phone}
+${order.pincode ? `Pincode: ${order.pincode}
+` : ''}${order.address ? `Address: ${order.address}
+` : ''}
+Payment: ${order.payment_method.toUpperCase()}
+Amount: Rs.${order.amount}
+Product: ${order.product}
+${order.utr ? `UTR: ${order.utr}
+` : ''}${order.payment_note ? `Note: ${order.payment_note}
+` : ''}${isPrepaid ? "Payment already received as prepaid order." : "ACTION: Call to confirm COD order."}
+
+Call: ${order.phone}`;
+}
+
+// PROVIDER 1: Brevo (formerly Sendinblue) - 300 emails/day FREE forever
+async function sendViaBrevo(order, env) {
+  const subject = `🛒 NEW ${order.payment_method.toUpperCase()} Order • ₹${order.amount} • ${order.name}`;
+  const recipients = String(env.NOTIFY_EMAIL).split(",").map(e => e.trim()).filter(Boolean);
+
+  const res = await withTimeout(fetch("https://api.brevo.com/v3/smtp/email", {
+    method: "POST",
+    headers: {
+      "api-key": env.BREVO_API_KEY,
+      "Content-Type": "application/json",
+      "Accept": "application/json",
+    },
+    body: JSON.stringify({
+      sender: {
+        name: env.FROM_NAME || "Avnideep Orders",
+        email: env.FROM_EMAIL || env.NOTIFY_EMAIL.split(",")[0].trim(),
+      },
+      to: recipients.map(e => ({ email: e })),
+      subject: subject,
+      htmlContent: buildEmailHtml(order),
+      textContent: buildEmailText(order),
+    }),
+  }), 5000, "brevo");
+
+  if (!res.ok) {
+    const errText = await res.text().catch(() => "");
+    return { ok: false, provider: "brevo", status: res.status, error: errText.slice(0, 200) };
+  }
+  return { ok: true, provider: "brevo", status: res.status };
+}
+
+// PROVIDER 2: MailerSend - 3000 emails/month FREE
+async function sendViaMailerSend(order, env) {
+  const subject = `🛒 NEW ${order.payment_method.toUpperCase()} Order • ₹${order.amount} • ${order.name}`;
+  const recipients = String(env.NOTIFY_EMAIL).split(",").map(e => e.trim()).filter(Boolean);
+
+  const res = await withTimeout(fetch("https://api.mailersend.com/v1/email", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${env.MAILERSEND_API_KEY}`,
+      "Content-Type": "application/json",
+      "X-Requested-With": "XMLHttpRequest",
+    },
+    body: JSON.stringify({
+      from: {
+        email: env.FROM_EMAIL || "orders@trial-xxx.mlsender.net",
+        name: env.FROM_NAME || "Avnideep Orders",
+      },
+      to: recipients.map(e => ({ email: e })),
+      subject: subject,
+      html: buildEmailHtml(order),
+      text: buildEmailText(order),
+    }),
+  }), 5000, "mailersend");
+
+  if (!res.ok) {
+    const errText = await res.text().catch(() => "");
+    return { ok: false, provider: "mailersend", status: res.status, error: errText.slice(0, 200) };
+  }
+  return { ok: true, provider: "mailersend", status: res.status };
+}
+
+// PROVIDER 3: Web3Forms - UNLIMITED FREE, no signup required (just access key)
+async function sendViaWeb3Forms(order, env) {
+  const subject = `🛒 NEW ${order.payment_method.toUpperCase()} Order • ₹${order.amount} • ${order.name}`;
+
+  const res = await withTimeout(fetch("https://api.web3forms.com/submit", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Accept": "application/json" },
+    body: JSON.stringify({
+      access_key: env.WEB3FORMS_KEY,
+      subject: subject,
+      from_name: "Avnideep Orders",
+      email: env.NOTIFY_EMAIL,
+      message: buildEmailText(order),
+      // Web3Forms also supports HTML via this trick:
+      _autoresponse: "",
+    }),
+  }), 5000, "web3forms");
+
+  if (!res.ok) {
+    const errText = await res.text().catch(() => "");
+    return { ok: false, provider: "web3forms", status: res.status, error: errText.slice(0, 200) };
+  }
+  return { ok: true, provider: "web3forms", status: res.status };
+}
+
+// PROVIDER 4: Resend (fallback, only 100/day free)
+async function sendViaResend(order, env) {
+  const subject = `🛒 NEW ${order.payment_method.toUpperCase()} Order • ₹${order.amount} • ${order.name}`;
+  const recipients = String(env.NOTIFY_EMAIL).split(",").map(e => e.trim()).filter(Boolean);
+
+  const res = await withTimeout(fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${env.RESEND_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from: env.FROM_EMAIL || "Avnideep Orders <orders@resend.dev>",
+      to: recipients,
+      subject: subject,
+      html: buildEmailHtml(order),
+      text: buildEmailText(order),
+    }),
+  }), 5000, "resend");
+
+  if (!res.ok) {
+    const errText = await res.text().catch(() => "");
+    return { ok: false, provider: "resend", status: res.status, error: errText.slice(0, 200) };
+  }
+  return { ok: true, provider: "resend", status: res.status };
+}
+
+// MAIN EMAIL FUNCTION - Auto-detects provider based on env vars
+async function sendEmail(order, env) {
+  if (!env.NOTIFY_EMAIL) {
+    return { skipped: true, reason: "no_notify_email" };
+  }
+
+  const providers = [
+    { key: 'BREVO_API_KEY', fn: sendViaBrevo, name: 'brevo' },
+    { key: 'MAILERSEND_API_KEY', fn: sendViaMailerSend, name: 'mailersend' },
+    { key: 'WEB3FORMS_KEY', fn: sendViaWeb3Forms, name: 'web3forms' },
+    { key: 'RESEND_API_KEY', fn: sendViaResend, name: 'resend' },
+  ];
+
+  let lastResult = { skipped: true, reason: "no_email_provider_configured" };
+
+  for (const provider of providers) {
+    if (!env[provider.key]) {
+      continue;
+    }
+
+    try {
+      const result = await provider.fn(order, env);
+      if (result.ok) {
+        return result;
+      }
+      lastResult = result;
+    } catch (err) {
+      lastResult = { ok: false, provider: provider.name, error: String(err.message || err) };
+    }
+  }
+
+  return lastResult;
+}
+
+// ============================================================
+// 🔷 FACEBOOK CONVERSION API (Server-Side Events)
+// Uses shared CAPI utility from _capi.js for consistent event tracking
+// ============================================================
+async function sendFacebookCAPI(order, env, eventName = 'Purchase', requestUa = '') {
+  try {
+    const rawPhone = String(order.phone || '').replace(/[^0-9]/g, '');
+    if (!rawPhone) {
+      return { skipped: true, reason: 'no_phone_for_matching' };
+    }
+
+
+    const userData = await buildUserData({
+      name: order.name,
+      phone: order.phone,
+      fbp: order.fbp,
+      fbc: order.fbc,
+      ip: (order.ip_address && order.ip_address !== 'unknown') ? order.ip_address : '',
+      ua: order.user_agent || requestUa || '',
+      orderId: order.order_id
+    });
+
+    const customData = buildCustomData({
+      value: order.amount,
+      currency: 'INR',
+      orderId: order.order_id,
+      contentName: 'AVN-6PRO-001'
+    });
+
+    const rawLogUserData = { ph: userData.ph ? userData.ph.substring(0,8)+"..." : null, em: userData.em ? userData.em.substring(0,8)+"..." : null, fn: userData.fn ? "[HASHED]" : null, ln: userData.ln ? "[HASHED]" : null, external_id: userData.external_id ? userData.external_id.substring(0,8)+"..." : null, client_ip_address: userData.client_ip_address, fbp: userData.fbp, fbc: userData.fbc };
+      console.log(`[CAPILOG] SERVER CAPI PAYLOAD: eventName=${eventName} eventId=${String(order.order_id || "")} userData=${JSON.stringify(rawLogUserData)} customData=${JSON.stringify(customData)}`);
+      const result = await sendCAPIEvent({
+      env,
+      eventName: eventName,
+      eventId: String(order.order_id || ''),
+      userData,
+      customData,
+      eventSourceUrl: order.page_url || 'https://shop.avnideepayurveda.in/',
+      actionSource: 'website',
+      timeout: 4000,
+      retries: 1
+    });
+
+    if (result && result.error) {
+      return { ok: false, error: String(result.error) };
+    }
+
+    return {
+      ok: true,
+      events_received: result?.events_received || 0,
+      message: result?.events_received ? 'Events sent to Facebook' : 'Unknown response',
+    };
+  } catch (err) {
+    return { ok: false, error: String(err.message || err) };
+  }
+}
+
+// ============================================================
+// 4a️⃣ PURCHASE CAPI IDEMPOTENCY
+// Ensures Purchase CAPI is sent exactly once per order_id
+// ============================================================
+
+/**
+ * Read-only check: has Purchase CAPI already been sent for this order_id?
+ * Step 1 in the idempotency flow. Does NOT mark as sent.
+ * Returns { canSend: boolean, reason: string }
+ */
+async function canSendPurchaseCAPI(orderId, env) {
+  try {
+    const row = await env.DB.prepare(
+      'SELECT purchase_capi_sent FROM orders WHERE order_id = ?'
+    ).bind(orderId).first();
+
+    if (!row) {
+      console.warn('CAPI_CHECK_ORDER_NOT_FOUND', orderId);
+      return { canSend: false, reason: 'order_not_found' };
+    }
+
+    if (row.purchase_capi_sent === 1) {
+      return { canSend: false, reason: 'already_sent' };
+    }
+
+    return { canSend: true, reason: 'not_sent' };
+  } catch (err) {
+    console.error('CAPI_CHECK_FAILED', orderId, err.message);
+    // Column might not exist yet (pre-migration) - fail-safe: don't send
+    return { canSend: false, reason: 'check_error', error: err.message };
+  }
+}
+
+/**
+ * Mark Purchase CAPI as sent in D1.
+ * Step 4 in the idempotency flow - only call AFTER Meta API confirms success.
+ * If Meta fails, do NOT call this - keep purchase_capi_sent = 0 for retry.
+ */
+async function markPurchaseCAPISent(orderId, env) {
+  try {
+    const markResult = await env.DB.prepare(
+      'UPDATE orders SET purchase_capi_sent = 1 WHERE order_id = ?'
+    ).bind(orderId).run();
+    console.log('CAPI_PURCHASE_MARKED_SENT', { order_id: orderId, changes: markResult?.meta?.changes });
+  } catch (err) {
+    console.error('CAPI_MARK_FAILED', orderId, err.message);
+  }
+}
+
+// ============================================================
+// 5️⃣ GOOGLE SHEETS (Apps Script Web App)
+// Saves order to your Google Sheet automatically
+// ============================================================
+export async function onRequestOptions({ env }) {
+  return new Response(null, { status: 204, headers: jsonHeaders(env) });
+}
+
+// ============================================================
+// MAIN ORDER HANDLER
+// ============================================================
+export async function onRequestPost({ request, env, waitUntil }) {
+  const ip = request.headers.get("CF-Connecting-IP") || request.headers.get("X-Forwarded-For") || "unknown";
+
+  // ============================================================
+  // CSRF/ORIGIN CHECK - Prevent external form submissions
+  // ============================================================
+  try {
+    const origin = request.headers.get("Origin") || request.headers.get("Referer") || "";
+    const allowedHosts = ["shop.avnideepayurveda.in", "avnideep-shilajit-new.pages.dev", "localhost", "127.0.0.1"];
+    if (origin) {
+      const originHost = new URL(origin).hostname.toLowerCase();
+      const allowed = allowedHosts.some(h => originHost === h || originHost.endsWith("." + h));
+      if (!allowed) {
+        console.warn("CSRF_BLOCKED", { origin, ip });
+        return new Response(
+          JSON.stringify({ ok: false, error: "Access denied" }),
+          { status: 403, headers: jsonHeaders(env) }
+        );
+      }
+    }
+  } catch (e) {
+    // If origin parsing fails, allow request to proceed
+    console.warn("ORIGIN_CHECK_FAILED", String(e));
+  }
+
+  // ============================================================
+  // RATE LIMITING - Smart bot protection
+  // 30/IP/min threshold. Phone bypass: known phones skip IP limit.
+  // Duplicate detection below handles refresh+resubmit gracefully.
+  // ============================================================
+  if (env.RATE_LIMIT_KV) {
+    const now = Date.now();
+    const WINDOW_MS = 60000;
+    const MAX_REQUESTS = 30;  // 30/IP/min - enough for shared IPs
+
+    try {
+      // PHONE BYPASS: Check if this phone was seen before (handles refreshes)
+      let phoneBypass = false;
+      let seenPhone = null;
+      try {
+        const clonedReq = request.clone();
+        const bodyPreview = await clonedReq.json().catch(() => null);
+        if (bodyPreview && bodyPreview.phone) {
+          const rawPhone = String(bodyPreview.phone).replace(/[^0-9]/g, '');
+          if (rawPhone.length >= 10) {
+            seenPhone = rawPhone.slice(-10);
+            const phoneKey = `seen_phone:${seenPhone}`;
+            console.log('[KV-VERIFY] order read', { key: phoneKey, type: 'phone_seen' });
+            const phoneSeen = await env.RATE_LIMIT_KV.get(phoneKey).catch(() => null);
+            if (phoneSeen === '1') {
+              phoneBypass = true;
+            }
+          }
+        }
+      } catch (e) {}
+
+      const rateKey = `rate_limit:${ip}`;
+      const phoneKey = seenPhone ? `seen_phone:${seenPhone}` : null;
+
+      if (phoneBypass && phoneKey) {
+        // Known phone: mark it active once and skip the IP burst check.
+        await env.RATE_LIMIT_KV.put(phoneKey, '1', { expirationTtl: 3600 }).catch(() => {});
+      } else {
+        // IP-based rate limiting for unknown visitors.
+        console.log('[KV-VERIFY] order read', { key: rateKey, type: 'rate_limit' });
+        const record = await env.RATE_LIMIT_KV.get(rateKey, { type: 'json' }).catch(() => null);
+      const timestamps = Array.isArray(record?.timestamps)
+        ? record.timestamps.filter(t => (now - t) < WINDOW_MS)
+        : [];
+
+      if (timestamps.length >= MAX_REQUESTS) {
+        console.log("RATE_LIMIT_EXCEEDED", { ip, count: timestamps.length });
+        return new Response(
+          JSON.stringify({
+            ok: false,
+            error: "Too many requests. WhatsApp par order karein: https://wa.me/917060101043",
+            retry_after: 60,
+            whatsapp: "https://wa.me/917060101043?text=Mujhe order karna hai"
+          }),
+          { status: 429, headers: jsonHeaders(env) }
+        );
+      }
+console.log('[KV-VERIFY] order write', { key: rateKey, type: 'rate_limit' });
+      
+      timestamps.push(now);
+      await env.RATE_LIMIT_KV.put(rateKey, JSON.stringify({ count: timestamps.length, timestamps }), { expirationTtl: 120 }).catch(() => {});
+
+        if (phoneKey) {
+          await env.RATE_LIMIT_KV.put(phoneKey, '1', { expirationTtl: 3600 }).catch(() => {});
+        }
+      }
+    } catch (rateErr) {
+      console.warn("RATE_LIMIT_CHECK_FAILED", String(rateErr.message || rateErr));
+    }
+}
+
+
+  try {
+    // Step 1: Parse JSON body
+    let body;
+    try {
+      body = await request.json();
+    } catch (e) {
+      return new Response(
+        JSON.stringify({ ok: false, error: "Invalid request body" }),
+        { status: 400, headers: jsonHeaders(env) }
+      );
+    }
+
+    // Step 3: Validate required fields
+    const missing = REQUIRED.filter((k) => body[k] === undefined || body[k] === "" || body[k] === null);
+    if (missing.length) {
+      return new Response(
+        JSON.stringify({ ok: false, error: `Missing fields: ${missing.join(", ")}` }),
+        { status: 400, headers: jsonHeaders(env) }
+      );
+    }
+
+    const order = normalizeOrder(body, ip);
+
+    // Step 4: Validate phone
+    if (!/^[6-9]\d{9}$/.test(order.phone)) {
+      return new Response(
+        JSON.stringify({ ok: false, error: "कृपया सही 10 अंकों का मोबाइल नंबर दर्ज करें।" }),
+        { status: 400, headers: jsonHeaders(env) }
+      );
+    }
+
+    // Step 5: 🛡️ DUPLICATE DETECTION - Two-layer check
+    // Layer 1: Exact order_id match in D1 (handles retries with same ID)
+    // Layer 2: Same phone + amount within 30 seconds (handles retries with different IDs)
+    let isDup = false;
+    let existingOrderId = null;
+    try {
+      if (env.DB) {
+        // LAYER 1: Check if exact order_id already exists in D1 (most reliable)
+        if (order.order_id) {
+          const idCheck = await env.DB.prepare(
+            `SELECT order_id FROM orders WHERE order_id = ?`
+          ).bind(order.order_id).first();
+          if (idCheck) {
+            isDup = true;
+            existingOrderId = idCheck.order_id;
+            console.log("DUPLICATE_BY_ORDER_ID", { existing: existingOrderId, new: order.order_id });
+          }
+        }
+        
+        // Layer 2 (fallback): Phone + amount within 60s (when no KV)
+        if (!isDup) {
+          const dupResult = await env.DB.prepare(
+            `SELECT order_id, amount, created_at FROM orders WHERE phone = ? ORDER BY created_at DESC LIMIT 1`
+          ).bind(order.phone).first();
+          if (dupResult) {
+            const lastTime = new Date(dupResult.created_at).getTime();
+            const now = Date.now();
+            if (String(dupResult.amount) === String(order.amount) && (now - lastTime) < 30000) {
+              isDup = true;
+              existingOrderId = dupResult.order_id;
+              console.log("DUPLICATE_BY_PHONE_AMOUNT", { existing: existingOrderId, phone: order.phone });
+            }
+          }
+        }
+      }
+    } catch (dupErr) {
+      console.warn("DEDUP_CHECK_FAILED", String(dupErr.message || dupErr));
+    }
+
+    // If duplicate detected, return existing order — skip processing entirely
+    if (isDup && existingOrderId) {
+      console.log("DUPLICATE_SKIPPED", { existing: existingOrderId, phone: order.phone });
+      return new Response(
+        JSON.stringify({
+          ok: true,
+          orderId: existingOrderId,
+          duplicate: true,
+          message: "Order already exists",
+          channels: { d1: true, facebook_capi: true },
+        }),
+        { status: 200, headers: jsonHeaders(env) }
+      );
+    }
+
+    // Step 6: 🚀 SAVE TO D1 FIRST (source of truth - UNIQUE constraint on order_id)
+    // Facebook CAPI only fires AFTER D1 confirms new order, preventing duplicate FB events
+    const d1result = await saveToD1(order, env);
+
+    // Only send Facebook CAPI if D1 saved successfully (not a duplicate)
+    let facebookCapi = { skipped: true, reason: "d1_not_confirmed" };
+    if (d1result.ok && !d1result.note?.includes('duplicate')) {
+      const eventName = order.payment_method === 'prepaid' ? 'InitiateCheckout' : 'Purchase';
+      if (eventName === 'Purchase') {
+        // Idempotency check: has Purchase CAPI already been sent for this order?
+        const capiCheck = await canSendPurchaseCAPI(order.order_id, env);
+        if (capiCheck.canSend) {
+          facebookCapi = await sendFacebookCAPI(order, env, 'Purchase', request.headers.get('User-Agent') || '');
+          // Step 4: Only mark as sent if Meta API confirmed success
+          if (facebookCapi && facebookCapi.ok) {
+            await markPurchaseCAPISent(order.order_id, env);
+          }
+        } else {
+          console.log('CAPI_PURCHASE_SKIPPED', { order_id: order.order_id, reason: capiCheck.reason });
+        }
+      } else {
+        // InitiateCheckout: no idempotency needed (fires before payment for prepaid)
+        facebookCapi = await sendFacebookCAPI(order, env, 'InitiateCheckout', request.headers.get('User-Agent') || '');
+      }
+    } else if (d1result.note?.includes('duplicate')) {
+      // D1 UNIQUE constraint caught duplicate order_id
+      isDup = true;
+      existingOrderId = order.order_id;
+      console.log("DUPLICATE_BY_D1_UNIQUE", { order_id: order.order_id });
+    }
+
+    // Fire Telegram + Email in background — don't block the response
+    waitUntil(sendTelegram(order, env).catch(() => {}));
+    waitUntil(sendEmail(order, env).catch(() => {}));
+
+    // Placeholder for Telegram + Email (fire-and-forget)
+    const telegram = { ok: null, skipped: null, note: "fire-and-forget" };
+    const email = { ok: null, skipped: null, note: "fire-and-forget" };
+
+    // Step 7: Log results (visible in Cloudflare logs)
+    console.log("ORDER_RESULT", JSON.stringify({
+      order_id: order.order_id,
+      phone: order.phone,
+      payment: order.payment_method,
+      amount: order.amount,
+      duplicate: isDup,
+      channels: { d1: d1result, facebook_capi: facebookCapi },
+    }));
+
+    // Step 8: Success only if at least one channel worked
+    // Critical channels: D1 + Google Sheets determine order success
+    const successCount = [d1result, facebookCapi].filter((c) => c.ok).length;
+    const skippedCount = [d1result].filter((c) => c.skipped).length;
+    if (!d1result.ok) {
+      const errorMessage = "Order save failed. D1 database error. कृपया WhatsApp पर contact करें।";
+
+      return new Response(
+        JSON.stringify({
+          ok: false,        error: errorMessage,
+        debug: { d1: d1result, facebook_capi: facebookCapi },
+      }),
+        { status: 500, headers: jsonHeaders(env) }
+      );
+    }
+
+    return new Response(
+      JSON.stringify({
+        ok: true,
+        orderId: order.order_id,
+        duplicate: isDup,
+        channels: {
+          d1: d1result.ok || false,
+          facebook_capi: facebookCapi.ok || false,
+        },
+        debug: { d1: d1result },
+      }),
+      { status: 200, headers: jsonHeaders(env) }
+    );
+  } catch (error) {
+    console.error("ORDER_ERROR", error);
+    return new Response(
+      JSON.stringify({ ok: false, error: error instanceof Error ? error.message : "Server error" }),
+      { status: 500, headers: jsonHeaders(env) }
+    );
+  }
+}
+
+// ============================================================
+// HEALTH CHECK ENDPOINT (GET /api/order)
+// Visit this URL to verify all credentials are set
+// ============================================================
+export async function onRequestGet({ env }) {
+  return new Response(
+    JSON.stringify({
+      ok: true,
+      message: "Avnideep Order API is running ✅",
+      version: "v3",
+      env_check: {
+        telegram: !!env.TELEGRAM_BOT_TOKEN && !!env.TELEGRAM_CHAT_ID,
+        d1: !!env.DB,
+        email_provider: !!env.NOTIFY_EMAIL ? (
+          env.BREVO_API_KEY ? "brevo (300/day FREE)" :
+          env.MAILERSEND_API_KEY ? "mailersend (3000/mo FREE)" :
+          env.WEB3FORMS_KEY ? "web3forms (250/day FREE)" :
+          env.RESEND_API_KEY ? "resend (100/day FREE)" :
+          false
+        ) : false,
+        facebook_capi: !!env.META_ACCESS_TOKEN && !!env.META_PIXEL_ID,
+        rate_limit_kv: !!env.RATE_LIMIT_KV,
+        allowed_origin: env.ALLOWED_ORIGIN || "* (not set)",
+      },
+      time: new Date().toISOString(),
+    }, null, 2),
+    { status: 200, headers: jsonHeaders(env) }
+  );
+}
+
+// ============================================================
+// 5️⃣ PATCH /api/order - CONFIRM PREPAID PAYMENT WITH UTR
+// Called from payment.html after user completes UPI payment
+// Updates D1 database, notifies Telegram, sends email
+// ============================================================
+export async function onRequestPatch({ request, env, waitUntil }) {
+  const jsonH = { ...jsonHeaders(env), "Access-Control-Allow-Methods": "POST, OPTIONS, GET, PATCH" };
+  
+  try {
+    let body;
+    try {
+      body = await request.json();
+    } catch (e) {
+      return new Response(JSON.stringify({ ok: false, error: "Invalid request body" }), { status: 400, headers: jsonH });
+    }
+    
+    const orderId = String(body.orderId || "").trim();
+    if (!orderId) {
+      return new Response(JSON.stringify({ ok: false, error: "orderId is required" }), { status: 400, headers: jsonH });
+    }
+
+    const utr = String(body.utr || "").trim();
+    const name = String(body.name || "").trim();
+    const phone = String(body.phone || "").trim();
+    const amount = Number(body.amount || 0);
+    const autoConfirm = body.autoConfirm === true;
+    const newStatus = String(body.status || "").trim();
+    const address = String(body.address || "").trim();
+    const pincode = String(body.pincode || "").trim();
+    const razorpayPaymentId = String(body.razorpay_payment_id || "").trim();
+    
+    // Backward compat: if old-style call (utr present or autoConfirm), use that flow
+    const isOldStyle = (utr || autoConfirm) && !newStatus;
+    
+    // Build ORDER BY UPDATE clause dynamically
+    const setClauses = [];
+    const bindValues = [];
+    
+    if (isOldStyle) {
+      // Backward compat: set utr + payment_received status
+      setClauses.push("utr = ?", "status = ?");
+      bindValues.push(utr, "payment_received");
+    } else {
+      if (newStatus) {
+        setClauses.push("status = ?");
+        bindValues.push(newStatus);
+      }
+      if (address) {
+        setClauses.push("address = ?");
+        bindValues.push(address);
+      }
+      if (pincode) {
+        setClauses.push("pincode = ?");
+        bindValues.push(pincode);
+      }
+      if (razorpayPaymentId) {
+        setClauses.push("payment_note = ?");
+        bindValues.push("Razorpay Payment ID: " + razorpayPaymentId);
+      }
+    }
+    
+    if (setClauses.length === 0) {
+      return new Response(JSON.stringify({ ok: false, error: "No fields to update. Send status, address, pincode, or utr." }), { status: 400, headers: jsonH });
+    }
+    
+    // Update D1
+    let d1UpdateOk = false;
+    let dbOrder = null;
+    try {
+      if (env.DB) {
+        bindValues.push(orderId);
+        const updateRes = await env.DB.prepare(
+          `UPDATE orders SET ${setClauses.join(", ")} WHERE order_id = ?`
+        ).bind(...bindValues).run();
+        d1UpdateOk = updateRes.success;
+        
+        // Fetch updated order for notifications
+        dbOrder = await env.DB.prepare("SELECT * FROM orders WHERE order_id = ?").bind(orderId).first();
+      }
+    } catch (e) {
+      console.warn("D1_PATCH_FAILED", String(e.message || e));
+    }
+    
+    if (!dbOrder) {
+      // Build minimal order from request body
+      dbOrder = {
+        order_id: orderId,
+        name: name || "Customer",
+        phone: phone || "Unknown",
+        pincode: pincode || "",
+        address: address || "",
+        payment_method: body.paymentMethod || (body.amount === 100 ? "advance_cod" : "prepaid"),
+        amount: amount || 1250,
+        product: body.product || "Avnideep 6Pro Vitality Shilajit Capsules",
+        status: isOldStyle ? "payment_received" : (newStatus || "updated"),
+        page_url: body.pageUrl || "",
+        utr: utr || "",
+        payment_note: razorpayPaymentId ? "Razorpay Payment ID: " + razorpayPaymentId : "",
+        created_at: new Date().toISOString(),
+        ip_address: request.headers.get("CF-Connecting-IP") || "unknown",
+        user_agent: "",
+        fbp: body.fbp || "",
+        fbc: body.fbc || "",
+      };
+    }
+    
+    // Determine if this is a payment confirmation (send notifications)
+    const paidStatuses = ["paid", "advance_paid", "payment_received", "payment_confirmed"];
+    const isPaymentConfirm = paidStatuses.includes((newStatus || (isOldStyle ? "payment_received" : "")).toLowerCase());
+    
+    if (isPaymentConfirm && d1UpdateOk) {
+      // Send Telegram + Email in background
+      waitUntil(sendTelegram(dbOrder, env).catch(() => {}));
+      waitUntil(sendEmail(dbOrder, env).catch(() => {}));
+      
+      // Send Facebook Purchase CAPI (idempotent)
+      waitUntil((async () => {
+        try {
+          const capiCheck = await canSendPurchaseCAPI(orderId, env);
+          if (capiCheck.canSend) {
+            const capiResult = await sendFacebookCAPI(dbOrder, env, 'Purchase', request.headers.get('User-Agent') || '');
+            if (capiResult && capiResult.ok) {
+              await markPurchaseCAPISent(orderId, env);
+            }
+          }
+        } catch(e) {
+          console.warn("CAPI_PATCH_FAILED", String(e.message || e));
+        }
+      })());
+    }
+    
+    return new Response(
+      JSON.stringify({
+        ok: true,
+        orderId: orderId,
+        message: isPaymentConfirm ? "Payment confirmed ✅" : "Order updated ✅",
+        updated: setClauses.map(c => c.split(" = ")[0]),
+      }),
+      { status: 200, headers: jsonH }
+    );
+  } catch (error) {
+    console.error("PATCH_ERROR", error);
+    return new Response(
+      JSON.stringify({ ok: false, error: error instanceof Error ? error.message : "Server error" }),
+      { status: 500, headers: jsonHeaders(env) }
+    );
+  }
+}

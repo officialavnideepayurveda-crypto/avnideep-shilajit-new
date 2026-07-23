@@ -1,0 +1,14 @@
+/* All critical styles are inlined in index.html for maximum performance */
+/* This file exists only to prevent 404 from cached old versions */
+html,
+body,
+#MainContent,
+.gradient,
+.shopify-section {
+  background:
+    radial-gradient(circle at 0% 0%, rgba(201,235,123,.55) 0%, transparent 28%),
+    radial-gradient(circle at 100% 0%, rgba(201,235,123,.55) 0%, transparent 28%),
+    radial-gradient(circle at 0% 100%, rgba(201,235,123,.55) 0%, transparent 28%),
+    radial-gradient(circle at 100% 100%, rgba(201,235,123,.55) 0%, transparent 28%),
+    #faf9f2 !important;
+}

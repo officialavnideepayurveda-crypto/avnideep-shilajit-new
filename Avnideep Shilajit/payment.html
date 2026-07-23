@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Secure UPI Checkout | Avnideep Ayurveda</title>
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-HTH3FR9SF6"></script>
+  <script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-HTH3FR9SF6');
+  </script>
+  <!-- End Google Analytics -->
+
+  <!-- Meta Pixel Code -->
+  <script>
+  !function(f,b,e,v,n,t,s)
+  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];
+  s.parentNode.insertBefore(t,s)}(window, document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', '1715387275770711');
+  fbq('track', 'PageView');
+  </script>
+  <!-- End Meta Pixel Code -->
+
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    :root {
+      color-scheme: light;
+      --bg: #f4f6f8;
+      --surface: #ffffff;
+      --surface-soft: #f8fafc;
+      --border: #d7dae0;
+      --text: #0f172a;
+      --muted: #64748b;
+      --accent: #0f172a;
+      --success: #16a34a;
+      --shadow: 0 24px 80px rgba(15, 23, 42, 0.09);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      min-height: 100%;
+      width: 100%;
+      scroll-behavior: smooth;
+      overflow-x: hidden;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: radial-gradient(circle at top, rgba(255,255,255,0.85), transparent 28%),
+        linear-gradient(180deg, #f6f8f9 0%, #eef2f6 100%);
+      color: var(--text);
+      touch-action: pan-y;
+    }
+
+    body {
+      min-height: 100vh;
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.75; }
+    }
+
+    .security-bar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 16px;
+      background: rgba(22, 163, 74, 0.12);
+      border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+      backdrop-filter: blur(10px);
+      animation: slideDown 0.3s ease-out;
+    }
+
+    .security-bar svg {
+      width: 16px;
+      height: 16px;
+      color: #16a34a;
+      flex-shrink: 0;
+    }
+
+    .security-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #0f172a;
+      letter-spacing: 0.2px;
+    }
+
+    .security-lock {
+      font-size: 12px;
+      color: #475569;
+    }
+
+    .checkout-container {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      padding: 56px 24px 32px;
+    }
+
+    .checkout-card {
+      width: min(100%, 1080px);
+      max-width: 1080px;
+      background: var(--surface);
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    @media (min-width: 1024px) {
+      .checkout-card {
+        display: grid;
+        grid-template-columns: minmax(300px, 360px) 1fr;
+      }
+    }
+
+    .checkout-main {
+      display: flex;
+      flex-direction: column;
+      background: transparent;
+    }
+
+    .payment-content {
+      padding: 24px 18px 26px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    @media (min-width: 1024px) {
+      .payment-content {
+        padding: 30px 28px 32px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .payment-content {
+        padding: 16px 14px 20px;
+        gap: 12px;
+      }
+
+      .content-title {
+        font-size: 16px !important;
+        margin-bottom: 0px !important;
+      }
+
+      .content-subtitle {
+        font-size: 12px !important;
+        margin-bottom: 12px !important;
+      }
+    }
+
+    .content-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 2px;
+    }
+
+    .content-subtitle {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 8px;
+    }
+
+    .merchant-sidebar {
+      display: none;
+      background: linear-gradient(180deg, #1f314b 0%, #121d2e 100%);
+      color: white;
+      padding: 28px 24px;
+      gap: 24px;
+      min-width: 320px;
+    }
+
+    @media (min-width: 1024px) {
+      .merchant-sidebar {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+
+      .mobile-merchant {
+        display: none;
+      }
+    }
+
+    .merchant-header,
+    .mobile-merchant-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .merchant-logo,
+    .mobile-merchant-logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      background: #0f172a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .merchant-name,
+    .mobile-merchant-name {
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: -0.3px;
+    }
+
+    .merchant-id,
+    .mobile-merchant-id {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.75);
+      font-family: monospace;
+      margin-top: 2px;
+    }
+
+    .amount-section {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 20px;
+      padding: 20px;
+      margin-top: 12px;
+    }
+
+    .amount-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: rgba(255, 255, 255, 0.7);
+      font-weight: 700;
+    }
+
+    .amount-value {
+      margin-top: 10px;
+      font-size: 32px;
+      font-weight: 700;
+      color: white;
+      font-family: monospace;
+      line-height: 1.05;
+    }
+
+    .verified-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 12px;
+      background: rgba(16, 185, 129, 0.16);
+      border: 1px solid rgba(16, 185, 129, 0.24);
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #d9faf1;
+      margin-top: 12px;
+    }
+
+    .verified-badge svg {
+      width: 12px;
+      height: 12px;
+    }
+
+    .product-name {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.72);
+      margin-top: 14px;
+      line-height: 1.5;
+    }
+
+    .trust-box {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 18px;
+      padding: 20px;
+      display: grid;
+      gap: 12px;
+      font-size: 12px;
+      line-height: 1.6;
+      color: #e2e8f0;
+    }
+
+    .trust-box p {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0;
+    }
+
+    .trust-box svg {
+      width: 14px;
+      height: 14px;
+      color: #86efac;
+      flex-shrink: 0;
+    }
+
+    .sidebar-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 18px;
+      border-top: 1px solid rgba(255, 255, 255, 0.12);
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.75);
+      gap: 12px;
+    }
+
+    .pci-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pci-badge svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .timer-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(16, 185, 129, 0.14);
+      border: 1px solid rgba(16, 185, 129, 0.24);
+      font-family: monospace;
+      font-weight: 700;
+      font-size: 12px;
+      color: #d9faf1;
+      animation: pulse 1.5s infinite;
+    }
+
+    .mobile-merchant {
+      background: #f8fafc;
+      border-bottom: 1px solid #e5e8f0;
+      color: #0f172a;
+      padding: 18px 16px;
+    }
+
+    .mobile-amount-box {
+      background: white;
+      border: 1px solid #e5e8f0;
+      border-radius: 20px;
+      padding: 16px;
+    }
+
+    .mobile-amount-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #64748b;
+      font-weight: 700;
+    }
+
+    .mobile-amount-display {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .mobile-amount-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: #0f172a;
+      font-family: monospace;
+    }
+
+    .mobile-verified {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #ecfdf5;
+      color: #166534;
+      padding: 7px 12px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .mobile-verified svg {
+      width: 12px;
+      height: 12px;
+    }
+
+    .mobile-product {
+      margin-top: 14px;
+      color: #475569;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .qr-container {
+      background: #fafbfc;
+      border: 1px solid #e2e6eb;
+      border-radius: 20px;
+      padding: 20px;
+      display: grid;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .qr-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .qr-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #475569;
+      font-weight: 700;
+    }
+
+    .qr-support {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #64748b;
+      font-size: 12px;
+    }
+
+    .qr-support svg {
+      width: 12px;
+      height: 12px;
+      color: #22c55e;
+    }
+
+    #qrcode {
+      width: 176px;
+      height: 176px;
+      margin: 0 auto;
+      padding: 14px;
+      background: white;
+      border-radius: 20px;
+      border: 1px solid #e2e6eb;
+    }
+
+    .qr-instruction {
+      font-size: 12px;
+      color: #475569;
+      font-weight: 500;
+      margin-top: 0;
+    }
+
+    .timer-card {
+      background: white;
+      border: 1px solid #e2e6eb;
+      border-radius: 999px;
+      padding: 12px 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+    }
+
+    .timer-icon {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #22c55e;
+      box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.12);
+      flex-shrink: 0;
+    }
+
+    .timer-text {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .timer-label {
+      font-size: 10px;
+      color: #64748b;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.9px;
+    }
+
+    .timer-countdown {
+      font-size: 15px;
+      font-weight: 700;
+      color: #0f172a;
+      font-family: monospace;
+      margin-top: 2px;
+    }
+
+    .upi-id-box {
+      background: white;
+      border: 1px solid #e2e6eb;
+      border-radius: 18px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .upi-id-label {
+      display: block;
+      font-size: 10px;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 700;
+    }
+
+    .upi-id-value {
+      display: block;
+      margin-top: 4px;
+      font-family: monospace;
+      font-size: 14px;
+      font-weight: 700;
+      color: #0f172a;
+      word-break: break-all;
+    }
+
+    .copy-btn {
+      background: white;
+      color: #0f172a;
+      border: 1px solid #d6d9df;
+      padding: 10px 14px;
+      border-radius: 14px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .copy-btn:hover {
+      background: #f8fafc;
+      border-color: #b8c2cc;
+    }
+
+    .copy-btn.copied {
+      background: #ecfdf5;
+      color: #166534;
+      border-color: #86efac;
+    }
+
+    .upi-apps-label {
+      font-size: 11px;
+      color: #475569;
+      text-transform: uppercase;
+      font-weight: 700;
+      margin-bottom: 12px;
+      letter-spacing: 1px;
+    }
+
+    .upi-apps-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    @media (min-width: 640px) {
+      .upi-apps-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+
+    .upi-app-btn {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      min-height: 64px;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+      text-align: left;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+    }
+
+    .upi-app-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+      border-color: #d6d9df;
+    }
+
+    .upi-logo-wrap {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      background: #f8fafc;
+    }
+
+    .upi-logo-wrap img {
+      width: 28px;
+      height: 28px;
+      object-fit: contain;
+    }
+    .upi-logo-wrap svg {
+      width: 28px;
+      height: 28px;
+      display: block;
+    }
+
+    .upi-app-text {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-width: 0;
+    }
+
+    .upi-app-text .app-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: #0f172a;
+      line-height: 1.1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .upi-app-text .app-type {
+      margin-top: 2px;
+      font-size: 11px;
+      color: #64748b;
+      font-weight: 500;
+    }
+
+    .primary-cta {
+      width: 100%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: #0f172a;
+      color: white;
+      border: 1px solid rgba(15, 23, 42, 0.12);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      margin-bottom: 12px;
+      box-shadow: 0 14px 32px rgba(15, 23, 42, 0.08);
+    }
+
+    .primary-cta:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 18px 36px rgba(15, 23, 42, 0.12);
+    }
+
+    .secondary-cta {
+      display: inline-flex;
+      justify-content: center;
+      width: 100%;
+      padding: 13px 16px;
+      border-radius: 16px;
+      border: 1px solid #d6d9df;
+      background: white;
+      color: #0f172a;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .secondary-cta:hover {
+      background: #f8fafc;
+    }
+
+    .trust-footer {
+      display: grid;
+      gap: 10px;
+      justify-content: center;
+      padding-top: 18px;
+      border-top: 1px solid #e5e8ef;
+      font-size: 11px;
+      color: #64748b;
+    }
+
+    .trust-footer span {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      justify-content: center;
+    }
+
+    .trust-footer svg {
+      width: 12px;
+      height: 12px;
+      color: #22c55e;
+      flex-shrink: 0;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.35);
+      backdrop-filter: blur(4px);
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      z-index: 100;
+    }
+
+    .modal.active {
+      display: grid;
+    }
+
+    .modal-content {
+      width: 100%;
+      max-width: 400px;
+      background: white;
+      border-radius: 24px;
+      padding: 28px 24px;
+      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.16);
+    }
+
+    .modal-header { text-align: center; margin-bottom: 20px; }
+
+    .modal-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 18px;
+      background: #ecfdf5;
+      display: grid;
+      place-items: center;
+      margin: 0 auto 14px;
+      color: #166534;
+      font-size: 24px;
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 6px;
+    }
+
+    .modal-subtitle {
+      font-size: 13px;
+      color: #64748b;
+      line-height: 1.6;
+    }
+
+    .form-group { margin-bottom: 14px; }
+
+    .form-input {
+      width: 100%;
+      border: 1px solid #d6d9df;
+      border-radius: 16px;
+      padding: 14px 15px;
+      font-size: 14px;
+      color: #0f172a;
+      transition: border 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #22c55e;
+      box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1);
+    }
+
+    .form-label { display: block; font-size: 12px; font-weight: 600; color: #0f172a; margin-bottom: 6px; letter-spacing: 0.2px; }
+
+    .form-input::placeholder {
+      color: #94a3b8;
+    }
+
+    .error-msg {
+      display: none;
+      font-size: 12px;
+      color: #b91c1c;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      padding: 10px 12px;
+      border-radius: 14px;
+      margin-top: 8px;
+    }
+
+    .error-msg.show {
+      display: block;
+    }
+
+    .modal-buttons {
+      display: grid;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .modal-btn {
+      border-radius: 16px;
+      padding: 14px 16px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid transparent;
+    }
+
+    .modal-btn-primary {
+      background: #0f172a;
+      color: white;
+      border-color: rgba(15, 23, 42, 0.12);
+    }
+
+    .modal-btn-secondary {
+      background: #f8fafc;
+      color: #0f172a;
+      border-color: #d6d9df;
+    }
+
+    .modal-btn-primary:hover {
+      filter: brightness(1.03);
+    }
+
+    .modal-btn-secondary:hover {
+      background: #eef2f7;
+    }
+
+    #payment-verifying .spinner {
+      width: 44px;
+      height: 44px;
+      border: 4px solid #e5e7eb;
+      border-top-color: #0f172a;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 16px;
+    }
+  </style>
+</head>
+<body>
+  <!-- SECURITY BAR -->
+  <div class="security-bar">
+    <svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+    <span class="security-label">Secure UPI Payment</span>
+    <span class="security-lock">🔒</span>
+  </div>
+
+  <!-- MAIN CONTAINER -->
+  <div class="checkout-container">
+    <div class="checkout-card">
+      
+      <!-- SIDEBAR (Desktop Only) -->
+      <div class="merchant-sidebar">
+        <div>
+          <div class="merchant-header">
+            <div class="merchant-logo">A</div>
+            <div>
+              <div class="merchant-name">Avnideep Ayurveda</div>
+              <div class="merchant-id">Ref: #AVN-681164</div>
+            </div>
+          </div>
+          
+          <div class="amount-section">
+            <div class="amount-label">Amount Payable</div>
+            <div class="amount-value">₹999</div>
+            <div class="verified-badge">
+              <svg fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+              Verified
+            </div>
+            <div class="product-name">Ayurvedic Herbal Supplement</div>
+          </div>
+          
+          <div class="trust-box">
+            <p><svg fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg> 100% Secure Payments</p>
+            <p><svg fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg> Direct UPI Transfer</p>
+            <p><svg fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg> Bank-Grade Security</p>
+          </div>
+        </div>
+        
+        <div class="sidebar-footer">
+          <div class="pci-badge">
+            <svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+            PCI-DSS
+          </div>
+          <div class="timer-badge" id="sidebar-timer">15:00</div>
+        </div>
+      </div>
+      
+      <!-- MAIN CONTENT -->
+      <div class="checkout-main">
+        
+        <!-- MOBILE MERCHANT HEADER -->
+        <div class="mobile-merchant">
+          <div class="mobile-merchant-header">
+            <div class="mobile-merchant-logo">A</div>
+            <div class="mobile-merchant-text">
+              <div class="mobile-merchant-name">Avnideep Ayurveda</div>
+              <div class="mobile-merchant-id">Ref: #AVN-681164</div>
+            </div>
+          </div>
+          <div class="mobile-amount-box">
+            <div class="mobile-amount-label">Amount Payable</div>
+            <div class="mobile-amount-display">
+              <div class="mobile-amount-value">₹999</div>
+              <div class="mobile-verified">
+                <svg fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+                Verified
+              </div>
+            </div>
+            <div class="mobile-product">Ayurvedic Herbal Supplement</div>
+          </div>
+        </div>
+        
+        <!-- PAYMENT CONTENT -->
+        <div id="payment-idle" class="payment-content">
+          <h1 class="content-title">🎯 अपनी payment पूरी करें | Complete Your Payment</h1>
+          <p class="content-subtitle" style="color: #d9534f; font-weight: 600; margin-bottom: 16px;">⏰ Session expires in <span id="timer-display-subtitle">15:00</span></p>
+          
+          <!-- RAZORPAY PAYMENT BUTTON - MOBILE FIRST (SHOWN IMMEDIATELY) -->
+          <div style="background: white; border: 1px solid #e5e8f0; padding: 16px; border-radius: 16px; margin-bottom: 16px;">
+            <div style="text-align: center; margin-bottom: 12px;">
+              <div style="font-size: 12px; text-transform: uppercase; color: #475569; font-weight: 700; letter-spacing: 1px; margin-bottom: 8px;">💳 अभी Payment करें | Pay Now</div>
+              <div style="display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; margin-bottom: 10px;">
+                <span style="background: #f0f7ff; color: #0c6fdb; padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 700;">📱 UPI</span>
+                <span style="background: #f0f7ff; color: #0c6fdb; padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 700;">💳 Cards</span>
+                <span style="background: #f0f7ff; color: #0c6fdb; padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 700;">🏦 Net</span>
+                <span style="background: #f0f7ff; color: #0c6fdb; padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 700;">👛 Wallet</span>
+              </div>
+            </div>
+            <div style="text-align: center; padding: 12px; background: #f0fdf4; border: 1px solid #22c55e; border-radius: 8px; color: #16a34a; font-size: 13px; font-weight: 600; margin: 12px 0;">
+              ✓ Payment processing... कृपया प्रतीक्षा करें
+            </div>
+            <div style="text-align: center; font-size: 11px; color: #22c55e; font-weight: 600; margin-top: 10px;">
+              ✓ Secured by Razorpay (PCI-DSS)
+            </div>
+          </div>
+          
+          <!-- URGENT TIMER -->
+          <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 12px; padding: 12px; margin-bottom: 14px; text-align: center;">
+            <div style="font-size: 13px; font-weight: 700; color: #856404;">⏰ <span id="timer-display-urgent" style="font-family: monospace; color: #d9534f;">15:00</span> बाकी है</div>
+          </div>
+          
+          <!-- PRICING BREAKDOWN -->
+          <div style="background: #fef3c7; border: 1px solid #fcd34d; border-radius: 12px; padding: 12px; margin-bottom: 14px;">
+            <div style="font-size: 11px; font-weight: 700; color: #92400e; margin-bottom: 8px;">🎁 20% Discount!</div>
+            <div style="display: grid; gap: 6px; font-size: 11px; color: #78350f;">
+              <div style="display: flex; justify-content: space-between;">
+                <span>MRP:</span>
+                <span style="text-decoration: line-through;">₹1250</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; color: #dc2626; font-weight: 700;">
+                <span>Discount:</span>
+                <span>-₹251</span>
+              </div>
+              <div style="border-top: 1px solid #fcd34d; padding-top: 6px; display: flex; justify-content: space-between; font-weight: 700; color: #16a34a;">
+                <span>Pay:</span>
+                <span>₹999 ✓</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- STEP-BY-STEP INSTRUCTIONS -->
+          <div style="background: #f0f7ff; border-left: 4px solid #0f172a; padding: 12px; border-radius: 8px; margin-bottom: 14px;">
+            <div style="font-size: 11px; font-weight: 700; color: #0f172a; margin-bottom: 8px; text-transform: uppercase;">📋 सिर्फ 2 Steps:</div>
+            <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px; color: #0f172a; line-height: 1.5;">
+              <div style="display: flex; gap: 8px; align-items: flex-start;">
+                <div style="background: #0f172a; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; font-size: 11px;">1</div>
+                <div><strong>ऊपर "Pay Now" दबाएं</strong></div>
+              </div>
+              <div style="display: flex; gap: 8px; align-items: flex-start;">
+                <div style="background: #0f172a; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; font-size: 11px;">2</div>
+                <div><strong>अपना Payment Method चुनें & Pay करें</strong></div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- TRUST BADGES -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px;">
+            <div style="background: #ecfdf5; padding: 10px; border-radius: 10px; text-align: center; border: 1px solid #86efac;">
+              <div style="font-size: 16px; margin-bottom: 3px;">🔒</div>
+              <div style="font-size: 10px; font-weight: 700; color: #166534;">100% Safe</div>
+            </div>
+            <div style="background: #ecfdf5; padding: 10px; border-radius: 10px; text-align: center; border: 1px solid #86efac;">
+              <div style="font-size: 16px; margin-bottom: 3px;">⚡</div>
+              <div style="font-size: 10px; font-weight: 700; color: #166534;">Instant Pay</div>
+            </div>
+          </div>
+          
+          <!-- HELP SECTION -->
+          <div style="background: #f8f9fa; padding: 10px; border-radius: 10px;">
+            <div style="font-size: 11px; font-weight: 700; color: #0f172a; margin-bottom: 6px;">❓ समस्या?</div>
+            <div style="font-size: 11px; color: #475569; line-height: 1.5;">
+              • Internet ठीक करें<br>
+              • फिर से "Pay Now" दबाएं<br>
+              • अगर हो समस्या तो Support से संपर्क करें
+            </div>
+          </div>
+          
+          <a href="index.html" class="secondary-cta">← Back to Home</a>
+          
+          <!-- TRUST FOOTER -->
+          <div class="trust-footer">
+            <span><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>PCI DSS Secure</span>
+            <span><svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>Encrypted Payment</span>
+            <span><svg fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>Razorpay Secured</span>
+          </div>
+        </div>
+        <!-- PAYMENT MODAL -->
+        <div id="payment-modal" class="modal">
+          <div class="modal-content">
+            <div class="modal-header">
+              <div class="modal-icon"> </div>
+              <h2 class="modal-title">Verify Payment</h2>
+              <p class="modal-subtitle">Enter 12-digit UTR number from your bank</p>
+            </div>
+            
+            <div class="form-group">
+              <label for="utr-input" class="form-label">UTR Number</label>
+              <input id="utr-input" type="text" class="form-input" placeholder="12-digit UTR" maxlength="16" inputmode="numeric">
+            </div>
+            <div class="form-group">
+              <label for="cust-input" class="form-label">Your Name or Phone</label>
+              <input id="cust-input" type="text" class="form-input" placeholder="Your name or phone">
+            </div>
+            <div id="error-msg" class="error-msg"></div>
+            
+            <div class="modal-buttons">
+              <button class="modal-btn modal-btn-secondary" onclick="closePaymentModal()">Cancel</button>
+              <button class="modal-btn modal-btn-primary" onclick="submitPayment()">Verify</button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- VERIFYING STATE -->
+        <div id="payment-verifying" class="payment-content" style="display: none;">
+          <div style="text-align: center; padding: 32px 16px;">
+            <div style="display: inline-block; width: 56px; height: 56px; border: 3px solid #e5e7eb; border-top: 3px solid #10b981; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px;"></div>
+            <h2 class="content-title" style="margin-bottom: 6px;">Verifying Payment</h2>
+            <p class="content-subtitle" style="margin-bottom: 16px;">Checking with bank network...</p>
+            <p id="verify-utr" style="font-family: 'Inter', monospace; color: #10b981; font-weight: 700; font-size: 12px;"></p>
+          </div>
+        </div>
+        
+        <!-- SUCCESS STATE -->
+        <div id="payment-success" class="payment-content" style="display: none;">
+          <div style="text-align: center; padding: 32px 16px;">
+            <div style="width: 72px; height: 72px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 40px; margin: 0 auto 20px; box-shadow: 0 8px 20px rgba(16, 185, 129, 0.25); animation: float 0.8s ease-out;">✓</div>
+            <h2 class="content-title">Payment Successful!</h2>
+            <p class="content-subtitle">Your order has been confirmed</p>
+            <p style="font-size: 12px; color: #64748b; margin-bottom: 18px;">Order ID: <span style="font-weight: 700; color: #0f172a; font-family: 'Inter', monospace;" id="success-order">AVN-681164</span></p>
+            <a href="index.html" class="primary-cta" style="margin-bottom: 12px; text-decoration: none;">← Back to Home</a>
+            <p style="font-size: 10px; color: #94a3b8;">Your order confirmation has been sent to your email.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const amount = Number(params.get('amount') || "999");
+    const orderId = params.get('order_id') || "AVN-681164";
+    const API_ENDPOINT = "./api/order";
+
+    // Safety net: if the Razorpay Redirect URL is ever pointed back to this
+    // page by mistake (instead of thank-you.html), forward to thank-you.html
+    // with the same params so Purchase still tracks correctly in one place.
+    if (params.get('razorpay_payment_id')) {
+      window.location.replace('/thank-you?' + params.toString() +
+        '&order_id=' + encodeURIComponent(orderId) +
+        '&amount=' + encodeURIComponent(amount));
+    }
+
+    // NOTE: Purchase is NOT fired here anymore. This page only opens the
+    // Razorpay payment button - actual payment has not happened yet at load time.
+    // Purchase now fires only on thank-you.html, and only when the visitor
+    // arrives there via a real Razorpay redirect (razorpay_payment_id present in URL).
+    // This page still fires InitiateCheckout so the funnel step is tracked.
+    try {
+      if (typeof fbq === 'function') {
+        fbq('track', 'InitiateCheckout', {
+          value: amount,
+          currency: 'INR',
+          content_name: 'AVN-6PRO-001',
+          order_id: orderId
+        });
+      }
+    } catch(e) {
+      console.warn('FB Pixel InitiateCheckout error:', e);
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('success-order').textContent = orderId;
+      startTimer(900);
+
+
+    });
+    
+    let timerInterval;
+    function startTimer(seconds) {
+      let remaining = seconds;
+      const updateTimer = () => {
+        const mins = Math.floor(remaining / 60);
+        const secs = remaining % 60;
+        const display = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        
+        // Update all timer display elements
+        const timerDisplay = document.getElementById('timer-display');
+        const sidebarTimer = document.getElementById('sidebar-timer');
+        const timerSubtitle = document.getElementById('timer-display-subtitle');
+        const timerUrgent = document.getElementById('timer-display-urgent');
+        
+        if (timerDisplay) timerDisplay.textContent = display;
+        if (sidebarTimer) sidebarTimer.textContent = display;
+        if (timerSubtitle) timerSubtitle.textContent = display;
+        if (timerUrgent) timerUrgent.textContent = display;
+        
+        // Red color when < 60 seconds
+        if (remaining <= 60) {
+          if (timerDisplay) timerDisplay.style.color = '#dc2626';
+          if (sidebarTimer) sidebarTimer.style.color = '#dc2626';
+          if (timerUrgent) timerUrgent.style.color = '#d9534f';
+        }
+      };
+      updateTimer();
+      timerInterval = setInterval(() => {
+        remaining--;
+        if (remaining < 0) {
+          clearInterval(timerInterval);
+          return;
+        }
+        updateTimer();
+      }, 1000);
+    }
+    
+  </script>
+</body>
+</html>

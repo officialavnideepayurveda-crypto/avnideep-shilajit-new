@@ -1,0 +1,10 @@
+node_modules/
+.wrangler/
+.venv/
+__pycache__/
+*.pyc
+.env
+.env.local
+.dev.vars
+index_temp.html
+shop.html

@@ -1,0 +1,2 @@
+/* All scripts are inlined in index.html for maximum performance */
+/* This file exists only to prevent 404 from cached old versions */

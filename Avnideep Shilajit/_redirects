@@ -1,0 +1,38 @@
+# Cloudflare Workers Redirects
+# Remove trailing slashes and handle clean URLs
+
+# Cache manifest, sitemap (cache handled by _headers file)
+/manifest.webmanifest  /manifest.webmanifest  200
+/sitemap.xml  /sitemap.xml  200
+/robots.txt  /robots.txt  200
+
+# Clean URL redirects
+/privacy-policy  /privacy-policy.html  200
+/refund-policy  /refund-policy.html  200
+/terms-and-conditions  /terms-and-conditions.html  200
+/shipping-policy  /shipping-policy.html  200
+/contact-us  /contact-us.html  200
+/about-us  /about-us.html  200
+/disclaimer  /disclaimer.html  200
+
+# Trailing slash removal — redirect /page/ to /page
+/about-us/*  /about-us  301
+/contact-us/*  /contact-us  301
+/disclaimer/*  /disclaimer  301
+/privacy-policy/*  /privacy-policy  301
+/refund-policy/*  /refund-policy  301
+/shipping-policy/*  /shipping-policy  301
+/terms-and-conditions/*  /terms-and-conditions  301
+/thank-you/*  /thank-you  301
+
+# 404 catch-all — return 404 with Cloudflare's default page
+# (Cloudflare Workers Pages handles 404s automatically for unmatched routes)
+
+# Shortcuts
+/home    /    301
+/buy     /#checkout    301
+/order   /#checkout    301
+# /thank-you handled by Workers clean URL (auto serves thank-you.html)
+
+# Redirect old shop.html to homepage - contains old Purchase tracking code
+/shop.html  /  301

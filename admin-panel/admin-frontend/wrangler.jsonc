@@ -1,0 +1,35 @@
+{
+  "$schema": "https://raw.githubusercontent.com/cloudflare/workers-sdk/main/packages/wrangler/config-schema.json",
+  "name": "avnideep-admin",
+  "type": "javascript",
+  "main": "src/index.js",
+  "compatibility_date": "2026-07-04",
+  "compatibility_flags": ["nodejs_compat"],
+  
+  "site": {
+    "bucket": "./src",
+    "include": ["*.html", "*.js", "*.css", "*.json", "manifest.webmanifest"],
+    "exclude": ["*.map", ".DS_Store"]
+  },
+  
+  "env": {
+    "production": {
+      "name": "avnideep-admin",
+      "routes": [
+        {
+          "pattern": "admin.avnideepayurveda.in/*",
+          "zone_name": "avnideepayurveda.in"
+        }
+      ]
+    },
+    "staging": {
+      "name": "avnideep-admin-staging",
+      "routes": [
+        {
+          "pattern": "admin-staging.avnideepayurveda.in/*",
+          "zone_name": "avnideepayurveda.in"
+        }
+      ]
+    }
+  }
+}
