@@ -1132,6 +1132,18 @@ function build(status){
     phone: $('#tcPhoneInput').value.trim(),
 
 
+    address: $('#cAddress') ? $('#cAddress').value.trim() : '',
+
+
+    pincode: $('#cPincode') ? $('#cPincode').value.trim() : '',
+
+
+    city: $('#cCity') ? $('#cCity').value.trim() : '',
+
+
+    state: $('#cState') ? $('#cState').value.trim() : '',
+
+
     paymentMethod: m,
 
 
@@ -1184,6 +1196,15 @@ function validate(p){
 
 
   if(!/^[6-9]\d{9}$/.test(p.phone)){ $('#tcPhoneInput').focus(); return 'सही 10 अंकों का मोबाइल नंबर दर्ज करें।'; }
+
+
+  if(!p.address || p.address.length < 5){ $('#cAddress').focus(); return 'कृपया अपना पूरा पता भरें।'; }
+
+
+  if(!p.pincode || p.pincode.length !== 6){ $('#cPincode').focus(); return 'कृपया सही 6 अंकों का पिन कोड भरें।'; }
+
+
+  if(!p.city || p.city.length < 2){ $('#cCity').focus(); return 'कृपया अपना शहर भरें।'; }
 
 
   return '';
@@ -1469,6 +1490,15 @@ function initForm(){
 
 
       '📞 Phone: ' + payload.phone + '\n' +
+
+
+      '📍 Address: ' + (payload.address || 'N/A') + '\n' +
+
+
+      '📮 Pincode: ' + (payload.pincode || 'N/A') + '\n' +
+
+
+      '🏙️ City: ' + (payload.city || 'N/A') + '\n' +
 
 
       ' Payment: ' + payload.paymentMethod.toUpperCase() + '\n' +
@@ -1760,7 +1790,7 @@ function initForm(){
         var orderId = result.orderId || payload.orderId;
         var isDup = result && result.duplicate === true;
         var dupParam = isDup ? '&duplicate=true' : '';
-        window.location.href = '/thank-you?order_id=' + encodeURIComponent(orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.name) + '&method=cod' + dupParam;
+        window.location.href = '/thank-you?order_id=' + encodeURIComponent(orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.name) + '&address=' + encodeURIComponent(payload.address||'') + '&pincode=' + encodeURIComponent(payload.pincode||'') + '&city=' + encodeURIComponent(payload.city||'') + '&method=cod' + dupParam;
 
 
       } else {
@@ -1780,7 +1810,7 @@ function initForm(){
 
 
 
-        window.location.href = '/thank-you?order_id=' + encodeURIComponent(payload.orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.name) + '&method=cod_whatsapp&wa_url=' + encodeURIComponent(waOrderUrl);
+        window.location.href = '/thank-you?order_id=' + encodeURIComponent(payload.orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.name) + '&address=' + encodeURIComponent(payload.address||'') + '&pincode=' + encodeURIComponent(payload.pincode||'') + '&city=' + encodeURIComponent(payload.city||'') + '&method=cod_whatsapp&wa_url=' + encodeURIComponent(waOrderUrl);
 
 
         form.reset();

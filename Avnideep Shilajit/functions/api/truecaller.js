@@ -6,7 +6,7 @@
 // with verification data.
 //
 // Configure this URL in Truecaller Developer Dashboard:
-// https://shop.avnideepayurveda.in/api/truecaller
+// https://shop.avnideep.in/api/truecaller
 // ============================================================
 
 // CORS headers
