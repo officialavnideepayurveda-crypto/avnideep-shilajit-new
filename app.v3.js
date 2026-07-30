@@ -935,8 +935,8 @@ function updatePay(){
   $('#sSave').hidden = m!=='prepaid';
   var btn = $('#oBtn');
   if(btn){
-    var mainText = m==='prepaid' ? '⚡ अभी Order करें - ₹999' : '🔖 ₹100 Advance में बुक करें';
-    var subText = m==='prepaid' ? '🔒 Secure Online Payment' : '🔐 ₹100 Razorpay से pay करें • बाकी ₹1,150 डिलीवरी पर';
+    var mainText = m === 'prepaid' ? '⚡ अभी Order करें - ₹999' : '⚡ अभी COD Order करें - ₹1250';
+    var subText = m === 'prepaid' ? '🔒 Secure Online Payment' : '🔒 No advance payment • COD';
     btn.innerHTML = '<span>'+mainText+'</span><small>'+subText+'</small>';
   }
   // Savings line
