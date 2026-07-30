@@ -8,3 +8,11 @@ __pycache__/
 .dev.vars
 index_temp.html
 shop.html
+
+# Backup files
+*.light-backup
+*.backup
+*.bak*
+
+# Temp/utility scripts
+fix_trust_badges.js
