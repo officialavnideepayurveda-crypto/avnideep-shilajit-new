@@ -219,7 +219,7 @@ describe('CAPI Utility — sendCAPIEvent', () => {
         event_name: 'Purchase',
         event_time: expect.any(Number),
         action_source: 'website',
-        event_source_url: 'https://shop.avnideepayurveda.in/',
+        event_source_url: 'https://shop.avnideep.in/',
         event_id: eventId,
         user_data: {
           ph: 'abc123hashed',

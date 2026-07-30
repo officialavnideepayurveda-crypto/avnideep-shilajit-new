@@ -3,7 +3,7 @@
 export function corsHeaders(env, requestOrigin) {
   const allowedOrigins = ["https://admin.avnideepayurveda.in", 
     "https://adminshilajit.avnideepayurveda.in",
-    "https://shop.avnideepayurveda.in",
+    "https://shop.avnideep.in",
     env.ALLOWED_ORIGIN
   ].filter(Boolean);
   

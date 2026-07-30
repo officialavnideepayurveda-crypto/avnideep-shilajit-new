@@ -12,7 +12,7 @@
     "nodejs_compat"
   ],
   "vars": {
-    "ALLOWED_ORIGIN": "https://shop.avnideepayurveda.in",
+    "ALLOWED_ORIGIN": "https://shop.avnideep.in",
     "NOTIFY_EMAIL": "support@avnideepayurveda.in",
   },
   "kv_namespaces": [
@@ -30,7 +30,7 @@
   ],
   "routes": [
     {
-      "pattern": "shop.avnideepayurveda.in",
+      "pattern": "shop.avnideep.in",
       "custom_domain": true
     }
   ]

@@ -4,7 +4,7 @@
 const DEFAULT_SEO = {
   meta_title: 'Avnideep 6Pro Vitality Shilajit | 50% OFF + Free Doctor Consult',
   meta_description: 'Avnideep 6Pro Vitality Shilajit Capsules - 14 जड़ी-बूटियों से बना 100% आयुर्वेदिक formula। COD उपलब्ध, 10 दिन Money Back Guarantee, Free Delivery।',
-  canonical_url: 'https://shop.avnideepayurveda.in/',
+  canonical_url: 'https://shop.avnideep.in/',
   og_image: 'https://cdn.avnideepayurveda.in/Avnideep-shilajit/og-image.webp',
   robots: 'index, follow',
   favicon: '/favicon.ico'
