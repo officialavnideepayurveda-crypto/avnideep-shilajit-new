@@ -13,4 +13,4 @@ Disallow: /
 User-agent: Claude-Web
 Disallow: /
 
-Sitemap: https://shop.avnideep.in/sitemap.xml
+Sitemap: https://shop.avnideepayurveda.in/sitemap.xml
