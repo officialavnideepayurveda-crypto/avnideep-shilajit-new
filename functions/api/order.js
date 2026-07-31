@@ -62,7 +62,7 @@ function normalizeOrder(body, ip) {
     razorpay_order_id: String(body.razorpay_order_id || body.razorpayOrderId || "").slice(0, 100),
     razorpay_payment_id: String(body.razorpay_payment_id || body.razorpayPaymentId || "").slice(0, 100),
     razorpay_signature: String(body.razorpay_signature || body.razorpaySignature || "").slice(0, 300),
-    payment_status: body.razorpay_payment_id ? (String(body.payment_status || body.paymentStatus || 'paid').slice(0, 20)) : (String(body.payment_status || body.paymentStatus || "").slice(0, 20)),
+    payment_status: String(body.payment_status || body.paymentStatus || (body.razorpay_payment_id ? 'paid' : '')).slice(0, 20),
     payment_captured: body.razorpay_payment_id ? 1 : Number(body.payment_captured || body.paymentCaptured || 0),
     updated_at: body.updatedAt || new Date().toISOString(),
     webhook_verified: Number(body.webhook_verified || 0),
@@ -245,7 +245,7 @@ async function saveToD1(order, env) {
             utr, payment_note, reward_id, reward_amount, fbp, fbc,
             razorpay_order_id, razorpay_payment_id, razorpay_signature,
             payment_status, payment_captured, webhook_verified, refund_status, updated_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
         ).bind(
           order.order_id,
           order.name,

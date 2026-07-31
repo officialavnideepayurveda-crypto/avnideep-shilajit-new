@@ -140,7 +140,7 @@ export async function onRequestPost({ request, env, context }) {
         // Payment successfully captured - update order in D1
         if (env.DB && payment.order_id) {
           try {
-            await env.DB.prepare(
+            const updRes = await env.DB.prepare(
               `UPDATE orders SET 
                 payment_status = 'paid',
                 payment_captured = 1,
@@ -161,8 +161,20 @@ export async function onRequestPost({ request, env, context }) {
               payment.order_id || "",
               payment.id || ""
             ).run();
+            const changes = (updRes && updRes.meta && updRes.meta.changes) || 0;
+            if (changes === 0) {
+              // Order row not found yet - ask Razorpay to retry
+              return new Response(
+                JSON.stringify({ ok: false, error: "Order not found yet", retry: true }),
+                { status: 503, headers: jsonHeaders }
+              );
+            }
           } catch (dbErr) {
             console.error("WEBHOOK_DB_UPDATE_FAILED", String(dbErr.message || dbErr));
+            return new Response(
+              JSON.stringify({ ok: false, error: "DB update failed" }),
+              { status: 503, headers: jsonHeaders }
+            );
           }
         }
         return new Response(
