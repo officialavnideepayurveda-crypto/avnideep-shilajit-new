@@ -923,6 +923,7 @@ function initVideo(){
 }
 
 
+var CHECKOUT_MODE = 'advance';
 function getPay(){
   var c = $('input[name="paymentMethod"]:checked');
   return c ? c.value : 'advance';
@@ -935,9 +936,41 @@ function updatePay(){
   $('#sSave').hidden = m!=='prepaid';
   var btn = $('#oBtn');
   if(btn){
-    var mainText = m === 'prepaid' ? '⚡ अभी Order करें - ₹999' : '⚡ अभी COD Order करें - ₹1250';
-    var subText = m === 'prepaid' ? '🔒 Secure Online Payment' : '🔒 No advance payment • COD';
+    var mainText, subText;
+    if(m === 'prepaid'){
+      mainText = '⚡ अभी Order करें - ₹999';
+      subText = '🔒 Secure Online Payment';
+    } else if(CHECKOUT_MODE === 'full_cod'){
+      mainText = '⚡ अभी COD Order करें - ₹1250';
+      subText = '🔒 No advance payment • COD';
+    } else {
+      mainText = '🔖 ₹100 Advance में बुक करें';
+      subText = '🔐 ₹100 Razorpay से pay करें • बाकी ₹1,150 cash courier boy को order आने पर दे';
+    }
     btn.innerHTML = '<span>'+mainText+'</span><small>'+subText+'</small>';
+  }
+  var ct = $('#ctaSub');
+  if(ct){
+    if(m === 'prepaid'){
+      ct.textContent = '🔒 Secure Online Payment';
+    } else if(CHECKOUT_MODE === 'full_cod'){
+      ct.textContent = '🔐 Safe Checkout • No advance payment';
+    } else {
+      ct.textContent = '🔐 ₹100 Advance • बाकी ₹1,150 cash on delivery';
+    }
+  }
+  var cT = $('#codCardTitle'), cS = $('#codCardSub');
+  if(cT || cS){
+    if(m === 'prepaid'){
+      if(cT) cT.textContent = '💵 Cash on Delivery';
+      if(cS) cS.textContent = 'घर पहुंचने पर भुगतान करें (₹100 advance)';
+    } else if(CHECKOUT_MODE === 'full_cod'){
+      if(cT) cT.textContent = '💵 Cash on Delivery';
+      if(cS) cS.textContent = 'घर पहुंचने पर भुगतान करें (No advance)';
+    } else {
+      if(cT) cT.textContent = '💰 ₹100 Advance + COD';
+      if(cS) cS.textContent = '₹100 अभी Razorpay से • बाकी ₹1,150 घर पहुंचने पर cash';
+    }
   }
   // Savings line
   var sv = $('#sSaveAmt');
@@ -953,6 +986,7 @@ function updatePay(){
 
 
 function initPay(){
+  if(window.__payInit) return; window.__payInit = true;
 
 
   $$('input[name="paymentMethod"]').forEach(function(i){i.addEventListener('change', updatePay)});
@@ -1144,13 +1178,13 @@ function build(status){
     state: $('#cState') ? $('#cState').value.trim() : '',
 
 
-    paymentMethod: m,
+    paymentMethod: m === 'prepaid' ? 'prepaid' : (CHECKOUT_MODE === 'full_cod' ? 'cod' : 'advance_cod'),
 
 
     amount: m === 'prepaid' ? 999 : 1250,
 
 
-    product: 'Avnideep 6Pro Shilajit Capsules',
+    product: 'Avnideep 6Pro Vitality Shilajit Capsules',
 
 
     status: status,
@@ -1349,6 +1383,7 @@ window.fetchT = fetchT;
 
 
 function initForm(){
+  if(window.__formInit) return; window.__formInit = true;
 
 
   var form = $('#oForm'), err = $('#fErr'), btn = $('#oBtn');
@@ -1543,7 +1578,10 @@ function initForm(){
     var m = getPay();
 
 
-    var payload = build(m==='prepaid' ? 'payment_pending' : 'cod_order');
+    var isAdvance = m !== 'prepaid' && CHECKOUT_MODE === 'advance';
+
+
+    var payload = build(m === 'prepaid' ? 'payment_pending' : (isAdvance ? 'advance_paid' : 'cod_order'));
 
 
     if(m === 'prepaid'){
@@ -1650,6 +1688,40 @@ function initForm(){
 
 
 
+
+
+    // ADVANCE (₹100 Razorpay now + ₹1,150 cash on delivery) flow
+    if(isAdvance){
+      payload.advanceAmount = 100;
+      try {
+        var rzpResult = await openRazorpayCheckout(payload, 100);
+        if (rzpResult.success) {
+          payload.paymentMethod = 'advance_cod';
+          payload.paymentNote = '₹100 advance paid via Razorpay (' + (rzpResult.razorpay_payment_id || '') + ') • बाकी ₹1,150 delivery पर cash';
+          try {
+            var advRes = await sendOrder(payload, 0);
+            if (advRes && advRes.ok !== false) {
+              try{ sessionStorage.setItem('avn_last_order', advRes.orderId || payload.orderId); }catch(e){}
+            }
+          } catch(se){ console.warn('advance order save failed', se); }
+          window.location.href = '/thank-you?order_id=' + encodeURIComponent(payload.orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.name) + '&method=advance_cod&razorpay_payment_id=' + encodeURIComponent(rzpResult.razorpay_payment_id || '');
+          return;
+        } else {
+          showErr(err, rzpResult.error || 'Advance payment failed. Please try again.');
+          btn.innerHTML = origHTML;
+          btn.disabled = false;
+          submitting = false;
+          return;
+        }
+      } catch(rzrErr) {
+        console.error('RZP_ADV_ERR', rzrErr);
+        showErr(err, rzrErr.message || 'Advance payment failed. Try again or choose prepaid.');
+        btn.innerHTML = origHTML;
+        btn.disabled = false;
+        submitting = false;
+        return;
+      }
+    }
 
 
     // Try backend API next
@@ -2275,6 +2347,9 @@ function init(){
     initForm();
 
 
+    loadCheckoutMode();
+
+
     initSticky();
 
 
@@ -2455,7 +2530,7 @@ function initSocialProof(){
   var messages = [
 
 
-    'ne abhi-abhi <strong>6Pro Shilajit</strong> order kiya',
+    'ne abhi-abhi <strong>6Pro Vitality Shilajit</strong> order kiya',
 
 
     'ne <strong>COD</strong> par order kiya',
@@ -3643,8 +3718,22 @@ async function getPayConfig() {
   try {
     var r = await fetch(RZR_API + '/payment-config');
     var d = await r.json();
-    return d.ok ? d.data : { razorpay_enabled: false, cod_enabled: true, key_id: '' };
-  } catch(e) { return { razorpay_enabled: false, cod_enabled: true, key_id: '' }; }
+    var cfg = d.ok ? d.data : null;
+    if (cfg && cfg.checkout_mode) {
+      CHECKOUT_MODE = cfg.checkout_mode === 'full_cod' ? 'full_cod' : 'advance';
+    }
+    return cfg || { razorpay_enabled: false, cod_enabled: true, key_id: '', checkout_mode: CHECKOUT_MODE };
+  } catch(e) { return { razorpay_enabled: false, cod_enabled: true, key_id: '', checkout_mode: CHECKOUT_MODE }; }
+}
+function loadCheckoutMode() {
+  try {
+    fetch(RZR_API + '/payment-config').then(function(r){ return r.json(); }).then(function(d){
+      if (d && d.ok && d.data && d.data.checkout_mode) {
+        CHECKOUT_MODE = d.data.checkout_mode === 'full_cod' ? 'full_cod' : 'advance';
+      }
+      updatePay();
+    }).catch(function(){});
+  } catch(e){}
 }
 async function createRzrOrder(amt, curr, receipt, cust) {
   var r = await fetch(RZR_API + '/razorpay/create-order', {
@@ -3672,19 +3761,19 @@ async function saveRzrOrder(od) {
   if (!d.ok) throw new Error(d.error || 'Save failed');
   return d.data;
 }
-async function openRazorpayCheckout(payload) {
+async function openRazorpayCheckout(payload, chargeAmount) {
   var config = await getPayConfig();
   if (!config.razorpay_enabled) throw new Error('Online payment disabled');
   if (!config.key_id) throw new Error('Gateway not configured');
   await loadRazorpaySDK();
   var cust = { name: payload.name, phone: payload.phone };
-  var rzpOrder = await createRzrOrder(payload.amount, 'INR', payload.orderId, cust);
+  var rzpOrder = await createRzrOrder(chargeAmount || payload.amount, 'INR', payload.orderId, cust);
   return new Promise(function(resolve, reject) {
     var opts = {
       key: rzpOrder.key_id || config.key_id,
       amount: rzpOrder.amount, currency: rzpOrder.currency || 'INR',
       name: 'Avnideep Ayurveda',
-      description: 'Avnideep 6Pro Shilajit Capsules',
+      description: 'Avnideep 6Pro Vitality Shilajit Capsules',
       order_id: rzpOrder.id,
       prefill: { name: payload.name, contact: payload.phone },
       theme: { color: '#7A0C0C' },
@@ -3695,7 +3784,7 @@ async function openRazorpayCheckout(payload) {
             payload.razorpay_order_id = response.razorpay_order_id;
             payload.razorpay_payment_id = response.razorpay_payment_id;
             payload.razorpay_signature = response.razorpay_signature;
-            await saveRzrOrder(payload);
+            if(!payload.advanceAmount){ await saveRzrOrder(payload); }
             resolve({ success: true, orderId: payload.orderId, razorpay_payment_id: payload.razorpay_payment_id || '' });
           } else reject(new Error('Verification failed'));
         } catch(e) { reject(e); }

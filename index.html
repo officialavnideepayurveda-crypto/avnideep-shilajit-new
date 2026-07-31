@@ -623,7 +623,7 @@ function sendCAPIEvent(eventName, eventID, customData) {
                   <div class="popup-trigger">
         <button class="cta-order" type="button" onclick="openOrderPopup()">
           <span>⚡ अभी ऑर्डर करें - ₹1250</span>
-          <small>🔐 Safe Checkout • No advance payment</small>
+          <small id='ctaSub'>🔐 ₹100 Advance • बाकी ₹1,150 cash on delivery</small>
         </button>
       </div>
     </div>
@@ -886,7 +886,7 @@ function sendCAPIEvent(eventName, eventID, customData) {
     <div class="f-contact">
       <span>📍 Haridwar, Uttarakhand, India</span>
       <a href="tel:+917060101043">📞 +91 7060101043</a>
-      <a href="mailto:support@avnideepayurveda.in">✉️ support@avnideepayurveda.in</a>
+      <a href="/cdn-cgi/l/email-protection#a4d7d1d4d4cbd6d0e4c5d2cacdc0c1c1d4c5ddd1d6d2c1c0c58acdca">✉️ <span class="__cf_email__" data-cfemail="90e3e5e0e0ffe2e4d0f1e6fef9f4f5f5e0f1e9e5e2e6f5f4f1bef9fe">[email&#160;protected]</span></a>
       <a href="https://wa.me/917060101043" target="_blank" rel="noopener">📱 +91 7060101043 (WhatsApp)</a>
     </div>
     <div class="f-links">
@@ -931,7 +931,7 @@ function sendCAPIEvent(eventName, eventID, customData) {
     </div>
   </div>
 </div>
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 (function(){
 "use strict";
 var $ = function(s,c){return (c||document).querySelector(s)};
@@ -1087,6 +1087,7 @@ function initVideo(){
     b.addEventListener('keydown', function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();load()}});
   });
 }
+var CHECKOUT_MODE = 'advance';
 function getPay(){
   var c = $('input[name="paymentMethod"]:checked');
   return c ? c.value : 'cod';
@@ -1099,9 +1100,28 @@ function updatePay(){
   $('#sSave').hidden = m !== 'prepaid';
   var btn = $('#oBtn');
   if(btn){
-    var mainText = m === 'prepaid' ? '⚡ अभी Order करें - ₹999' : '⚡ अभी COD Order करें - ₹1250';
-    var subText = m === 'prepaid' ? '🔒 Secure Online Payment' : '🔒 No advance payment • COD';
+    var mainText, subText;
+    if(m === 'prepaid'){
+      mainText = '⚡ अभी Order करें - ₹999';
+      subText = '🔒 Secure Online Payment';
+    } else if(typeof CHECKOUT_MODE !== 'undefined' && CHECKOUT_MODE === 'full_cod'){
+      mainText = '⚡ अभी COD Order करें - ₹1250';
+      subText = '🔒 No advance payment • COD';
+    } else {
+      mainText = '🔖 ₹100 Advance में बुक करें';
+      subText = '🔐 ₹100 Razorpay से pay करें • बाकी ₹1,150 cash courier boy को order आने पर दे';
+    }
     btn.innerHTML = '<span>' + mainText + '</span><small>' + subText + '</small>';
+  }
+  var ct2 = document.getElementById('ctaSub');
+  if(ct2){
+    if(m === 'prepaid'){
+      ct2.textContent = '🔒 Secure Online Payment';
+    } else if(typeof CHECKOUT_MODE !== 'undefined' && CHECKOUT_MODE === 'full_cod'){
+      ct2.textContent = '🔐 Safe Checkout • No advance payment';
+    } else {
+      ct2.textContent = '🔐 ₹100 Advance • बाकी ₹1,150 cash on delivery';
+    }
   }
   var sv = $('#sSaveAmt');
   if(sv){
@@ -1894,8 +1914,8 @@ function initSocialProof(){
             <input type="radio" name="paymentMethod" value="cod" checked>
             <div class="pay-top">
               <div>
-                <strong>💵 Cash on Delivery</strong>
-                <small>घर पहुंचने पर भुगतान करें (No advance)</small>
+                <strong id='codCardTitle'>💰 ₹100 Advance + COD</strong>
+                <small id='codCardSub'>₹100 अभी Razorpay से • बाकी ₹1,150 घर पहुंचने पर cash</small>
               </div>
               <b>₹1250</b>
             </div>
@@ -1911,8 +1931,8 @@ function initSocialProof(){
         </div>
         <div class="form-err" id="fErr" role="alert"></div>
         <button class="cta-order ayur-cta" id="oBtn" type="submit">
-          <span>⚡ अभी COD Order करें - ₹1250</span>
-          <small>🔐 Safe Checkout • No advance payment</small>
+          <span>🔖 ₹100 Advance में बुक करें</span>
+          <small>🔐 ₹100 Razorpay से pay करें • बाकी ₹1,150 cash courier boy को order आने पर दे</small>
         </button>
       </form>
       <div class="trust-foot">

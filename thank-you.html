@@ -207,7 +207,7 @@
         }
       } catch(e){}
       if (!orderId) orderId = razorpayOrderId || razorpayPaymentId;
-      method = 'prepaid';
+      if (!method || method === 'cod') method = 'prepaid';
     }
 
     // Apply default amount
@@ -291,7 +291,7 @@
       if(orderId) document.getElementById('displayOrderId').textContent = orderId;
       if(name) document.getElementById('displayName').textContent = name;
       document.getElementById('displayAmount').textContent = '\u20B9 ' + amount;
-      document.getElementById('displayPayment').textContent = method === 'prepaid' ? 'Prepaid' : 'COD';
+      document.getElementById('displayPayment').textContent = method === 'prepaid' ? 'Prepaid' : (method === 'advance_cod' ? '₹100 Advance + COD' : 'COD');
 
       // Update WhatsApp button
       var waBtn = document.getElementById('whatsappBtn');
