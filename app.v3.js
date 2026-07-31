@@ -1150,7 +1150,7 @@ function build(status){
     amount: m === 'prepaid' ? 999 : 1250,
 
 
-    product: 'Avnideep 6Pro Vitality Shilajit Capsules',
+    product: 'Avnideep 6Pro Shilajit Capsules',
 
 
     status: status,
@@ -2455,7 +2455,7 @@ function initSocialProof(){
   var messages = [
 
 
-    'ne abhi-abhi <strong>6Pro Vitality Shilajit</strong> order kiya',
+    'ne abhi-abhi <strong>6Pro Shilajit</strong> order kiya',
 
 
     'ne <strong>COD</strong> par order kiya',
@@ -3684,7 +3684,7 @@ async function openRazorpayCheckout(payload) {
       key: rzpOrder.key_id || config.key_id,
       amount: rzpOrder.amount, currency: rzpOrder.currency || 'INR',
       name: 'Avnideep Ayurveda',
-      description: 'Avnideep 6Pro Vitality Shilajit Capsules',
+      description: 'Avnideep 6Pro Shilajit Capsules',
       order_id: rzpOrder.id,
       prefill: { name: payload.name, contact: payload.phone },
       theme: { color: '#7A0C0C' },
