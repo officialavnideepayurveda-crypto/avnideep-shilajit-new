@@ -147,14 +147,19 @@ export async function onRequestPost({ request, env, context }) {
                 razorpay_payment_id = ?,
                 razorpay_order_id = ?,
                 webhook_verified = 1,
-                status = CASE WHEN status = 'pending' THEN 'paid' ELSE status END,
+                status = CASE
+                  WHEN status IN ('pending', 'payment_pending', 'prepaid') THEN 'paid'
+                  WHEN status = 'advance_paid' THEN 'advance_paid'
+                  ELSE status
+                END,
                 updated_at = ?
-              WHERE razorpay_order_id = ?`
+              WHERE razorpay_order_id = ? OR razorpay_payment_id = ?`
             ).bind(
               payment.id || "",
               payment.order_id || "",
               new Date().toISOString(),
-              payment.order_id
+              payment.order_id || "",
+              payment.id || ""
             ).run();
           } catch (dbErr) {
             console.error("WEBHOOK_DB_UPDATE_FAILED", String(dbErr.message || dbErr));

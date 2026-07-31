@@ -59,6 +59,14 @@ function normalizeOrder(body, ip) {
     source: String(body.source || "").trim().slice(0, 50),
     fbp: String(body.fbp || "").slice(0, 100),
     fbc: String(body.fbc || ""),
+    razorpay_order_id: String(body.razorpay_order_id || body.razorpayOrderId || "").slice(0, 100),
+    razorpay_payment_id: String(body.razorpay_payment_id || body.razorpayPaymentId || "").slice(0, 100),
+    razorpay_signature: String(body.razorpay_signature || body.razorpaySignature || "").slice(0, 300),
+    payment_status: body.razorpay_payment_id ? (String(body.payment_status || body.paymentStatus || 'paid').slice(0, 20)) : (String(body.payment_status || body.paymentStatus || "").slice(0, 20)),
+    payment_captured: body.razorpay_payment_id ? 1 : Number(body.payment_captured || body.paymentCaptured || 0),
+    updated_at: body.updatedAt || new Date().toISOString(),
+    webhook_verified: Number(body.webhook_verified || 0),
+    refund_status: String(body.refund_status || body.refundStatus || "").slice(0, 20),
   };
 }
 
@@ -163,7 +171,15 @@ async function saveToD1(order, env) {
           utm_medium TEXT DEFAULT '',
           utm_campaign TEXT DEFAULT '',
           fbp TEXT DEFAULT '',
-          fbc TEXT DEFAULT ''
+          fbc TEXT DEFAULT '',
+          razorpay_order_id TEXT DEFAULT '',
+          razorpay_payment_id TEXT DEFAULT '',
+          razorpay_signature TEXT DEFAULT '',
+          payment_status TEXT DEFAULT '',
+          payment_captured INTEGER DEFAULT 0,
+          webhook_verified INTEGER DEFAULT 0,
+          refund_status TEXT DEFAULT '',
+          updated_at TEXT DEFAULT ''
         )`
       ).run();
       try {
@@ -188,6 +204,30 @@ async function saveToD1(order, env) {
           console.log("D1_ALTER_COLUMN_FAILED", String(alterErr.message || alterErr).slice(0, 100));
         }
       }
+      try {
+        await env.DB.prepare(`ALTER TABLE orders ADD COLUMN razorpay_order_id TEXT DEFAULT ''`).run();
+      } catch (alterErr) { if (String(alterErr.message || alterErr).indexOf('duplicate column name') < 0 && String(alterErr.message || alterErr).indexOf('already exists') < 0) { console.log("D1_ALTER_COLUMN_FAILED", String(alterErr.message || alterErr).slice(0, 100)); } }
+      try {
+        await env.DB.prepare(`ALTER TABLE orders ADD COLUMN razorpay_payment_id TEXT DEFAULT ''`).run();
+      } catch (alterErr) { if (String(alterErr.message || alterErr).indexOf('duplicate column name') < 0 && String(alterErr.message || alterErr).indexOf('already exists') < 0) { console.log("D1_ALTER_COLUMN_FAILED", String(alterErr.message || alterErr).slice(0, 100)); } }
+      try {
+        await env.DB.prepare(`ALTER TABLE orders ADD COLUMN razorpay_signature TEXT DEFAULT ''`).run();
+      } catch (alterErr) { if (String(alterErr.message || alterErr).indexOf('duplicate column name') < 0 && String(alterErr.message || alterErr).indexOf('already exists') < 0) { console.log("D1_ALTER_COLUMN_FAILED", String(alterErr.message || alterErr).slice(0, 100)); } }
+      try {
+        await env.DB.prepare(`ALTER TABLE orders ADD COLUMN payment_status TEXT DEFAULT ''`).run();
+      } catch (alterErr) { if (String(alterErr.message || alterErr).indexOf('duplicate column name') < 0 && String(alterErr.message || alterErr).indexOf('already exists') < 0) { console.log("D1_ALTER_COLUMN_FAILED", String(alterErr.message || alterErr).slice(0, 100)); } }
+      try {
+        await env.DB.prepare(`ALTER TABLE orders ADD COLUMN payment_captured INTEGER DEFAULT 0`).run();
+      } catch (alterErr) { if (String(alterErr.message || alterErr).indexOf('duplicate column name') < 0 && String(alterErr.message || alterErr).indexOf('already exists') < 0) { console.log("D1_ALTER_COLUMN_FAILED", String(alterErr.message || alterErr).slice(0, 100)); } }
+      try {
+        await env.DB.prepare(`ALTER TABLE orders ADD COLUMN webhook_verified INTEGER DEFAULT 0`).run();
+      } catch (alterErr) { if (String(alterErr.message || alterErr).indexOf('duplicate column name') < 0 && String(alterErr.message || alterErr).indexOf('already exists') < 0) { console.log("D1_ALTER_COLUMN_FAILED", String(alterErr.message || alterErr).slice(0, 100)); } }
+      try {
+        await env.DB.prepare(`ALTER TABLE orders ADD COLUMN refund_status TEXT DEFAULT ''`).run();
+      } catch (alterErr) { if (String(alterErr.message || alterErr).indexOf('duplicate column name') < 0 && String(alterErr.message || alterErr).indexOf('already exists') < 0) { console.log("D1_ALTER_COLUMN_FAILED", String(alterErr.message || alterErr).slice(0, 100)); } }
+      try {
+        await env.DB.prepare(`ALTER TABLE orders ADD COLUMN updated_at TEXT DEFAULT ''`).run();
+      } catch (alterErr) { if (String(alterErr.message || alterErr).indexOf('duplicate column name') < 0 && String(alterErr.message || alterErr).indexOf('already exists') < 0) { console.log("D1_ALTER_COLUMN_FAILED", String(alterErr.message || alterErr).slice(0, 100)); } }
     } catch (tableErr) {
       console.log("D1_TABLE_CREATE_SKIPPED", String(tableErr.message || tableErr).slice(0, 100));
     }
@@ -202,8 +242,10 @@ async function saveToD1(order, env) {
             payment_method, amount, product, status, source, page_url,
             created_at, ip_address, user_agent, 
             utm_source, utm_medium, utm_campaign,
-            utr, payment_note, reward_id, reward_amount, fbp, fbc
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+            utr, payment_note, reward_id, reward_amount, fbp, fbc,
+            razorpay_order_id, razorpay_payment_id, razorpay_signature,
+            payment_status, payment_captured, webhook_verified, refund_status, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
         ).bind(
           order.order_id,
           order.name,
@@ -227,7 +269,15 @@ async function saveToD1(order, env) {
           order.reward_id || '',
           order.reward_amount || 0,
           order.fbp || '',
-          order.fbc || ''
+          order.fbc || '',
+          order.razorpay_order_id || '',
+          order.razorpay_payment_id || '',
+          order.razorpay_signature || '',
+          order.payment_status || '',
+          order.payment_captured || 0,
+          order.webhook_verified || 0,
+          order.refund_status || '',
+          order.updated_at || ''
         ).run();
         if (query && query.success) {
           return { ok: true, status: 200, message: "Order saved to D1" };
