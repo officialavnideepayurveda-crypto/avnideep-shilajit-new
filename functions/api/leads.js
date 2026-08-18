@@ -4,6 +4,9 @@
 // Called by TruecallerLogin.jsx after successful verification
 // ============================================================
 
+// Perf: leads table bootstrap runs once per isolate, not on every lead call
+let leadsSchemaBootstrapped = false;
+
 const corsHeaders = (env) => ({
   "Access-Control-Allow-Origin": env.ALLOWED_ORIGIN || "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
@@ -33,6 +36,7 @@ export async function onRequestPost({ request, env }) {
     let d1Result = { skipped: true };
     if (env.DB) {
       try {
+        if (!leadsSchemaBootstrapped) {
         await env.DB.prepare(
           `CREATE TABLE IF NOT EXISTS leads (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -43,6 +47,8 @@ export async function onRequestPost({ request, env }) {
             created_at TEXT DEFAULT (datetime('now'))
           )`
         ).run();
+        leadsSchemaBootstrapped = true;
+        }
 
         const existing = await env.DB.prepare('SELECT id, name, source, ip_address FROM leads WHERE phone = ?').bind(phone).first();
 

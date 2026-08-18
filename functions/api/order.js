@@ -5,6 +5,7 @@
 // ============================================================
 
 import { sendCAPIEvent, buildUserData, buildCustomData } from './_capi';
+import { parseRefCookie, parseRefTs, recordOrderAttribution } from './_lib/attribution';
 
 const jsonHeaders = (env) => ({
   "Access-Control-Allow-Origin": env.ALLOWED_ORIGIN || "*",
@@ -48,8 +49,6 @@ function normalizeOrder(body, ip) {
     page_url: String(body.pageUrl || "").slice(0, 300),
     utr: String(body.utr || "").trim().slice(0, 50),
     payment_note: String(body.paymentNote || "").trim().slice(0, 200),
-    reward_id: String(body.rewardId || "").trim().slice(0, 100),
-    reward_amount: Number(body.rewardAmount || 0),
     created_at: body.createdAt || new Date().toISOString(),
     ip_address: ip || "unknown",
     user_agent: String(body.userAgent || "").slice(0, 200),
@@ -139,13 +138,75 @@ async function sendTelegram(order, env) {
 // 2️⃣ D1 DATABASE (Primary Storage - Cloudflare Edge)
 // Fast SQLite at the edge - no external API calls needed
 // ============================================================
+// Perf: CREATE TABLE + 11 ALTERs only run ONCE (KV flag), not on every order.
+// Saves ~12 D1 statements per order — critical for D1 free-tier quotas under traffic.
+let ordersSchemaBootstrapped = false;
+
+// WARN-3 FIX: ensure the orders table exists BEFORE the duplicate-detection query runs
+// (previously the table was only created inside saveToD1, so the very first request
+// logged "no such table: orders" in the dedup check). Idempotent + once-only via flags.
+async function ensureOrdersTable(env) {
+  if (!env?.DB || ordersSchemaBootstrapped) return true;
+  try {
+    if ((await env.RATE_LIMIT_KV?.get('d1_schema_orders_v1')) === '1') {
+      ordersSchemaBootstrapped = true;
+      return true;
+    }
+  } catch (e) {}
+  try {
+    await env.DB.prepare(`CREATE TABLE IF NOT EXISTS orders (
+      order_id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      phone TEXT NOT NULL,
+      pincode TEXT DEFAULT '',
+      address TEXT DEFAULT '',
+      payment_method TEXT DEFAULT 'cod',
+      amount REAL DEFAULT 0,
+      product TEXT DEFAULT 'Avnideep 6Pro Vitality Shilajit Capsules',
+      status TEXT DEFAULT 'cod_order',
+      source TEXT DEFAULT '',
+      page_url TEXT DEFAULT '',
+      utr TEXT DEFAULT '',
+      payment_note TEXT DEFAULT '',
+      created_at TEXT DEFAULT (datetime('now')),
+      ip_address TEXT DEFAULT '',
+      user_agent TEXT DEFAULT '',
+      utm_source TEXT DEFAULT '',
+      utm_medium TEXT DEFAULT '',
+      utm_campaign TEXT DEFAULT '',
+      fbp TEXT DEFAULT '',
+      fbc TEXT DEFAULT '',
+      razorpay_order_id TEXT DEFAULT '',
+      razorpay_payment_id TEXT DEFAULT '',
+      razorpay_signature TEXT DEFAULT '',
+      payment_status TEXT DEFAULT '',
+      payment_captured INTEGER DEFAULT 0,
+      webhook_verified INTEGER DEFAULT 0,
+      refund_status TEXT DEFAULT '',
+      updated_at TEXT DEFAULT ''
+    )`).run();
+    ordersSchemaBootstrapped = true;
+    return true;
+  } catch (e) {
+    console.warn("ENSURE_ORDERS_TABLE_FAILED", String(e.message || e).slice(0, 100));
+    return false;
+  }
+}
+
+
 async function saveToD1(order, env) {
   if (!env.DB) {
     return { skipped: true, reason: "d1_not_configured" };
   }
 
   try {
+    // Auto-create orders table only once (KV flag) - avoids 14 D1 statements on every order
+    let schemaDone = null;
+    if (ordersSchemaBootstrapped) { schemaDone = '1'; }
+    else { try { schemaDone = await env.RATE_LIMIT_KV.get('d1_schema_orders_v1'); } catch (e) {} }
+    if (schemaDone !== '1') {
     // Auto-create orders table if not exists (handles first run after deploy)
+    let bootstrapOk = true;
     try {
       await env.DB.prepare(
         `CREATE TABLE IF NOT EXISTS orders (
@@ -162,8 +223,6 @@ async function saveToD1(order, env) {
           page_url TEXT DEFAULT '',
           utr TEXT DEFAULT '',
           payment_note TEXT DEFAULT '',
-          reward_id TEXT DEFAULT '',
-          reward_amount REAL DEFAULT 0,
           created_at TEXT DEFAULT (datetime('now')),
           ip_address TEXT DEFAULT '',
           user_agent TEXT DEFAULT '',
@@ -187,49 +246,42 @@ async function saveToD1(order, env) {
       } catch (alterErr) {
         // ignore if column already exists or if D1 does not support alter in this context
         if (String(alterErr.message || alterErr).indexOf('duplicate column name') < 0 && String(alterErr.message || alterErr).indexOf('already exists') < 0) {
-          console.log("D1_ALTER_COLUMN_FAILED", String(alterErr.message || alterErr).slice(0, 100));
-        }
-      }
-      try {
-        await env.DB.prepare(`ALTER TABLE orders ADD COLUMN reward_id TEXT DEFAULT ''`).run();
-      } catch (alterErr) {
-        if (String(alterErr.message || alterErr).indexOf('duplicate column name') < 0 && String(alterErr.message || alterErr).indexOf('already exists') < 0) {
-          console.log("D1_ALTER_COLUMN_FAILED", String(alterErr.message || alterErr).slice(0, 100));
-        }
-      }
-      try {
-        await env.DB.prepare(`ALTER TABLE orders ADD COLUMN reward_amount REAL DEFAULT 0`).run();
-      } catch (alterErr) {
-        if (String(alterErr.message || alterErr).indexOf('duplicate column name') < 0 && String(alterErr.message || alterErr).indexOf('already exists') < 0) {
-          console.log("D1_ALTER_COLUMN_FAILED", String(alterErr.message || alterErr).slice(0, 100));
+          bootstrapOk = false; console.log("D1_ALTER_COLUMN_FAILED", String(alterErr.message || alterErr).slice(0, 100));
         }
       }
       try {
         await env.DB.prepare(`ALTER TABLE orders ADD COLUMN razorpay_order_id TEXT DEFAULT ''`).run();
-      } catch (alterErr) { if (String(alterErr.message || alterErr).indexOf('duplicate column name') < 0 && String(alterErr.message || alterErr).indexOf('already exists') < 0) { console.log("D1_ALTER_COLUMN_FAILED", String(alterErr.message || alterErr).slice(0, 100)); } }
+      } catch (alterErr) { if (String(alterErr.message || alterErr).indexOf('duplicate column name') < 0 && String(alterErr.message || alterErr).indexOf('already exists') < 0) { bootstrapOk = false; console.log("D1_ALTER_COLUMN_FAILED", String(alterErr.message || alterErr).slice(0, 100)); } }
       try {
         await env.DB.prepare(`ALTER TABLE orders ADD COLUMN razorpay_payment_id TEXT DEFAULT ''`).run();
-      } catch (alterErr) { if (String(alterErr.message || alterErr).indexOf('duplicate column name') < 0 && String(alterErr.message || alterErr).indexOf('already exists') < 0) { console.log("D1_ALTER_COLUMN_FAILED", String(alterErr.message || alterErr).slice(0, 100)); } }
+      } catch (alterErr) { if (String(alterErr.message || alterErr).indexOf('duplicate column name') < 0 && String(alterErr.message || alterErr).indexOf('already exists') < 0) { bootstrapOk = false; console.log("D1_ALTER_COLUMN_FAILED", String(alterErr.message || alterErr).slice(0, 100)); } }
       try {
         await env.DB.prepare(`ALTER TABLE orders ADD COLUMN razorpay_signature TEXT DEFAULT ''`).run();
-      } catch (alterErr) { if (String(alterErr.message || alterErr).indexOf('duplicate column name') < 0 && String(alterErr.message || alterErr).indexOf('already exists') < 0) { console.log("D1_ALTER_COLUMN_FAILED", String(alterErr.message || alterErr).slice(0, 100)); } }
+      } catch (alterErr) { if (String(alterErr.message || alterErr).indexOf('duplicate column name') < 0 && String(alterErr.message || alterErr).indexOf('already exists') < 0) { bootstrapOk = false; console.log("D1_ALTER_COLUMN_FAILED", String(alterErr.message || alterErr).slice(0, 100)); } }
       try {
         await env.DB.prepare(`ALTER TABLE orders ADD COLUMN payment_status TEXT DEFAULT ''`).run();
-      } catch (alterErr) { if (String(alterErr.message || alterErr).indexOf('duplicate column name') < 0 && String(alterErr.message || alterErr).indexOf('already exists') < 0) { console.log("D1_ALTER_COLUMN_FAILED", String(alterErr.message || alterErr).slice(0, 100)); } }
+      } catch (alterErr) { if (String(alterErr.message || alterErr).indexOf('duplicate column name') < 0 && String(alterErr.message || alterErr).indexOf('already exists') < 0) { bootstrapOk = false; console.log("D1_ALTER_COLUMN_FAILED", String(alterErr.message || alterErr).slice(0, 100)); } }
       try {
         await env.DB.prepare(`ALTER TABLE orders ADD COLUMN payment_captured INTEGER DEFAULT 0`).run();
-      } catch (alterErr) { if (String(alterErr.message || alterErr).indexOf('duplicate column name') < 0 && String(alterErr.message || alterErr).indexOf('already exists') < 0) { console.log("D1_ALTER_COLUMN_FAILED", String(alterErr.message || alterErr).slice(0, 100)); } }
+      } catch (alterErr) { if (String(alterErr.message || alterErr).indexOf('duplicate column name') < 0 && String(alterErr.message || alterErr).indexOf('already exists') < 0) { bootstrapOk = false; console.log("D1_ALTER_COLUMN_FAILED", String(alterErr.message || alterErr).slice(0, 100)); } }
       try {
         await env.DB.prepare(`ALTER TABLE orders ADD COLUMN webhook_verified INTEGER DEFAULT 0`).run();
-      } catch (alterErr) { if (String(alterErr.message || alterErr).indexOf('duplicate column name') < 0 && String(alterErr.message || alterErr).indexOf('already exists') < 0) { console.log("D1_ALTER_COLUMN_FAILED", String(alterErr.message || alterErr).slice(0, 100)); } }
+      } catch (alterErr) { if (String(alterErr.message || alterErr).indexOf('duplicate column name') < 0 && String(alterErr.message || alterErr).indexOf('already exists') < 0) { bootstrapOk = false; console.log("D1_ALTER_COLUMN_FAILED", String(alterErr.message || alterErr).slice(0, 100)); } }
       try {
         await env.DB.prepare(`ALTER TABLE orders ADD COLUMN refund_status TEXT DEFAULT ''`).run();
-      } catch (alterErr) { if (String(alterErr.message || alterErr).indexOf('duplicate column name') < 0 && String(alterErr.message || alterErr).indexOf('already exists') < 0) { console.log("D1_ALTER_COLUMN_FAILED", String(alterErr.message || alterErr).slice(0, 100)); } }
+      } catch (alterErr) { if (String(alterErr.message || alterErr).indexOf('duplicate column name') < 0 && String(alterErr.message || alterErr).indexOf('already exists') < 0) { bootstrapOk = false; console.log("D1_ALTER_COLUMN_FAILED", String(alterErr.message || alterErr).slice(0, 100)); } }
       try {
         await env.DB.prepare(`ALTER TABLE orders ADD COLUMN updated_at TEXT DEFAULT ''`).run();
-      } catch (alterErr) { if (String(alterErr.message || alterErr).indexOf('duplicate column name') < 0 && String(alterErr.message || alterErr).indexOf('already exists') < 0) { console.log("D1_ALTER_COLUMN_FAILED", String(alterErr.message || alterErr).slice(0, 100)); } }
+      } catch (alterErr) { if (String(alterErr.message || alterErr).indexOf('duplicate column name') < 0 && String(alterErr.message || alterErr).indexOf('already exists') < 0) { bootstrapOk = false; console.log("D1_ALTER_COLUMN_FAILED", String(alterErr.message || alterErr).slice(0, 100)); } }
     } catch (tableErr) {
+      bootstrapOk = false;
       console.log("D1_TABLE_CREATE_SKIPPED", String(tableErr.message || tableErr).slice(0, 100));
+    }
+    if (bootstrapOk) {
+      // Mark schema ready (30-day KV TTL; re-runs once after expiry - cheap and safe)
+      try { await env.RATE_LIMIT_KV.put('d1_schema_orders_v1', '1', { expirationTtl: 86400 * 30 }); } catch (e) {}
+      ordersSchemaBootstrapped = true;
+    }
     }
 
     // Retry D1 write up to 3 times
@@ -242,10 +294,10 @@ async function saveToD1(order, env) {
             payment_method, amount, product, status, source, page_url,
             created_at, ip_address, user_agent, 
             utm_source, utm_medium, utm_campaign,
-            utr, payment_note, reward_id, reward_amount, fbp, fbc,
+            utr, payment_note, fbp, fbc,
             razorpay_order_id, razorpay_payment_id, razorpay_signature,
             payment_status, payment_captured, webhook_verified, refund_status, updated_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
         ).bind(
           order.order_id,
           order.name,
@@ -266,8 +318,6 @@ async function saveToD1(order, env) {
           order.utm_campaign,
           order.utr || '',
           order.payment_note || '',
-          order.reward_id || '',
-          order.reward_amount || 0,
           order.fbp || '',
           order.fbc || '',
           order.razorpay_order_id || '',
@@ -287,8 +337,36 @@ async function saveToD1(order, env) {
           await new Promise(r => setTimeout(r, 200 * attempt));
         }
       } catch (retryErr) {
-        // On UNIQUE constraint, return success immediately (no retry needed)
+        // On UNIQUE constraint: if payment completed (razorpay ids present), update existing order
         if (String(retryErr.message || retryErr).indexOf("UNIQUE constraint") >= 0) {
+          if (order.razorpay_payment_id) {
+            try {
+              await env.DB.prepare(
+                `UPDATE orders SET
+                  razorpay_order_id = ?,
+                  razorpay_payment_id = ?,
+                  razorpay_signature = ?,
+                  payment_status = 'paid',
+                  payment_captured = 1,
+                  status = ?,
+                  payment_note = ?,
+                  updated_at = ?
+                WHERE order_id = ?`
+              ).bind(
+                order.razorpay_order_id || '',
+                order.razorpay_payment_id || '',
+                order.razorpay_signature || '',
+                order.status || 'paid',
+                order.payment_note || '',
+                new Date().toISOString(),
+                order.order_id
+              ).run();
+              console.log("D1_DUPLICATE_ORDER_UPDATED", { order_id: order.order_id });
+              return { ok: true, status: 200, note: "duplicate_order_id_updated" };
+            } catch (updErr) {
+              console.error("D1_DUPLICATE_UPDATE_FAILED", String(updErr.message || updErr));
+            }
+          }
           console.log("D1_DUPLICATE_ORDER_ID", { order_id: order.order_id });
           return { ok: true, status: 200, note: "duplicate_order_id" };
         }
@@ -586,7 +664,10 @@ async function sendFacebookCAPI(order, env, eventName = 'Purchase', requestUa = 
       retries: 1
     });
 
-    if (result && result.error) {
+    if (!result) {
+      return { ok: false, error: 'meta_credentials_missing' };
+    }
+    if (result.error) {
       return { ok: false, error: String(result.error) };
     }
 
@@ -661,7 +742,11 @@ export async function onRequestOptions({ env }) {
 // MAIN ORDER HANDLER
 // ============================================================
 export async function onRequestPost({ request, env, waitUntil }) {
+  const wu = (typeof waitUntil === 'function') ? waitUntil : (p) => { if (p && typeof p.catch === 'function') p.catch(() => {}); };
   const ip = request.headers.get("CF-Connecting-IP") || request.headers.get("X-Forwarded-For") || "unknown";
+
+  // WARN-3 FIX: create the orders table before any query touches it (dedup, D1 write)
+  try { await ensureOrdersTable(env); } catch (e) { console.warn("PRE_DEDUP_SCHEMA_FAILED", String(e.message || e).slice(0, 100)); }
 
   // ============================================================
   // CSRF/ORIGIN CHECK - Prevent external form submissions
@@ -720,8 +805,7 @@ export async function onRequestPost({ request, env, waitUntil }) {
       const phoneKey = seenPhone ? `seen_phone:${seenPhone}` : null;
 
       if (phoneBypass && phoneKey) {
-        // Known phone: mark it active once and skip the IP burst check.
-        await env.RATE_LIMIT_KV.put(phoneKey, '1', { expirationTtl: 3600 }).catch(() => {});
+        // Known phone: skip the IP burst check. No KV write needed - the key already exists.
       } else {
         // IP-based rate limiting for unknown visitors.
         console.log('[KV-VERIFY] order read', { key: rateKey, type: 'rate_limit' });
@@ -827,19 +911,78 @@ console.log('[KV-VERIFY] order write', { key: rateKey, type: 'rate_limit' });
       console.warn("DEDUP_CHECK_FAILED", String(dupErr.message || dupErr));
     }
 
-    // If duplicate detected, return existing order — skip processing entirely
+    // If duplicate detected:
+    // - If payment completed (razorpay ids present), UPDATE the existing order with payment info
+    // - Otherwise skip processing entirely (prevents duplicate orders / double FB events)
     if (isDup && existingOrderId) {
-      console.log("DUPLICATE_SKIPPED", { existing: existingOrderId, phone: order.phone });
-      return new Response(
-        JSON.stringify({
-          ok: true,
-          orderId: existingOrderId,
-          duplicate: true,
-          message: "Order already exists",
-          channels: { d1: true, facebook_capi: true },
-        }),
-        { status: 200, headers: jsonHeaders(env) }
-      );
+      // EXACT order_id match (Layer 1) + payment completed → link payment to existing order
+      if (order.razorpay_payment_id && existingOrderId === order.order_id) {
+        try {
+          await env.DB.prepare(
+            `UPDATE orders SET
+              razorpay_order_id = ?,
+              razorpay_payment_id = ?,
+              razorpay_signature = ?,
+              payment_status = 'paid',
+              payment_captured = 1,
+              status = ?,
+              payment_note = ?,
+              updated_at = ?
+            WHERE order_id = ?`
+          ).bind(
+            order.razorpay_order_id || '',
+            order.razorpay_payment_id || '',
+            order.razorpay_signature || '',
+            order.status || 'paid',
+            order.payment_note || '',
+            new Date().toISOString(),
+            existingOrderId
+          ).run();
+          console.log("DUP_PAYMENT_UPDATED", { existing: existingOrderId, payment_id: order.razorpay_payment_id });
+          // Fire Purchase CAPI now that payment is confirmed (idempotent via purchase_capi_sent)
+          try {
+            const capiCheck = await canSendPurchaseCAPI(existingOrderId, env);
+            if (capiCheck.canSend) {
+              const capiRes = await sendFacebookCAPI(order, env, 'Purchase', request.headers.get('User-Agent') || '');
+              if (capiRes && capiRes.ok) {
+                await markPurchaseCAPISent(existingOrderId, env);
+              }
+            }
+          } catch (capiErr) {
+            console.error("DUP_PURCHASE_CAPI_FAILED", String(capiErr.message || capiErr));
+          }
+          return new Response(
+            JSON.stringify({
+              ok: true,
+              orderId: existingOrderId,
+              duplicate: true,
+              updated: true,
+              message: "Order payment updated",
+              channels: { d1: true, facebook_capi: true },
+            }),
+            { status: 200, headers: jsonHeaders(env) }
+          );
+        } catch (updErr) {
+          console.error("DUP_PAYMENT_UPDATE_FAILED", String(updErr.message || updErr));
+        }
+      }
+      // No payment → true duplicate, skip entirely (prevents duplicate orders / double FB events)
+      if (!order.razorpay_payment_id) {
+        console.log("DUPLICATE_SKIPPED", { existing: existingOrderId, phone: order.phone });
+        return new Response(
+          JSON.stringify({
+            ok: true,
+            orderId: existingOrderId,
+            duplicate: true,
+            message: "Order already exists",
+            channels: { d1: true, facebook_capi: true },
+          }),
+          { status: 200, headers: jsonHeaders(env) }
+        );
+      }
+      // Payment present but duplicate matched a DIFFERENT order (Layer 2 phone+amount):
+      // fall through to saveToD1 — INSERT succeeds since this order_id is free, and the
+      // Razorpay webhook reconciles payment_status by razorpay_order_id.
     }
 
     // Step 6: 🚀 SAVE TO D1 FIRST (source of truth - UNIQUE constraint on order_id)
@@ -848,34 +991,28 @@ console.log('[KV-VERIFY] order write', { key: rateKey, type: 'rate_limit' });
 
     // Only send Facebook CAPI if D1 saved successfully (not a duplicate)
     let facebookCapi = { skipped: true, reason: "d1_not_confirmed" };
+    let capiPromise = Promise.resolve();
     if (d1result.ok && !d1result.note?.includes('duplicate')) {
-      const eventName = order.payment_method === 'prepaid' ? 'InitiateCheckout' : 'Purchase';
-      if (eventName === 'Purchase') {
-        // Idempotency check: has Purchase CAPI already been sent for this order?
-        const capiCheck = await canSendPurchaseCAPI(order.order_id, env);
-        if (capiCheck.canSend) {
-          facebookCapi = await sendFacebookCAPI(order, env, 'Purchase', request.headers.get('User-Agent') || '');
-          // Step 4: Only mark as sent if Meta API confirmed success
-          if (facebookCapi && facebookCapi.ok) {
-            await markPurchaseCAPISent(order.order_id, env);
-          }
-        } else {
-          console.log('CAPI_PURCHASE_SKIPPED', { order_id: order.order_id, reason: capiCheck.reason });
-        }
-      } else {
-        // InitiateCheckout: no idempotency needed (fires before payment for prepaid)
-        facebookCapi = await sendFacebookCAPI(order, env, 'InitiateCheckout', request.headers.get('User-Agent') || '');
-      }
+      // Purchase NEVER fires on form submit. It only fires on the thank-you page
+      // AFTER payment: COD -> /api/events with matching event_id (dedup), and
+      // prepaid/advance -> PATCH /api/order autoConfirm from thank-you.html.
+      // Form submit always reports InitiateCheckout (funnel step), all methods.
+      capiPromise = (async () => {
+        await sendFacebookCAPI(order, env, 'InitiateCheckout', request.headers.get('User-Agent') || '');
+      })();
     } else if (d1result.note?.includes('duplicate')) {
       // D1 UNIQUE constraint caught duplicate order_id
       isDup = true;
       existingOrderId = order.order_id;
       console.log("DUPLICATE_BY_D1_UNIQUE", { order_id: order.order_id });
     }
+    // Perf: CAPI fires in background so the order response isn't delayed by Meta latency
+    if (typeof waitUntil === 'function') waitUntil(capiPromise.catch(() => {}));
+    else capiPromise.catch(() => {});
 
     // Fire Telegram + Email in background — don't block the response
-    waitUntil(sendTelegram(order, env).catch(() => {}));
-    waitUntil(sendEmail(order, env).catch(() => {}));
+    wu(sendTelegram(order, env).catch(() => {}));
+    wu(sendEmail(order, env).catch(() => {}));
 
     // Placeholder for Telegram + Email (fire-and-forget)
     const telegram = { ok: null, skipped: null, note: "fire-and-forget" };
@@ -905,6 +1042,32 @@ console.log('[KV-VERIFY] order write', { key: rateKey, type: 'rate_limit' });
       }),
         { status: 500, headers: jsonHeaders(env) }
       );
+    }
+
+    // ============================================================
+    // REFERRAL ATTRIBUTION (Sprint 2) — PRIMARY
+    // Reads the avnideep_ref cookie (written by app.v3.js when the
+    // visitor arrived via ?ref=CODE) and attributes this order to the
+    // partner. Best-effort: never fails or delays the order response.
+    // Duplicates, self-referrals and ineligible partners are ignored.
+    // ============================================================
+    try {
+      if (!isDup) {
+        const cookieHeader = request.headers.get("Cookie") || "";
+        const refCode = parseRefCookie(cookieHeader);
+        if (refCode) {
+          const attr = await recordOrderAttribution(env, {
+            order_id: order.order_id,
+            ref_code: refCode,
+            customer_mobile: order.phone,
+            source: "order_cookie",
+            ref_set_at: parseRefTs(cookieHeader),
+          });
+          console.log("ORDER_ATTRIBUTED", { order_id: order.order_id, ref: refCode, ok: attr.attributed, reason: attr.reason || "ok" });
+        }
+      }
+    } catch (attrErr) {
+      console.warn("ATTRIBUTION_FAILED", String(attrErr.message || attrErr).slice(0, 150));
     }
 
     return new Response(
@@ -965,6 +1128,7 @@ export async function onRequestGet({ env }) {
 // Updates D1 database, notifies Telegram, sends email
 // ============================================================
 export async function onRequestPatch({ request, env, waitUntil }) {
+  const wu = (typeof waitUntil === 'function') ? waitUntil : (p) => { if (p && typeof p.catch === 'function') p.catch(() => {}); };
   const jsonH = { ...jsonHeaders(env), "Access-Control-Allow-Methods": "POST, OPTIONS, GET, PATCH" };
   
   try {
@@ -1071,11 +1235,11 @@ export async function onRequestPatch({ request, env, waitUntil }) {
     
     if (isPaymentConfirm && d1UpdateOk) {
       // Send Telegram + Email in background
-      waitUntil(sendTelegram(dbOrder, env).catch(() => {}));
-      waitUntil(sendEmail(dbOrder, env).catch(() => {}));
+      wu(sendTelegram(dbOrder, env).catch(() => {}));
+      wu(sendEmail(dbOrder, env).catch(() => {}));
       
       // Send Facebook Purchase CAPI (idempotent)
-      waitUntil((async () => {
+      wu((async () => {
         try {
           const capiCheck = await canSendPurchaseCAPI(orderId, env);
           if (capiCheck.canSend) {

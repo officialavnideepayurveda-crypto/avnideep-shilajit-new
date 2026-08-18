@@ -6,6 +6,69 @@
 
 
 
+// ===== REFERRAL COOKIE (Sprint 2) =====
+// Writes the avnideep_ref cookie ONLY when the visitor arrived via ?ref=CODE.
+// 30-day, last-touch (new ref overwrites old). Server reads it at order creation.
+(function () {
+  try {
+    var ref = new URLSearchParams(window.location.search).get('ref');
+    if (ref && /^[A-Z0-9]{4,16}$/i.test(ref)) {
+      // WARN-4 FIX: write a timestamp cookie so the server can enforce the 30-day window
+      var secure = location.protocol === 'https:' ? '; Secure' : '';
+      document.cookie = 'avnideep_ref=' + encodeURIComponent(ref.toUpperCase()) +
+        '; max-age=2592000; path=/; SameSite=Lax' + secure;
+      document.cookie = 'avnideep_ref_ts=' + Math.floor(Date.now() / 1000) +
+        '; max-age=2592000; path=/; SameSite=Lax' + secure;
+    }
+  } catch (e) {}
+})();
+
+// ===== AFFILIATE CLICK TRACKING (Sprint 4 analytics) =====
+// Fires a beacon to the partner portal whenever this visitor has an
+// active referral (fresh ?ref= or a stored avnideep_ref cookie).
+// visitor_id persists (localStorage), session_id per tab (sessionStorage).
+// Fire-and-forget: analytics must never slow or break the shop.
+(function () {
+  try {
+    var refCookie = (document.cookie.match(/(?:^|;\s*)avnideep_ref=([^;]+)/) || [])[1] || '';
+    var refParam = new URLSearchParams(window.location.search).get('ref') || '';
+    var refCode = (refParam || decodeURIComponent(refCookie || '')).toUpperCase();
+    if (!refCode || !/^[A-Z0-9]{4,16}$/.test(refCode)) return;
+
+    var vid = '';
+    try { vid = localStorage.getItem('avnideep_vid') || ''; } catch (e) {}
+    if (!vid) {
+      vid = 'v' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+      try { localStorage.setItem('avnideep_vid', vid); } catch (e) {}
+    }
+    var sid = '';
+    try { sid = sessionStorage.getItem('avnideep_sid') || ''; } catch (e) {}
+    if (!sid) {
+      sid = 's' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+      try { sessionStorage.setItem('avnideep_sid', sid); } catch (e) {}
+    }
+    var u = new URLSearchParams(window.location.search);
+    var payload = {
+      ref: refCode, visitor_id: vid, session_id: sid,
+      landing_page: window.location.pathname + window.location.search,
+      utm_source: u.get('utm_source') || '', utm_medium: u.get('utm_medium') || '',
+      utm_campaign: u.get('utm_campaign') || ''
+    };
+    var beaconUrl = 'https://partners.avnideep.in/api/referral/click';
+    var body = JSON.stringify(payload);
+    // CORS FIX: text/plain = CORS "simple request" → NO preflight. sendBeacon
+    // always sends with credentials:include, and an application/json blob forced
+    // a preflight that browsers blocked (Access-Control-Allow-Credentials missing)
+    // → clicks were silently dropped. text/plain sends everywhere, incl. FB/IG
+    // in-app browsers. Endpoint parses the body via request.json() regardless.
+    var sent = false;
+    try { sent = navigator.sendBeacon(beaconUrl, new Blob([body], { type: 'text/plain' })); } catch (e) {}
+    if (!sent) {
+      try { fetch(beaconUrl, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: body, keepalive: true }).catch(function () {}); } catch (e2) {}
+    }
+  } catch (e) {}
+})();
+
 // ===== CHECKOUT UI (Script #7) =====
 
 
@@ -23,7 +86,7 @@ function _genEventId(eventName) {
   return eventName + '_' + Date.now() + '_' + Math.random().toString(36).substring(2, 10);
 }
 
-function _sendCapiEvent(eventName, eventId, customData) {
+function _sendCapiEvent(eventName, eventId, customData, userExtra) {
   try {
     fetch('/api/events', {
       method: 'POST',
@@ -33,22 +96,24 @@ function _sendCapiEvent(eventName, eventId, customData) {
         event_id: eventId,
         event_source_url: window.location.href.split('?')[0],
         custom_data: customData || {},
-        user_data: {
-          client_user_agent: navigator.userAgent || ''
-        }
+        user_data: Object.assign({
+          client_user_agent: navigator.userAgent || '',
+          fbp: getCookie('_fbp') || '',
+          fbc: getCookie('_fbc') || ''
+        }, userExtra || {})
       })
     }).catch(function(){});
   } catch(e){}
 }
 
-function trackFbEvent(eventName, params, eventId) {
+function trackFbEvent(eventName, params, eventId, userExtra) {
   if (!eventId) eventId = _genEventId(eventName);
   try {
     if (typeof fbq === 'function') {
       fbq('track', eventName, Object.assign({}, params || {}, {eventID: eventId}));
     }
   } catch(e){}
-  _sendCapiEvent(eventName, eventId, params);
+  _sendCapiEvent(eventName, eventId, params, userExtra);
 }
 
 function openOrderPopup(){
@@ -644,54 +709,11 @@ function initTimer(){
 
 
 function initScroll(){
-
-
-  $$('[data-scroll]').forEach(function(b){
-
-
-    b.addEventListener('click', function(e){
-
-
-      if(window._lastIC && Date.now() - window._lastIC < 3000) return; window._lastIC = Date.now();
-
-
-      e.preventDefault();
-
-
-      var t = $('#'+b.dataset.scroll);
-
-
-      if(!t) return;
-
-
-      _sendAnalytics('form_open');
-
-
-
-      trackFbEvent('InitiateCheckout', {value:payload.amount, currency:'INR', content_name:'AVN-6PRO-001'});
-
-
-      t.scrollIntoView({behavior:'smooth', block:'start'});
-
-
-      setTimeout(function(){
-
-
-        var n = $('#cName');
-
-
-        if(n) n.focus({preventScroll:true});
-
-
-      }, 700);
-
-
-    });
-
-
-  });
-
-
+  // Scroll CTA ([data-scroll]) buttons are handled by the inline legacy script
+  // in index.html (opens the order popup + fires InitiateCheckout exactly once
+  // with a per-click event_id for browser/CAPI dedup).
+  // This no-op prevents double event firing and removes the old ReferenceErrors
+  // (_sendAnalytics was undefined here, and payload.amount only exists inside build()).
 }
 
 
@@ -938,14 +960,14 @@ function updatePay(){
   if(btn){
     var mainText, subText;
     if(m === 'prepaid'){
-      mainText = '⚡ अभी Order करें - ₹999';
+      mainText = '⚡ Order Now - ₹999';
       subText = '🔒 Secure Online Payment';
     } else if(CHECKOUT_MODE === 'full_cod'){
-      mainText = '⚡ अभी COD Order करें - ₹1250';
-      subText = '🔒 No advance payment • COD';
+      mainText = '⚡ Order Now (FULL COD) - ₹1250';
+      subText = '🔒 No advance • Pay ₹1,250 on delivery';
     } else {
-      mainText = '🔖 ₹100 Advance में बुक करें';
-      subText = '🔐 ₹100 Razorpay से pay करें • बाकी ₹1,150 cash courier boy को order आने पर दे';
+      mainText = '🔖 Book with ₹100 Advance';
+      subText = '🔐 Pay ₹100 via Razorpay • Pay ₹1,150 cash on delivery';
     }
     btn.innerHTML = '<span>'+mainText+'</span><small>'+subText+'</small>';
   }
@@ -954,22 +976,22 @@ function updatePay(){
     if(m === 'prepaid'){
       ct.textContent = '🔒 Secure Online Payment';
     } else if(CHECKOUT_MODE === 'full_cod'){
-      ct.textContent = '🔐 Safe Checkout • No advance payment';
+      ct.textContent = '🔐 FULL COD • No advance payment';
     } else {
-      ct.textContent = '🔐 ₹100 Advance • बाकी ₹1,150 cash on delivery';
+      ct.textContent = '🔐 ₹100 Advance • Pay ₹1,150 cash on delivery';
     }
   }
   var cT = $('#codCardTitle'), cS = $('#codCardSub');
   if(cT || cS){
     if(m === 'prepaid'){
       if(cT) cT.textContent = '💵 Cash on Delivery';
-      if(cS) cS.textContent = 'घर पहुंचने पर भुगतान करें (₹100 advance)';
+      if(cS) cS.textContent = 'Pay on delivery (₹100 advance)';
     } else if(CHECKOUT_MODE === 'full_cod'){
-      if(cT) cT.textContent = '💵 Cash on Delivery';
-      if(cS) cS.textContent = 'घर पहुंचने पर भुगतान करें (No advance)';
+      if(cT) cT.textContent = '💵 FULL COD';
+      if(cS) cS.textContent = 'Pay ₹1,250 on delivery • No advance';
     } else {
       if(cT) cT.textContent = '💰 ₹100 Advance + COD';
-      if(cS) cS.textContent = '₹100 अभी Razorpay से • बाकी ₹1,150 घर पहुंचने पर cash';
+      if(cS) cS.textContent = '₹100 now via Razorpay • Pay ₹1,150 cash on delivery';
     }
   }
   // Savings line
@@ -1052,25 +1074,25 @@ function showSuccess(method, orderId){
   if(method === 'prepaid'){
 
 
-    txt.textContent = 'Prepaid payment के बाद आपका ऑर्डर final confirm हो जाएगा।';
+    txt.textContent = 'Your order will be confirmed after prepaid payment.';
 
 
   } else if(method === 'prepaid_whatsapp'){
 
 
-    txt.innerHTML = 'Order book नहीं हो पाया।<br>WhatsApp पर भेजा जा रहा है ताकि हम आपकी order तुरंत confirm कर सकें।';
+    txt.innerHTML = 'Order could not be placed.<br>Sending via WhatsApp so we can confirm your order right away.';
 
 
   } else if(method === 'cod_whatsapp'){
 
 
-    txt.innerHTML = 'Order backend पर सेव नहीं हुआ, इसलिए WhatsApp पर भेजा जा रहा है।<br><br>कृपया WhatsApp पर <strong>"Send"</strong> button दबाकर order confirm करें।';
+    txt.innerHTML = 'Order could not be saved on the backend, so we are sending it via WhatsApp.<br><br>Please press the <strong>"Send"</strong> button on WhatsApp to confirm your order.';
 
 
   } else {
 
 
-    txt.textContent = 'आपका COD ऑर्डर सेव हो गया। हमारी टीम जल्द कॉल करेगी।';
+    txt.textContent = 'Your COD order has been saved. Our team will call you soon.';
 
 
   }
@@ -1094,7 +1116,7 @@ function showSuccess(method, orderId){
     if(waBtn){
 
 
-      waBtn.href = appendUtm('https://wa.me/917060101043?text=' + encodeURIComponent('Hi, मेरा order ID: ' + orderId + ' है। Status check करना है।'));
+      waBtn.href = appendUtm('https://wa.me/917060101043?text=' + encodeURIComponent('Hi, my order ID is ' + orderId + '. I want to check the status.'));
 
 
     }
@@ -1226,19 +1248,16 @@ function build(status){
 function validate(p){
 
 
-  if(p.name.length < 2){ $('#cName').focus(); return 'पूरा नाम दर्ज करें।'; }
+  if(p.name.length < 2){ $('#cName').focus(); return 'Please enter your full name.'; }
 
 
-  if(!/^[6-9]\d{9}$/.test(p.phone)){ $('#tcPhoneInput').focus(); return 'सही 10 अंकों का मोबाइल नंबर दर्ज करें।'; }
+  if(!/^[6-9]\d{9}$/.test(p.phone)){ $('#tcPhoneInput').focus(); return 'Please enter a valid 10-digit mobile number.'; }
 
 
-  if(!p.address || p.address.length < 5){ $('#cAddress').focus(); return 'कृपया अपना पूरा पता भरें।'; }
+  if(!p.address || p.address.length < 5){ $('#cAddress').focus(); return 'Please enter your full address.'; }
 
 
-  if(!p.pincode || p.pincode.length !== 6){ $('#cPincode').focus(); return 'कृपया सही 6 अंकों का पिन कोड भरें।'; }
-
-
-  if(!p.city || p.city.length < 2){ $('#cCity').focus(); return 'कृपया अपना शहर भरें।'; }
+  if(!p.pincode || p.pincode.length !== 6){ $('#cPincode').focus(); return 'Please enter a valid 6-digit PIN code.'; }
 
 
   return '';
@@ -1334,7 +1353,7 @@ async function sendOrder(payload, retries){
       if(r.status === 429){
 
 
-        return {ok:false, error: data.error || 'बहुत requests। 1 मिनट बाद try करें।'};
+        return {ok:false, error: data.error || 'Too many requests. Please try again in 1 minute.'};
 
 
       }
@@ -1404,7 +1423,8 @@ function initForm(){
   if(phone) phone.addEventListener('input', function(){
 
 
-    phone.value = phone.value.replace(/\D/g,'').slice(0,10);
+    // Strip any leading +91 / 91 / 0 the customer types - store only the clean 10-digit number
+    phone.value = phone.value.replace(/\D/g,'').replace(/^(91|0)/,'').slice(0,10);
 
 
   });
@@ -1548,7 +1568,7 @@ function initForm(){
       buildUtmLabel() + '\n' +
 
 
-      'कृपया मेरा order confirm करें।';
+      'Please confirm my order.';
 
 
     return appendUtm('https://wa.me/917060101043?text=' + encodeURIComponent(msg));
@@ -1614,7 +1634,7 @@ function initForm(){
     var origHTML = btn.innerHTML;
 
 
-    btn.innerHTML = '<span>⏳ Processing... कृपया रुकें</span>';
+    btn.innerHTML = '<span>⏳ Processing... Please wait</span>';
 
 
 
@@ -1622,7 +1642,7 @@ function initForm(){
 
 
 
-      trackFbEvent('Lead', {value:payload.amount, currency:'INR', content_name:'AVN-6PRO-001'});
+      trackFbEvent('Lead', {value:payload.amount, currency:'INR', content_name:'AVN-6PRO-001', content_ids:['AVN-6PRO-001']}, null, {name: (payload.name||''), phone: (payload.phone||'')});
 
 
 
@@ -1693,11 +1713,21 @@ function initForm(){
     // ADVANCE (₹100 Razorpay now + ₹1,150 cash on delivery) flow
     if(isAdvance){
       payload.advanceAmount = 100;
+      // Background save: lead admin mein turant dikhe (payment pending)
+      try{
+        var bgPayload = Object.assign({}, payload, { status: 'payment_pending', capiEvent: 'InitiateCheckout' });
+        fetch('/api/order', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify(bgPayload),
+          keepalive: true
+        }).catch(function(e){ console.warn('advance background order save failed', e); });
+      }catch(e){ console.warn('advance background order save error', e); }
       try {
         var rzpResult = await openRazorpayCheckout(payload, 100);
         if (rzpResult.success) {
           payload.paymentMethod = 'advance_cod';
-          payload.paymentNote = '₹100 advance paid via Razorpay (' + (rzpResult.razorpay_payment_id || '') + ') • बाकी ₹1,150 delivery पर cash';
+          payload.paymentNote = '₹100 advance paid via Razorpay (' + (rzpResult.razorpay_payment_id || '') + ') • Pay ₹1,150 cash on delivery';
           try {
             var advRes = await sendOrder(payload, 0);
             if (advRes && advRes.ok !== false) {
@@ -1825,7 +1855,7 @@ function initForm(){
         console.warn('Prepaid backend save failed:', apiError);
 
 
-        showErr(err, 'Payment order backend पर सेव नहीं हुआ: ' + apiError + '। WhatsApp fallback भेजा जा रहा है।');
+        showErr(err, 'Payment order could not be saved on the backend: ' + apiError + '. Sending WhatsApp fallback.');
 
 
       }
@@ -1871,7 +1901,7 @@ function initForm(){
         if(apiError){
 
 
-          showErr(err, 'ऑर्डर backend पर सेव नहीं हुआ: ' + apiError + '। WhatsApp fallback भेजा जा रहा है।');
+          showErr(err, 'Order could not be saved on the backend: ' + apiError + '. Sending WhatsApp fallback.');
 
 
         }
@@ -2316,6 +2346,24 @@ function setupVisibility(){
 
 }
 
+
+// LOCAL checkout-mode loader (inside main-app IIFE). The old global
+// loadCheckoutMode() updated the GLOBAL CHECKOUT_MODE + called a global
+// updatePay() that does not exist (scope mismatch) - so the IIFE-local
+// updatePay()/build() always read CHECKOUT_MODE='advance' and full COD
+// never activated. This shadows the global within the IIFE and drives
+// the local CHECKOUT_MODE + local updatePay().
+function loadCheckoutMode(){
+  try {
+    fetch('https://avnideep-admin-api.officialavnideepayurveda.workers.dev/api/admin/payment-config').then(function(r){ return r.json(); }).then(function(d){
+      if (d && d.ok && d.data && d.data.checkout_mode) {
+        CHECKOUT_MODE = d.data.checkout_mode === 'full_cod' ? 'full_cod' : 'advance';
+        try { window.CHECKOUT_MODE = CHECKOUT_MODE; } catch(e){}
+      }
+      updatePay();
+    }).catch(function(){});
+  } catch(e){}
+}
 
 function init(){
 
@@ -3144,7 +3192,7 @@ function initTruecaller() {
   if (savedUser && savedUser.phone) {
 
 
-    document.getElementById('tcPhoneInput').value = savedUser.phone;
+    document.getElementById('tcPhoneInput').value = String(savedUser.phone||'').replace(/\D/g,'').replace(/^(91|0)/,'').slice(0,10);
 
 
     if (savedUser.name) document.getElementById('cName').value = savedUser.name;
@@ -3195,7 +3243,7 @@ function initTruecaller() {
     try { localStorage.setItem('truecaller_user', JSON.stringify(verifiedData)); } catch(e) {}
 
 
-    document.getElementById('tcPhoneInput').value = tcPhone;
+    document.getElementById('tcPhoneInput').value = String(tcPhone||'').replace(/\D/g,'').replace(/^(91|0)/,'').slice(0,10);
 
 
     if (tcName) document.getElementById('cName').value = tcName;
@@ -3477,7 +3525,7 @@ function initTruecaller() {
     try { localStorage.setItem('truecaller_user', JSON.stringify(data)); } catch(e) {}
 
 
-    document.getElementById('tcPhoneInput').value = phone;
+    document.getElementById('tcPhoneInput').value = String(phone||'').replace(/\D/g,'').replace(/^(91|0)/,'').slice(0,10);
 
 
     tcBtn.disabled = false;
@@ -3570,7 +3618,7 @@ function initTruecaller() {
     try { localStorage.setItem('truecaller_user', JSON.stringify(data)); } catch(e) {}
 
 
-    document.getElementById('tcPhoneInput').value = phone;
+    document.getElementById('tcPhoneInput').value = String(phone||'').replace(/\D/g,'').replace(/^(91|0)/,'').slice(0,10);
 
 
     if (name) document.getElementById('cName').value = name;
@@ -3724,16 +3772,6 @@ async function getPayConfig() {
     }
     return cfg || { razorpay_enabled: false, cod_enabled: true, key_id: '', checkout_mode: CHECKOUT_MODE };
   } catch(e) { return { razorpay_enabled: false, cod_enabled: true, key_id: '', checkout_mode: CHECKOUT_MODE }; }
-}
-function loadCheckoutMode() {
-  try {
-    fetch(RZR_API + '/payment-config').then(function(r){ return r.json(); }).then(function(d){
-      if (d && d.ok && d.data && d.data.checkout_mode) {
-        CHECKOUT_MODE = d.data.checkout_mode === 'full_cod' ? 'full_cod' : 'advance';
-      }
-      updatePay();
-    }).catch(function(){});
-  } catch(e){}
 }
 async function createRzrOrder(amt, curr, receipt, cust) {
   var r = await fetch(RZR_API + '/razorpay/create-order', {

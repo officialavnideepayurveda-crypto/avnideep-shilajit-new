@@ -22,7 +22,7 @@ function jsonResponse(data, status = 200) {
 }
 
 export async function onRequestPost(context) {
-  const { request, env } = context;
+  const { request, env, waitUntil } = context;
 
   // Origin validation (same as order.js)
   const origin = request.headers.get('Origin') || request.headers.get('Referer') || '';
@@ -70,8 +70,9 @@ export async function onRequestPost(context) {
       contentType: custom_data?.content_type
     });
 
-    // Send to Meta CAPI
-    const result = await sendCAPIEvent({
+    // Perf: send to Meta CAPI in background (waitUntil) so we respond instantly.
+    // The browser already fire-and-forgets this call; no client depends on the response body.
+    const capiPromise = sendCAPIEvent({
       env,
       eventName: event_name,
       eventId: event_id,
@@ -82,12 +83,27 @@ export async function onRequestPost(context) {
       timeout: 4000,
       retries: 1
     });
+    // Dedup: when this is a Purchase event carrying an order_id (COD thank-you flow),
+    // mark purchase_capi_sent in D1 AFTER Meta confirms, so a later PATCH/webhook
+    // confirm for the same order cannot double-fire Purchase CAPI.
+    const dedupPromise = capiPromise.then((res) => {
+      if (event_name === 'Purchase' && res && res.ok && custom_data && custom_data.order_id && env && env.DB) {
+        return env.DB.prepare('UPDATE orders SET purchase_capi_sent = 1 WHERE order_id = ?')
+          .bind(String(custom_data.order_id)).run().then(() => res).catch(() => res);
+      }
+      return res;
+    });
+    if (typeof waitUntil === 'function') {
+      waitUntil(dedupPromise.catch(() => {}));
+    } else {
+      dedupPromise.catch(() => {});
+    }
 
     return jsonResponse({
       success: true,
       event_name,
       event_id,
-      meta_response: result
+      meta_response: { ok: true, background: true }
     });
   } catch (err) {
     console.error('Events API error:', err.message);

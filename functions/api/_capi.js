@@ -16,19 +16,35 @@ async function sha256(str) {
 }
 
 // ============================================================
+// Normalize + hash a phone number to E.164 ('+91' + last 10 digits)
+// ============================================================
+export async function hashPhone(phone) {
+  if (!phone) return '';
+  const cleaned = String(phone).replace(/[^0-9]/g, '');
+  if (!cleaned) return '';
+  const last10 = cleaned.length >= 10 ? cleaned.slice(-10) : cleaned;
+  return sha256('+91' + last10);
+}
+
+// ============================================================
 // Normalize and hash user data for Facebook CAPI
 // ============================================================
-async function buildUserData({ name, phone, fbp, fbc, ip, ua, orderId }) {
+async function buildUserData({ name, phone, email, fbp, fbc, ip, ua, orderId }) {
   const userData = {};
 
   // Hash phone number (remove non-digits, normalize to E.164)
   if (phone) {
-    const rawPhone = String(phone).replace(/[^0-9]/g, '');
-    if (rawPhone.length >= 10) {
-      const last10 = rawPhone.slice(-10);
-      userData.ph = await sha256('91' + last10); // India country code + phone
-    }
+    const ph = await hashPhone(phone);
+    if (ph) userData.ph = ph;
   }
+
+  // Hash email (lowercase, trimmed) — Meta recommends hashing all PII
+  if (email) {
+    userData.em = await sha256(String(email).trim().toLowerCase());
+  }
+
+  // Two-letter country code, hashed per Meta's user_data requirements
+  userData.country = await sha256('in');
 
   // Hash name (lowercase, trim)
   if (name) {
@@ -67,31 +83,15 @@ async function buildUserData({ name, phone, fbp, fbc, ip, ua, orderId }) {
 // Build custom data object for the event
 // ============================================================
 function buildCustomData({ value, currency = 'INR', orderId, contentName, contentType }) {
-  const customData = { currency };
-
-  if (value !== undefined && value !== null) {
-    customData.value = parseFloat(value);
-  }
-
-  if (contentName) {
-    customData.content_name = contentName;
-  }
-
-  if (contentType) {
-    customData.content_type = contentType;
-  } else {
-    customData.content_type = 'product';
-  }
-
-  customData.content_ids = ['AVN-6PRO-001'];
-  customData.contents = [{
-    id: 'AVN-6PRO-001',
-    quantity: 1,
-    item_price: value || 0
-  }];
+  const customData = {
+    value: Number(value) || 0,
+    currency,
+    content_name: contentName || 'AVN-6PRO-001',
+    content_type: contentType || 'product',
+  };
 
   if (orderId) {
-    customData.order_id = orderId;
+    customData.order_id = String(orderId);
   }
 
   return customData;
@@ -112,7 +112,7 @@ async function sendCAPIEvent({
   retries = 1
 }) {
   if (!env.META_ACCESS_TOKEN || !env.META_PIXEL_ID) {
-    return { skipped: true, reason: 'meta_credentials_missing' };
+    return null;
   }
 
   const pixelId = env.META_PIXEL_ID;

@@ -13,6 +13,10 @@ shop.html
 *.light-backup
 *.backup
 *.bak*
+*.meta-safe-backup
 
 # Temp/utility scripts
 fix_trust_badges.js
+
+# Admin panel (moved to separate project)
+admin-panel/

@@ -96,10 +96,12 @@ function createMockD1() {
                 if (!store.has(orderId)) return null;
                 return { purchase_capi_sent: purchaseFlags.get(orderId) || 0 };
               }
-              // Handle SELECT order_id FROM orders WHERE order_id = ?
+              // Handle SELECT * FROM orders WHERE order_id = ?
+              // Return the FULL stored order row (the PATCH handler reads
+              // phone/amount/name/etc. from it for the Purchase CAPI call).
               if (sql.includes('WHERE order_id =')) {
                 const orderId = args[0];
-                if (store.has(orderId)) return { order_id: orderId };
+                if (store.has(orderId)) return store.get(orderId);
                 return null;
               }
               // Handle SELECT order_id, amount, created_at FROM orders WHERE phone = ?
@@ -165,7 +167,7 @@ beforeEach(() => {
 // TEST: COD SUCCESS
 // ============================================================
 describe('COD order — success path', () => {
-  it('should save order to D1, fire Purchase CAPI, and return ok', async () => {
+  it('should save order to D1, fire InitiateCheckout CAPI, and return ok', async () => {
     const { onRequestPost } = await import('../functions/api/order.js');
 
     const body = {
@@ -195,17 +197,18 @@ describe('COD order — success path', () => {
     // Verify order saved to D1
     expect(mockD1.hasOrder('AVN-1712345678-test1')).toBe(true);
 
-    // Verify CAPI Purchase event fired
-    const purchaseEvents = capiEvents.filter(e => e.eventName === 'Purchase');
-    expect(purchaseEvents).toHaveLength(1);
-    expect(purchaseEvents[0].eventId).toBe('AVN-1712345678-test1');
-
-    // Verify InitiateCheckout was NOT fired for COD
+    // Current design: the form submit fires InitiateCheckout for ALL payment
+    // methods. Purchase CAPI fires ONLY later on the thank-you page — via
+    // /api/events for COD and PATCH /api/order (autoConfirm) for prepaid —
+    // with idempotency protection (purchase_capi_sent). See order.js.
     const icoEvents = capiEvents.filter(e => e.eventName === 'InitiateCheckout');
-    expect(icoEvents).toHaveLength(0);
+    expect(icoEvents).toHaveLength(1);
 
-    // Verify purchase_capi_sent was marked
-    expect(mockD1.getPurchaseCapiSent('AVN-1712345678-test1')).toBe(1);
+    const purchaseEvents = capiEvents.filter(e => e.eventName === 'Purchase');
+    expect(purchaseEvents).toHaveLength(0);
+
+    // purchase_capi_sent stays 0 until Purchase is confirmed on thank-you
+    expect(mockD1.getPurchaseCapiSent('AVN-1712345678-test1')).toBe(0);
   });
 });
 
@@ -425,7 +428,12 @@ describe('PATCH /api/order — confirm prepaid payment', () => {
       headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': '203.0.113.42' },
       body: JSON.stringify(patchBody),
     });
-    const patchRes = await onRequestPatch({ request: patchReq, env: mockEnv });
+    // Collect fire-and-forget background work (CAPI Purchase, Telegram, Email)
+    // and await it, mirroring how the Pages runtime's waitUntil keeps the
+    // isolate alive until background promises settle.
+    const pending = [];
+    const patchRes = await onRequestPatch({ request: patchReq, env: mockEnv, waitUntil: (p) => pending.push(p) });
+    await Promise.all(pending);
     const patchData = await patchRes.json();
 
     expect(patchRes.status).toBe(200);
@@ -473,7 +481,9 @@ describe('PATCH /api/order — confirm prepaid payment', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(patchBody1),
     });
-    const res1 = await onRequestPatch({ request: patchReq1, env: mockEnv });
+    let pending = [];
+    const res1 = await onRequestPatch({ request: patchReq1, env: mockEnv, waitUntil: (p) => pending.push(p) });
+    await Promise.all(pending);
     expect((await res1.json()).ok).toBe(true);
 
     expect(capiEvents.filter(e => e.eventName === 'Purchase')).toHaveLength(1);
@@ -493,7 +503,9 @@ describe('PATCH /api/order — confirm prepaid payment', () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(patchBody2),
     });
-    const res2 = await onRequestPatch({ request: patchReq2, env: mockEnv });
+    pending = [];
+    const res2 = await onRequestPatch({ request: patchReq2, env: mockEnv, waitUntil: (p) => pending.push(p) });
+    await Promise.all(pending);
     expect((await res2.json()).ok).toBe(true);
 
     // Should be blocked by purchase_capi_sent = 1
