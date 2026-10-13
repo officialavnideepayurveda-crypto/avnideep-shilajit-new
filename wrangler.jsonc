@@ -1,0 +1,24 @@
+{
+  "$schema": "https://raw.githubusercontent.com/cloudflare/workers-sdk/main/packages/wrangler/config-schema.json",
+  "name": "avnideep-shilajit-new",
+  "compatibility_date": "2026-07-04",
+  "compatibility_flags": ["nodejs_compat"],
+  "pages_build_output_dir": ".",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "avnideep-orders",
+      "database_id": "206a16cc-c347-45d1-9168-e34a7511491d"
+    }
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "RATE_LIMIT_KV",
+      "id": "4ad07d2c9dea46d7975da1af3350a7a8"
+    }
+  ],
+  "vars": {
+    "ALLOWED_ORIGIN": "https://shop.avnideep.in",
+    "NOTIFY_EMAIL": "support@avnideepayurveda.in"
+  }
+}

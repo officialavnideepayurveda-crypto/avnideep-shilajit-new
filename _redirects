@@ -11,6 +11,8 @@
 # built-in clean URL handling and cause infinite 308 redirect loops.
 
 # Trailing slash removal — redirect /page/ to /page
+# NOTE: directory pages (/home, /pain-oil, /shilajit contain index.html) must NOT
+# have /* -> path rules: Pages auto-308s /path to /path/ and it infinite-loops.
 /about-us/*  /about-us  301
 /contact-us/*  /contact-us  301
 /disclaimer/*  /disclaimer  301
@@ -23,8 +25,7 @@
 # 404 catch-all — return 404 with Cloudflare's default page
 # (Cloudflare Workers Pages handles 404s automatically for unmatched routes)
 
-# Shortcuts
-/home    /    301
+# Shortcuts (NOTE: /home is now a real homepage — do NOT redirect it to /)
 /buy     /#checkout    301
 /order   /#checkout    301
 # /thank-you handled by Workers clean URL (auto serves thank-you.html)
