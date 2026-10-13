@@ -410,6 +410,11 @@ footer.site-foot{margin-top:clamp(32px,5vw,60px)}
 .foot-search{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;padding:16px 0;border-top:1px solid rgba(255,255,255,.14);font-size:12.5px}
 .gotop{text-align:center;padding:10px 0}
 .gotop a{color:#fff;font-weight:700;font-size:13px;text-decoration:none}
+/* full-bleed creative slide (text hidden, image full width + clickable) */
+.slide.on.slide-full{display:block}
+.slide-full .slide-text{display:none}
+.slide-full .full-link{display:block}
+.slide-full img{width:100%}
 </style>
 <script>!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','1715387275770711');fbq('track','PageView');</script>
 <noscript><img height="1" width="1" style="display:none" alt="" src="https://www.facebook.com/tr?id=1715387275770711&ev=PageView&noscript=1"></noscript>
@@ -427,41 +432,24 @@ footer.site-foot{margin-top:clamp(32px,5vw,60px)}
 
 <div class="hero">
 <div class="slides">
-<!-- Slide 1: brand banner (Next.js live creative, local for speed) -->
-<div class="slide on">
-<div>
-<span class="eyebrow ondark">100% Ayurvedic • Lab tested</span>
-<h1>Asli Ayurveda, <span class="g">Asli Bharosa.</span><br>Energy + Pain Relief.</h1>
-<p class="sub">6Pro Shilajit Capsules (andar se taakat) + Pain Relief Oil 60ml (bahar se aaram). AYUSH & GMP certified facility, third-party lab tested, COD par ghar baithe.</p>
-<div><a class="btn gold" href="#products">Shop bestsellers →</a><a class="btn ghost sm" href="/pain-oil/">Pain Oil ₹249</a></div>
-<div class="hero-proof">★ 4.8 rated · 50,000+ happy customers · COD available</div>
+<!-- Slide 1: Shilajit (responsive full banner) -->
+<div class="slide on slide-full">
+<div class="slide-text">
+<h1>Avnideep 6Pro Shilajit Capsules — Energy, Stamina & Vitality</h1>
+<p class="sub">Pure Himalayan Shilajit + 14 Ayurvedic herbs. Lab tested, COD available.</p>
 </div>
-<div><img src="assets/hero-banner.png" alt="Avnideep Ayurveda — Pure Himalayan Shilajit" fetchpriority="high"></div>
+<div><a class="full-link" href="/shilajit/" aria-label="Shop Shilajit"><picture><source media="(max-width:700px)" srcset="assets/banner-shilajit-mobile.png"><img src="assets/banner-shilajit-desktop.png" alt="Avnideep 6Pro Stamina — Fuel your inner fire with herbal strength" fetchpriority="high"></picture></a></div>
 </div>
-<!-- Slide 2: Shilajit -->
-<div class="slide">
-<div>
-<span class="eyebrow ondark">Capsules • Energy &amp; Stamina</span>
-<h1>Pure Himalayan <span class="g">Shilajit Capsules</span></h1>
-<p class="sub">18,000 ft se collected resin + 14 Ayurvedic herbs (Ashwagandha, Gokshura, Kaunch Beej). Fulvic acid standardised, heavy-metal tested. ★ 4.8 (2,481 reviews).</p>
-<div><a class="btn gold" href="/#checkout">Order Shilajit — ₹999 →</a></div>
-<div class="hero-proof">★ 4.8 · 2,481 verified reviews · Lab tested purity</div>
+<!-- Slide 2: Pain Oil (responsive full banner) -->
+<div class="slide slide-full">
+<div class="slide-text">
+<h1>Avnideep Pain Relief Oil — Dard se rahat, har din aaram</h1>
+<p class="sub">Nirgundi, Gandhapura, Kapoor. Ghutne, kamar, joint dard me warming relief. COD available.</p>
 </div>
-<div><img src="assets/shilajit-1.png" alt="Shilajit Capsules" loading="lazy"></div>
-</div>
-<!-- Slide 3: Pain Oil -->
-<div class="slide">
-<div>
-<span class="eyebrow ondark">Oil • Joint &amp; Muscle Pain</span>
-<h1>Joint Pain <span class="g">Relief Oil ₹249</span></h1>
-<p class="sub">Nirgundi, Gandhapura, Kapoor — ghutne, kamar, joint stiffness me warming relief. Halka, non-sticky. ★ 4.7 (1,840 reviews). COD + Prepaid same price.</p>
-<div><a class="btn gold" href="/pain-oil/#checkout">Order Pain Oil — ₹249 →</a></div>
-<div class="hero-proof">★ 4.7 · 1,840 verified reviews · COD available</div>
-</div>
-<div><img src="assets/oil-1.png" alt="Pain Relief Oil" loading="lazy"></div>
+<div><a class="full-link" href="/pain-oil/" aria-label="Shop Pain Relief Oil"><picture><source media="(max-width:700px)" srcset="assets/banner-painoil-mobile.png"><img src="assets/banner-painoil-desktop.png" alt="Avnideep Pain Relief Oil — Dard se rahat, har din aaram" loading="lazy"></picture></a></div>
 </div>
 </div>
-<div class="dots" id="dots"><button class="on" aria-label="slide 1"></button><button aria-label="slide 2"></button><button aria-label="slide 3"></button></div>
+<div class="dots" id="dots"><button class="on" aria-label="slide 1"></button><button aria-label="slide 2"></button></div>
 <div class="trust"><div class="wrap"><span>✓ 100% Ayurvedic</span><span>✓ Lab tested purity & heavy metals</span><span>✓ AYUSH & GMP certified</span><span>✓ Made in India</span><span>✓ 7-day easy returns</span></div></div>
 </div>
 

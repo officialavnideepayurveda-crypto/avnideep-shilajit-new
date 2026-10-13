@@ -284,7 +284,8 @@ footer a{color:#fff}
 .vid iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:0}
 .crumb{max-width:1080px;margin:auto;padding:10px 16px 0;font-size:12.5px;color:#6b655a}
 .crumb a{color:#0E3B2E;text-decoration:none;font-weight:700}
-.gallery img.main{transition:transform .35s ease;cursor:zoom-in}
+.gallery img.main{transition:transform .35s ease}
+.gallery img.main{aspect-ratio:auto;max-height:560px}
 .gallery.zoom img.main{transform:scale(1.8)}
 .offers{background:#fffbe8;border:1.5px dashed #C9A227;border-radius:14px;padding:14px;margin:12px 0;font-size:13.5px}
 .offers code{background:#0E3B2E;color:#fff;padding:2px 8px;border-radius:8px;font-weight:800}
@@ -343,9 +344,52 @@ table.cmp tr td:first-child{font-weight:700;color:#0E3B2E}
 .sp-notif-msg{font-size:11.5px;color:#bbb;line-height:1.3;margin-top:2px}
 .sp-notif-time{font-size:10px;color:#888;font-weight:600;display:block;margin-top:3px}
 .sp-notif-close{position:absolute;top:-6px;right:-6px;width:20px;height:20px;background:#333;border:1px solid #333;border-radius:50%;color:#fff;font-size:11px;display:grid;place-items:center;cursor:pointer;line-height:1}
+.certband{background:#fff;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.certband-row{display:flex;flex-wrap:wrap;gap:8px 30px;justify-content:center;padding:13px 16px;font-size:12.5px;font-weight:700;color:var(--green)}
 @media(max-width:540px){.sp-notif{top:50px;left:12px;right:12px;max-width:none;padding:8px 12px}}
 </style>
 <!-- Meta Pixel: SAME ID as Shilajit page -->
+<style>
+/* ===== STORY DETAIL PAGE LAYER (reference-style) ===== */
+.sbanner{margin:0}.sbanner img{width:100%;display:block;height:auto}
+.shook{text-align:center;padding:34px 16px 8px;max-width:760px;margin:0 auto}
+.shook h1{font-size:clamp(1.7rem,1.2rem + 2.4vw,2.5rem);margin:12px 0}
+.shook p{color:var(--mut);font-size:15.5px;margin:10px 0}
+.shook .cta-buy{display:inline-block;margin-top:8px;background:var(--green);color:#fff;text-decoration:none;font-weight:800;font-size:16px;padding:14px 28px;border-radius:12px}
+.sproblems{padding:26px 16px 6px;text-align:center;max-width:1080px;margin:auto}
+.sproblems h2{margin:10px 0 16px}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;text-align:left;margin-top:6px}
+.pcard2{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 10px 26px -20px rgba(14,59,46,.3)}
+.pcard2 .pnum{font-family:"Fraunces",Georgia,serif;font-size:30px;color:#D8D2C0;display:block;line-height:1}
+.pcard2 b{color:var(--green);display:block;margin:8px 0 4px;font-size:15.5px}
+.pcard2 p{font-size:13.5px;color:var(--mut)}
+.sagit{margin:18px auto 4px;font-weight:700;color:var(--green);font-size:16px;max-width:640px}
+.bgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:12px}
+.bcard{background:var(--cream);border:1px solid var(--line);border-radius:16px;padding:18px}
+.bcard .bnum{font-size:10.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#8a6d00}
+.bcard b{color:var(--green);display:block;margin:6px 0 4px;font-size:16px}
+.bcard p{font-size:13.5px;color:var(--mut)}
+.bcard img{width:72px;height:72px;border-radius:50%;object-fit:cover;border:2px solid var(--line);display:block;margin:8px auto;background:#fff}
+.cgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-top:12px}
+.ccard{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;text-align:center;box-shadow:0 10px 26px -20px rgba(14,59,46,.3)}
+.ccard b{color:var(--green);display:block;font-size:15.5px;margin-bottom:4px}
+.ccard b::before{content:"\2713 ";color:#1A7A4C}
+.ccard p{font-size:12.5px;color:var(--mut)}
+.offerbox{background:var(--green);color:#fff;border-radius:20px;padding:clamp(24px,4vw,40px);margin:18px 0;text-align:center}
+.offerbox h2{color:#fff!important;margin:10px 0 6px}
+.offerbox .goldpill.ondark{color:#FFE9A8;background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.3)}
+.offerbox p{color:#D8E5DC}
+.obprice{font-family:"Fraunces",Georgia,serif;font-size:34px;margin:10px 0}
+.obprice s{font-size:16px;color:#B9C6BE;font-family:system-ui,sans-serif}
+.offpill{background:#fff;color:var(--green);font-size:12px;font-weight:800;padding:4px 12px;border-radius:999px;font-family:system-ui,sans-serif}
+.otrust{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:12px 0 16px;font-size:12.5px;font-weight:700;color:#EAF4EC}
+.offerbox .btn.green{background:#fff;color:var(--green);display:inline-block;text-decoration:none;font-weight:800;padding:14px 30px;border-radius:12px;font-size:16px}
+.note{background:#FFFBEB;border:1px solid var(--line);border-radius:14px;padding:16px;font-size:13px;color:var(--mut);margin:18px 0;line-height:1.7}
+.note b{color:var(--ink)}
+.tav{width:44px;height:44px;border-radius:50%;background:var(--green);color:#fff;display:grid;place-items:center;font-weight:800;font-size:19px;float:left;margin:0 10px 6px 0}
+.rv{overflow:hidden}
+.goldpill.ondark{color:#FFE9A8;background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.3)}
+</style>
 <script>!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','1715387275770711');fbq('track','PageView');</script>
 <noscript><img height="1" width="1" style="display:none" alt="" src="https://www.facebook.com/tr?id=1715387275770711&ev=PageView&noscript=1"></noscript>
 <script>window.dataLayer=window.dataLayer||[];</script>
@@ -413,6 +457,26 @@ footer.site-foot,.site-foot{background:#0E3B2E!important}
 .foot-search a{color:#E6E0D0!important;text-decoration:none}
 .gotop{text-align:center;padding:10px 0}
 .gotop a{color:#fff!important;font-weight:700;font-size:13px;text-decoration:none}
+/* ===== 3D PREMIUM DEPTH LAYER ===== */
+.hero{position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:-20% -10% auto -10%;height:75%;background:radial-gradient(600px 300px at 15% 20%,rgba(26,122,76,.10),transparent 60%),radial-gradient(700px 340px at 85% 10%,rgba(201,162,39,.12),transparent 60%);pointer-events:none}
+.gallery{perspective:900px;position:relative;box-shadow:0 24px 48px -20px rgba(14,59,46,.35),0 4px 12px rgba(0,0,0,.06)!important}
+.gallery::after{content:"";position:absolute;inset:0;border-radius:18px;background:linear-gradient(135deg,rgba(255,255,255,.35) 0%,transparent 32%);pointer-events:none}
+.gallery img.main{animation:floaty 6s ease-in-out infinite;filter:drop-shadow(0 24px 24px rgba(14,59,46,.25))}
+@keyframes floaty{0%,100%{translate:0 0}50%{translate:0 -8px}}
+.thumbs img{transition:transform .2s ease,box-shadow .2s ease,border-color .2s}
+.thumbs img:hover{transform:translateY(-3px)}
+.thumbs img.on{box-shadow:0 10px 20px -10px rgba(14,59,46,.5)}
+.pricebox{background:linear-gradient(180deg,#fff,#F6F3E8)!important;box-shadow:0 16px 32px -18px rgba(14,59,46,.4),inset 0 1px 0 #fff!important;border:1px solid #D9CFB4!important}
+.cta .buy{box-shadow:0 14px 28px -12px rgba(14,59,46,.55),inset 0 1px 0 rgba(255,255,255,.25)!important}
+.cta .buy:active{transform:translateY(2px);box-shadow:0 6px 14px -8px rgba(14,59,46,.5)!important}
+section.card{position:relative;box-shadow:0 18px 40px -24px rgba(14,59,46,.25)!important}
+section.card::before{content:"";position:absolute;top:0;left:24px;right:24px;height:3px;border-radius:0 0 6px 6px;background:linear-gradient(90deg,transparent,#0E3B2E,transparent);opacity:.35;pointer-events:none}
+.bene,.rv{transition:transform .25s ease,box-shadow .25s ease}
+.bene:hover,.rv:hover{transform:translateY(-4px);box-shadow:0 18px 34px -20px rgba(14,59,46,.4)}
+.docstrip,.guar,.combo{background-image:linear-gradient(160deg,rgba(255,255,255,.08),transparent 55%);box-shadow:0 20px 44px -22px rgba(8,35,28,.6)!important}
+.sticky a{box-shadow:0 18px 40px -12px rgba(0,0,0,.45)!important}
+@media(prefers-reduced-motion:reduce){.gallery img.main{animation:none}}
 </style>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-HTH3FR9SF6"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag("js",new Date());gtag("config","G-HTH3FR9SF6");</script>
@@ -459,11 +523,29 @@ try {
 <a href="/shilajit/" class="hlink" style="font-size:13px;color:#0E3B2E;font-weight:700;text-decoration:none">Shilajit</a>
 <a class="btn" href="#checkout" data-scroll="checkout">Order ₹249</a>
 </div></div></header>
+<div class="sbanner"><picture><source media="(max-width:700px)" srcset="/home/assets/banner-painoil-mobile.png"><img src="/home/assets/banner-painoil-desktop.png" alt="Avnideep Pain Relief Oil — Dard se rahat, har din aaram" fetchpriority="high"></picture></div>
+<div class="wrap"><section class="shook"><span class="goldpill">Joint &bull; Knee &bull; Back</span>
+<h1>Ghutne-kamar ka dard roz ki zindagi rok raha hai?</h1>
+<p>Seedhi chadhte ghutnon me dard, subah uthte hi jodon ki akdan, lagatar baithne se kamar-gardan ka dard — ye takleef sharir ke saath-saath man ko bhi thaka deti hai. Apne pasandida kaam, sair-sapata aur parivaar ke saath waqt — sab kuch dard ki wajah se seemit ho jata hai.</p>
+<p><b>Aap akele nahi hain.</b> Hazaaron log roz Ayurvedic warming relief ke saath apni mobility wapas pa rahe hain.</p>
+<div><a class="cta-buy" href="#product">Pain Oil ko jaanein &darr;</a></div>
+</section>
+<section class="sproblems"><span class="goldpill">Samanya Pareshaniyan</span>
+<h2>Kya ye baatein aapko jani-pehchani lagti hain?</h2>
+<div class="pgrid">
+<div class="pcard2"><span class="pnum">01</span><b>Seedhi chadhte ghutne</b><p>Seedhi ya chadhai par ghutnon me tez dard, baithne-uthne me takleef.</p></div>
+<div class="pcard2"><span class="pnum">02</span><b>Subah ki akdan</b><p>Subah uthte hi jodon me stiffness — thodi der chalne par hi aaram.</p></div>
+<div class="pcard2"><span class="pnum">03</span><b>Kamar-gardan dard</b><p>Lagatar baithne ya jhukne wale kaam se kamar aur gardan me khinchav.</p></div>
+<div class="pcard2"><span class="pnum">04</span><b>Mausam badalte dard</b><p>Sardi ya mausam badalte hi purana dard ka laut aana.</p></div>
+<div class="pcard2"><span class="pnum">05</span><b>Dawaiyon ka sahara</b><p>Roz painkillers par nirbhar rehna, par cause ka hal na milna.</p></div>
+</div>
+<p class="sagit">Kya dard aapki rozmarra ki zindagi aur azaadi par asar daal raha hai?</p>
+</section></div>
 
 <div class="crumb"><a href="/home/">Home</a> › <a href="/pain-oil/">Pain Relief Oil</a> › 60ml ₹249</div>
 
 <div class="wrap">
-<div class="hero">
+<div class="hero" id="product">
 <div class="gallery">
 <span class="offbadge">50%<br>OFF</span>
 <img class="main" id="mainImg" src="oil-1.png" alt="Avnideep Pain Relief Oil 60ml">
@@ -476,7 +558,7 @@ try {
 <h1>Ghutne-Kamar Dard Me <span class="hl">Aaram Ka Ayurvedic Tarika</span> — Pain Relief Oil</h1>
 <div class="rating"><span class="stars-gold">★★★★★</span> 4.7 | 1,840+ verified reviews</div>
 <div class="pricebox"><span class="old">₹499</span><span class="new">₹249</span><span class="save">SAVE ₹250</span></div>
-<div style="font-size:13px;color:#6b655a">60ml • MRP inclusive of taxes • COD + Prepaid (dono ₹249)</div>
+<div style="font-size:13px;color:#6b655a">60ml • MRP inclusive of taxes • COD + Prepaid (dono ₹249) • <b>Sirf ₹8/day</b></div>
 <ul class="tick">
 <li>Nirgundi, Gandhapura (wintergreen), Kapoor — classical Vata-balancing herbs</li>
 <li>Subah ki akdan, seedhi par ghutne ka dard, kamar-gardan ache me daily massage</li>
@@ -500,6 +582,8 @@ try {
 </div>
 </div>
 
+<div class="certband"><div class="wrap certband-row" style="max-width:1080px;margin:auto;padding-left:16px;padding-right:16px"><span>✓ AYUSH Certified Facility</span><span>✓ GMP Certified</span><span>✓ Third-Party Lab Tested</span><span>✓ COD Available</span></div></div>
+
 <section class="card"><h2>Kyon kaam karta hai?</h2>
 <div class="grid2">
 <div class="bene"><b>Warming, deep action</b><br>Chir Pine + Lavang circulation badhate hain, rahat der tak tikti hai.</div>
@@ -519,13 +603,20 @@ try {
 </section>
 
 <section class="card"><h2>Key Ayurvedic Ingredients</h2>
-<ul class="Ing">
-<li><b>Nirgundi</b> — stiff joints ko relax</li>
-<li><b>Gandhapura (Wintergreen)</b> — cooling relief</li>
-<li><b>Kapoor + Pudina</b> — blood flow + soothing</li>
-<li><b>Malkangani + Lavang</b> — warming comfort</li>
-<li><b>Til Taila base</b> — herbs ko tissue tak pahunchaye</li>
-</ul>
+<div class="bgrid">
+<div class="bcard"><span class="bnum">Botanical 01</span><img src="herbs/circle/nirgundi.webp" alt="Nirgundi" loading="lazy"><b>Nirgundi</b><p>Stiff, dukhte joints ko relax karne wali classical herb.</p></div>
+<div class="bcard"><span class="bnum">Botanical 02</span><img src="herbs/circle/gandhapura.webp" alt="Gandhapura" loading="lazy"><b>Gandhapura</b><p>Wintergreen — initial warmth ke baad cooling sukoon.</p></div>
+<div class="bcard"><span class="bnum">Botanical 03</span><img src="herbs/circle/kapoor.webp" alt="Kapoor" loading="lazy"><b>Kapoor</b><p>Blood flow ko support aur soothing comfort.</p></div>
+<div class="bcard"><span class="bnum">Botanical 04</span><img src="herbs/circle/pudina.webp" alt="Pudina" loading="lazy"><b>Pudina</b><p>Cooling freshness ke saath soothing comfort.</p></div>
+<div class="bcard"><span class="bnum">Botanical 05</span><img src="herbs/circle/malkangani.webp" alt="Malkangani" loading="lazy"><b>Malkangani</b><p>Warming comfort — circulation ko support kare.</p></div>
+<div class="bcard"><span class="bnum">Botanical 06</span><img src="herbs/circle/lavang.webp" alt="Lavang" loading="lazy"><b>Lavang</b><p>Warming herb — deep comfort me sahayak.</p></div>
+<div class="bcard"><span class="bnum">Botanical 07</span><img src="herbs/circle/dalchini.webp" alt="Dalchini" loading="lazy"><b>Dalchini</b><p>Warming spice — comfort blend ka hissa.</p></div>
+<div class="bcard"><span class="bnum">Botanical 08</span><img src="herbs/circle/chir-pine.webp" alt="Chir Pine" loading="lazy"><b>Chir Pine</b><p>Circulation support ke liye paramparik tatva.</p></div>
+<div class="bcard"><span class="bnum">Botanical 09</span><img src="herbs/circle/khas.webp" alt="Khas Khas" loading="lazy"><b>Khas Khas</b><p>Cooling herb — comfort routine me sahayak.</p></div>
+<div class="bcard"><span class="bnum">Botanical 10</span><img src="herbs/circle/alsi.webp" alt="Alsi" loading="lazy"><b>Alsi</b><p>Daily wellness ko support karne wala paramparik beej.</p></div>
+<div class="bcard"><span class="bnum">Botanical 11</span><img src="herbs/circle/nilgiri.webp" alt="Nilgiri" loading="lazy"><b>Nilgiri</b><p>Freshness aur comfort ke liye jana-mana patta.</p></div>
+<div class="bcard"><span class="bnum">Botanical 12</span><img src="herbs/circle/til.webp" alt="Til Taila" loading="lazy"><b>Til Taila</b><p>Herbs ko tissue tak pahunchane wala halka, non-sticky base.</p></div>
+</div>
 <img class="wideimg" src="herbal-infographic.png" alt="11+ prakritik jadi-bootiyon ki shakti" loading="lazy" decoding="async">
 </section>
 
@@ -589,12 +680,12 @@ try {
 </div>
 <h3 style="color:#0E3B2E;margin:14px 0 4px">Verified buyer reviews</h3>
 <div class="rvgrid">
-<div class="rv"><span class="stars">★★★★★</span><br><b>Priya Patel, Ahmedabad</b> <small>✓ Verified</small><br>“Pain Relief Oil is magic. Mere knee pain kuch applications me gayab. Truly authentic Ayurvedic product.”</div>
-<div class="rv"><span class="stars">★★★★★</span><br><b>Rahul Sharma, Delhi</b> <small>✓ Verified</small><br>“Papa ke ghutne ke liye liya tha, ab wo subah walk par jaate hain. Non-sticky hai, smell tez nahi.”</div>
-<div class="rv"><span class="stars">★★★★★</span><br><b>Meena Devi, Patna</b> <small>✓ Verified</small><br>“Kamar dard me raat ko lagati hu, subah halka lagta hai. COD par mangwaya, 4 din me aa gaya.”</div>
-<div class="rv"><span class="stars">★★★★☆</span><br><b>Amit Kumar, Kanpur</b> <small>✓ Verified</small><br>“Gardan ke dard me 1 hafte me farak laga. Roz 2 baar lagana padta hai — consistency jaruri hai.”</div>
-<div class="rv"><span class="stars">★★★★★</span><br><b>Sunita Rao, Pune</b> <small>✓ Verified</small><br>“Mummy ke haath ke joint pain me kaam kiya. Doctor ne bhi Ayurvedic oil continue karne bola.”</div>
-<div class="rv"><span class="stars">★★★★★</span><br><b>Vikram Singh, Jaipur</b> <small>✓ Verified</small><br>“Gym ke baad muscle soreness me best. Balm se better laga mujhe — poori massage ho jaati hai.”</div>
+<div class="rv"><span class="tav">P</span><span class="stars">★★★★★</span><br><b>Priya Patel, Ahmedabad</b> <small>✓ Verified</small><br>“Pain Relief Oil is magic. Mere knee pain kuch applications me gayab. Truly authentic Ayurvedic product.”</div>
+<div class="rv"><span class="tav">R</span><span class="stars">★★★★★</span><br><b>Rahul Sharma, Delhi</b> <small>✓ Verified</small><br>“Papa ke ghutne ke liye liya tha, ab wo subah walk par jaate hain. Non-sticky hai, smell tez nahi.”</div>
+<div class="rv"><span class="tav">M</span><span class="stars">★★★★★</span><br><b>Meena Devi, Patna</b> <small>✓ Verified</small><br>“Kamar dard me raat ko lagati hu, subah halka lagta hai. COD par mangwaya, 4 din me aa gaya.”</div>
+<div class="rv"><span class="tav">A</span><span class="stars">★★★★☆</span><br><b>Amit Kumar, Kanpur</b> <small>✓ Verified</small><br>“Gardan ke dard me 1 hafte me farak laga. Roz 2 baar lagana padta hai — consistency jaruri hai.”</div>
+<div class="rv"><span class="tav">S</span><span class="stars">★★★★★</span><br><b>Sunita Rao, Pune</b> <small>✓ Verified</small><br>“Mummy ke haath ke joint pain me kaam kiya. Doctor ne bhi Ayurvedic oil continue karne bola.”</div>
+<div class="rv"><span class="tav">V</span><span class="stars">★★★★★</span><br><b>Vikram Singh, Jaipur</b> <small>✓ Verified</small><br>“Gym ke baad muscle soreness me best. Balm se better laga mujhe — poori massage ho jaati hai.”</div>
 </div>
 <h3 style="color:#0E3B2E;margin:14px 0 4px">Rating breakdown — 4.7/5 (1,840 reviews)</h3>
 <div class="bars">
@@ -611,14 +702,19 @@ try {
 <tr><td>Payment</td><td>COD ₹249 + WhatsApp order</td><td>Prepaid only</td></tr>
 <tr><td>Trust</td><td>GMP + Lab tested + Doctor guidance</td><td>No reports</td></tr>
 </table>
-<div class="tickline"><span>✓ GMP Certified</span><span>✓ Lab Tested</span><span>✓ COD Available</span><span>✓ 7-Day Returns</span></div></section>
+<div class="cgrid">
+<div class="ccard"><b>GMP Certified</b><p>Uttpadan manakon ke anusaar taiyaar.</p></div>
+<div class="ccard"><b>AYUSH Facility</b><p>AYUSH pramanit facility me nirmit.</p></div>
+<div class="ccard"><b>Lab Tested</b><p>Purity aur quality ki jaanch ke saath.</p></div>
+<div class="ccard"><b>100% Ayurvedic</b><p>Chuni hui prakritik jadi-bootiyon se taiyaar.</p></div>
+</div></section>
 
 <img class="wideimg" src="remedy-collage.png" alt="Dard ab rok nahi payega - jodon, maanspeshiyon aur kamar dard se rahat" loading="lazy" decoding="async">
 
 <div class="combo">
-<h2>Shilajit + Pain Oil Combo — Dono Saath, Zyada Fayda</h2>
-<p>Andar se taakat (Shilajit) + bahar se aaram (Pain Oil) • Prepaid ₹1,248 / COD ₹1,499 • Free delivery</p>
-<a href="/home/#products">Get Combo Deal →</a>
+<h2>Energy Bhi Chahiye? 6Pro Shilajit Try Karein</h2>
+<p>Andar se taakat ke liye — Pure Himalayan Shilajit + 14 herbs • Prepaid ₹999 • COD available</p>
+<a href="/shilajit/">View 6Pro Shilajit →</a>
 </div>
 
 <section class="card faq"><h2>FAQ</h2>
@@ -632,6 +728,17 @@ try {
 <details><summary>Kitni quantity hai? Kitne din chalega?</summary><p>60ml bottle — roz 2 baar normal use me lagbhag 1 mahina chalti hai. Chronic pain me 2 bottle (2 mahine course) best rehta hai.</p></details>
 <details><summary>Return policy kya hai?</summary><p>7-day easy returns. <a href="/refund-policy">Refund policy</a> • <a href="/shipping-policy">Shipping</a> padhein ya WhatsApp +91 7060101043 par poochhein.</p></details>
 </section>
+
+<div class="offerbox">
+<span class="goldpill ondark">Limited Offer</span>
+<h2>Dard Ab Rok Nahi Payega</h2>
+<p>Aaj hi Avnideep Pain Relief Oil order karein — 50% OFF + Free Delivery + COD.</p>
+<div class="obprice">₹249 <s>₹499</s> <span class="offpill">50% OFF</span></div>
+<div class="otrust"><span>✓ Free Delivery</span><span>✓ COD Available</span><span>✓ Genuine Product</span><span>✓ Secure Ordering</span></div>
+<div><a class="btn green" href="#checkout" data-scroll="checkout">Abhi Order Karein</a></div>
+</div>
+
+<div class="note">⚠️ <b>Mahatvapurna note:</b> Ye Ayurvedic topical tel hai, dawa nahi — parinaam vyakti se vyakti me alag ho sakte hain. Kati-phati skin ya aankhon par na lagayein. Gambhir samasya ho to doctor se salah lein. Garbhvati mahilaon ko upyog se pehle doctor se poochhna chahiye.</div>
 
 <section id="checkout">
     <div class="checkout ayur-checkout">
@@ -744,8 +851,8 @@ Haridwar, Uttarakhand, India<br>
 /* ViewContent fired in head (fbq+CAPI dedup, same as Shilajit) */
 var main=document.getElementById('mainImg');
 document.getElementById('thumbs').addEventListener('click',function(e){if(e.target.tagName==='IMG'){main.src=e.target.src;var all=this.querySelectorAll('img');for(var i=0;i<all.length;i++)all[i].classList.remove('on');e.target.classList.add('on');}});
-window.addEventListener('scroll',function(){document.getElementById('sticky').classList.toggle('show',window.scrollY>700);},{passive:true});
-main.addEventListener('click',function(){this.parentElement.classList.toggle('zoom');});
+window.addEventListener('scroll',function(){document.getElementById('sticky').classList.toggle('show',window.scrollY>450);},{passive:true});
+document.querySelectorAll('.offers code').forEach(function(c){c.style.cursor='pointer';c.title='Tap to copy';c.addEventListener('click',function(){var t=c.textContent.trim();function done(){var o=c.getAttribute('data-code')||t;c.textContent='Copied ✓';setTimeout(function(){c.textContent=o;},1200);}c.setAttribute('data-code',t);if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done).catch(done);}else{var i=document.createElement('input');i.value=t;document.body.appendChild(i);i.select();try{document.execCommand('copy');}catch(e){}document.body.removeChild(i);done();}});});
 document.getElementById('pinBtn').addEventListener('click',async function(){
 var c=document.getElementById('pinCheck').value.trim(),m=document.getElementById('pinMsg');
 if(!/^\d{6}$/.test(c)){m.textContent='Sahi 6-digit pincode likhein.';return}
@@ -1744,6 +1851,9 @@ function initSocialProof(){
 }
 
 
+</script>
+<script>
+(function(){try{var g=document.querySelector('.gallery'),img=document.getElementById('mainImg');if(!g||!img)return;if(window.matchMedia&&matchMedia('(hover: none)').matches)return;g.addEventListener('pointermove',function(e){try{var b=g.getBoundingClientRect(),x=(e.clientX-b.left)/b.width-.5,y=(e.clientY-b.top)/b.height-.5;img.style.transform='rotateY('+(x*10).toFixed(2)+'deg) rotateX('+(-y*10).toFixed(2)+'deg)';}catch(_){}});g.addEventListener('pointerleave',function(){img.style.transform='';});}catch(_){}})();
 </script>
 <script src="app-oil.v3.js?v=oil1"></script>
 <div class="sp-notif" id="spNotif" role="status" aria-live="polite">
