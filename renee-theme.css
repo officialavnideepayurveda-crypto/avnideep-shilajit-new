@@ -1,0 +1,125 @@
+/* ===== RENEE-STYLE WHITE PREMIUM THEME for Avnideep (override) ===== */
+:root{--rn-black:#0f0f0f;--rn-pink:#c81e5b;--rn-gold:#b8860b;--rn-green:#1B3A2D;--rn-bg:#ffffff;--rn-soft:#f7f3ec;--rn-line:#ece5d8;--rn-muted:#6b6b6b}
+html{background:#fff}
+body{background:#fff!important;color:#141414!important}
+.wrap{max-width:1280px!important;width:100%!important;background:#fff!important;box-shadow:none!important;overflow:visible!important}
+body> *:not(script):not(style):not(.skip):not(noscript):not(.sbar):not(.smodal):not(.glightbox){max-width:1280px!important;margin-left:auto!important;margin-right:auto!important;width:100%!important}
+.wrap section{padding:44px 24px!important}
+@media(max-width:640px){.wrap section{padding:28px 14px!important}}
+
+/* announcement like Renee */
+.ticker{background:#0f0f0f!important;color:#fff!important;border-bottom:1px solid #222!important;font-size:12.5px!important;letter-spacing:.4px}
+.ticker__t span{margin:0 28px}
+
+/* Renee header */
+.rn-header{position:sticky;top:0;z-index:900;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--rn-line)}
+.rn-header-in{max-width:1280px;margin:0 auto;display:flex;align-items:center;gap:18px;padding:12px 24px}
+.rn-logo{display:flex;align-items:center;gap:10px;font-weight:900}
+.rn-logo-mark{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#1B3A2D,#4A7C59);display:grid;place-items:center;color:#ffd54f;font-weight:900}
+.rn-logo b{font-size:19px;letter-spacing:.5px;color:#111;line-height:1}
+.rn-logo small{display:block;font-size:10px;letter-spacing:2.5px;color:var(--rn-gold);font-weight:800}
+.rn-nav{display:flex;gap:20px;margin-left:12px;font-size:14px;font-weight:700;flex:1}
+.rn-nav a{color:#222;padding:8px 2px;border-bottom:2px solid transparent}
+.rn-nav a:hover{border-color:#111}
+.rn-actions{display:flex;align-items:center;gap:10px}
+.rn-search{display:flex;align-items:center;background:#f1f1f1;border-radius:999px;padding:8px 14px;gap:8px;min-width:200px;color:#666;font-size:13px}
+.rn-iconbtn{width:40px;height:40px;border-radius:50%;border:1px solid var(--rn-line);display:grid;place-items:center;background:#fff;font-size:18px}
+.rn-cartbtn{background:#111!important;color:#fff!important;font-weight:800;padding:10px 18px;border-radius:999px;font-size:13px}
+@media(max-width:900px){.rn-nav{display:none}.rn-search{min-width:0;flex:1}.rn-header-in{padding:10px 12px;gap:10px}}
+
+/* hero - Renee full banner */
+.hero.ayur-hero,.hero{background:#fff!important;color:#111!important;text-align:left!important}
+.hero.ayur-hero h1{color:#111!important;font-family:Inter,Arial,sans-serif!important;font-size:44px!important;line-height:1.05!important;letter-spacing:-1px}
+.hero.ayur-hero h1 .hl{background:none!important;-webkit-text-fill-color:#1B3A2D!important;color:#1B3A2D!important}
+.hero p.sub,.hero .sub{color:#555!important}
+.hero-slider{max-width:100%!important;margin:20px 0!important}
+.slider-track{aspect-ratio:16/7!important;border:none!important;border-radius:20px!important}
+.slider-slide img{object-fit:cover!important;background:#f5f0e6!important}
+.rn-hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:28px;align-items:center}
+@media(max-width:900px){.rn-hero-grid{grid-template-columns:1fr}.hero.ayur-hero h1{font-size:30px!important}.slider-track{aspect-ratio:1/1!important}}
+.price-tag{background:#f7f3ec!important;border:1px solid var(--rn-line)!important}
+.price-old{color:#999!important}.price-new{color:#111!important}.price-off{background:#1B3A2D!important}
+.rating-row{justify-content:flex-start!important;color:#555!important}.rating-row .stars{color:#e8a200!important}
+.ayur-badge,.hero-badge{background:#eef5ef!important;border:1px solid #cfe0d2!important;color:#1B3A2D!important}
+.ayur-badge::before{content:"🌿"}
+.bonus-stack{background:#faf7f0!important;border:1px dashed #d8c79a!important}
+.bonus-item{color:#333!important}.bonus-item strong{color:#1B3A2D!important}
+.cta-primary,.cta-order,.btn-light,.show-more-btn,.sbar-order{background:linear-gradient(135deg,#111,#333)!important;box-shadow:0 12px 30px rgba(0,0,0,.2)!important;color:#fff!important;border-radius:999px!important}
+.cta-primary small,.cta-order small{opacity:.75}
+
+/* category circles like Renee */
+.rn-sec-title{text-align:center;margin-bottom:20px}
+.rn-sec-title h2{font-size:30px;font-weight:900;letter-spacing:-.5px;color:#111}
+.rn-sec-title p{color:#777;font-size:14px;margin-top:6px}
+.rn-sec-title a{font-size:13px;font-weight:800;text-decoration:underline}
+.rn-cats{display:flex;gap:18px;justify-content:center;flex-wrap:wrap}
+.rn-cat{width:110px;text-align:center;font-size:13px;font-weight:700;color:#222}
+.rn-cat i{width:92px;height:92px;border-radius:50%;display:grid;place-items:center;font-size:36px;background:#f7f3ec;border:1px solid var(--rn-line);margin:0 auto 8px;font-style:normal}
+.rn-cat:hover i{border-color:#111;transform:translateY(-2px)}
+@media(max-width:640px){.rn-cats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.rn-cat{width:auto}.rn-cat i{width:64px;height:64px;font-size:26px}}
+
+/* product cards like Renee Spotlight */
+.rn-products{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+@media(max-width:1000px){.rn-products{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:420px){.rn-products{gap:10px}}
+.rn-card{background:#fff;border:1px solid var(--rn-line);border-radius:18px;overflow:hidden;display:flex;flex-direction:column;transition:transform .2s,box-shadow .2s}
+.rn-card:hover{transform:translateY(-4px);box-shadow:0 18px 40px rgba(0,0,0,.1)}
+.rn-card-img{position:relative;background:#f7f3ec;aspect-ratio:1/1;overflow:hidden}
+.rn-card-img img{width:100%;height:100%;object-fit:cover}
+.rn-off{position:absolute;top:10px;left:10px;background:#1B3A2D;color:#fff;font-size:11px;font-weight:800;padding:4px 9px;border-radius:999px}
+.rn-tag{position:absolute;top:10px;right:10px;background:#111;color:#ffd54f;font-size:10px;font-weight:800;padding:4px 9px;border-radius:999px;letter-spacing:.5px}
+.rn-card-body{padding:14px;display:flex;flex-direction:column;gap:6px;flex:1}
+.rn-card-body h4{font-size:14px;line-height:1.4;min-height:40px;color:#111}
+.rn-stars{color:#e8a200;font-size:12px;font-weight:800}
+.rn-price{display:flex;gap:8px;align-items:baseline;font-size:14px}
+.rn-price s{color:#999}.rn-price b{font-size:18px}.rn-price em{font-style:normal;color:#1B3A2D;font-weight:800;font-size:12px}
+.rn-add{margin-top:auto;background:#111;color:#fff;border-radius:999px;padding:11px;font-weight:800;font-size:13px}
+.rn-add:hover{background:#1B3A2D}
+
+/* tiles */
+.rn-tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+@media(max-width:900px){.rn-tiles{grid-template-columns:repeat(2,1fr)}}
+.rn-tile{border-radius:18px;overflow:hidden;border:1px solid var(--rn-line);background:#faf7f0;padding:22px;min-height:170px;display:flex;flex-direction:column;justify-content:flex-end;gap:8px}
+.rn-tile h3{font-size:18px}.rn-tile p{font-size:13px;color:#666}.rn-tile a{font-weight:800;font-size:13px;text-decoration:underline}
+
+/* shop by price like Renee */
+.rn-pricegrid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;text-align:center}
+@media(max-width:800px){.rn-pricegrid{grid-template-columns:repeat(2,1fr)}}
+.rn-pricebox{border:1px solid var(--rn-line);border-radius:18px;padding:26px 14px;background:#111;color:#fff}
+.rn-pricebox span{font-size:12px;letter-spacing:2px;opacity:.7}.rn-pricebox b{display:block;font-size:30px;margin:6px 0}.rn-pricebox a{display:inline-block;margin-top:8px;background:#fff;color:#111;padding:8px 18px;border-radius:999px;font-size:12px;font-weight:800}
+
+/* trust strip like cruelty-free/vegan */
+.rn-trust{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;background:#f7f3ec;border:1px solid var(--rn-line);border-radius:18px;padding:18px}
+.rn-trust div{display:flex;gap:10px;align-items:center;font-size:13px;font-weight:700;min-width:200px}
+.rn-trust i{width:44px;height:44px;border-radius:50%;background:#fff;display:grid;place-items:center;font-size:22px;font-style:normal;border:1px solid var(--rn-line)}
+
+/* lighten old dark sections to Renee white */
+.benefits .bcard,.herb-row,.cmp,.rv,.faq-item,.problems,.guarantee,.timer-box,.clean-banner,.cert-card,.trust-strip,.ayur-trust-bar{background:#fff!important;border:1px solid var(--rn-line)!important;box-shadow:0 8px 24px rgba(0,0,0,.06)!important}
+.bcard-body h4,.herb-row h4,.section-h,.problems h2,.checkout h2,.guarantee h3,.faq-q{color:#111!important}
+.bcard-body p,.herb-row p,.problems-intro,.problems li p,.rv p,.faq-a,.checkout .sub{color:#555!important}
+.section-h .hl{color:#1B3A2D!important}
+.section-kicker{color:#1B3A2D!important}
+.cert-item{background:#faf7f0!important;border:1px solid var(--rn-line)!important}.cert-item strong{color:#1B3A2D!important}.cert-item small{color:#777!important}
+.checkout{background:#faf7f0!important;border:1px solid var(--rn-line)!important}
+.form-field label{color:#333!important}.form-field input,.form-field textarea{background:#fff!important;border:1.5px solid #ddd!important;color:#111!important}
+.pay-card{background:#fff!important;border:2px solid #e5ddd0!important}.pay-card.selected{border-color:#1B3A2D!important;background:#eef5ef!important}
+.pay-top strong{color:#111!important}.pay-card small,.s-row{color:#666!important}.s-row b{color:#111!important}
+.press-strip{background:#f7f3ec!important;border-top:1px solid var(--rn-line)!important;border-bottom:1px solid var(--rn-line)!important}
+.press-logos span{color:#444!important;opacity:1!important}
+.footer,.ayur-footer{background:#0f0f0f!important;color:#ddd!important;border-top:none!important}
+.f-contact,.footer .f-desc{color:#aaa!important}
+
+/* Renee footer columns */
+.rn-footer-grid{display:grid;grid-template-columns:1.3fr 1fr 1fr 1.2fr;gap:24px;text-align:left;max-width:1200px;margin:0 auto 20px}
+@media(max-width:900px){.rn-footer-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.rn-footer-grid{grid-template-columns:1fr}}
+.rn-footer-grid h5{font-size:13px;letter-spacing:1.5px;color:#fff;margin-bottom:12px}
+.rn-footer-grid a{display:block;font-size:13px;color:#bbb;padding:4px 0}
+.rn-news{display:flex;gap:8px;margin-top:10px}
+.rn-news input{flex:1;padding:11px 14px;border-radius:999px;border:1px solid #333;background:#1c1c1c;color:#fff}
+.rn-news button{background:#fff;color:#111;padding:11px 18px;border-radius:999px;font-weight:800}
+
+/* keep sticky bar */
+.sbar{background:#fff!important;border-top:1px solid var(--rn-line)!important;box-shadow:0 -10px 30px rgba(0,0,0,.12)!important;max-width:1280px!important}
+.sbar-info p{color:#111!important}
+.sbar-call{background:#1B3A2D!important}

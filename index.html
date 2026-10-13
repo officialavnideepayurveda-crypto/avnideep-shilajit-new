@@ -40,6 +40,7 @@
 <link rel="preconnect" href="https://connect.facebook.net" crossorigin>
 
 <link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="./renee-theme.css?v=20261013">
 <link rel="icon" type="image/webp" href="https://cdn.avnideepayurveda.in/Avnideep-shilajit/shilajit%20for%20web.jpg" sizes="any">
 <link rel="apple-touch-icon" sizes="180x180" href="https://cdn.avnideepayurveda.in/Avnideep-shilajit/shilajit%20for%20web.jpg">
 <link rel="shortcut icon" href="https://cdn.avnideepayurveda.in/Avnideep-shilajit/shilajit%20for%20web.jpg">
@@ -182,8 +183,15 @@ try {
 
 
 <div class="wrap">
-
-  <section class="hero ayur-hero">
+<header class="rn-header"><div class="rn-header-in">
+<a class="rn-logo" href="#top" aria-label="Avnideep home"><span class="rn-logo-mark">A</span><span><b>AVNIDEEP</b><small>AYURVEDA</small></span></a>
+<nav class="rn-nav"><a href="#shop">Shop</a><a href="#categories">Categories</a><a href="#spotlight">Bestsellers</a><a href="#price">Offers</a><a href="#reviews">Reviews</a><a href="#faq">FAQ</a></nav>
+<div class="rn-actions"><span class="rn-search">🔍 Search Shilajit…</span><button class="rn-iconbtn" type="button" onclick="openOrderPopup()" aria-label="Cart">🛒</button><button class="rn-cartbtn" type="button" onclick="openOrderPopup()">Order Now</button></div>
+</div></header>
+<section class="rn-cats-wrap" id="categories" style="padding-bottom:0"><div class="rn-sec-title"><h2>Shop by Category</h2><p>Renee-style circle categories — Avnideep Ayurveda range</p></div><div class="rn-cats">
+<a class="rn-cat" href="#shop"><i>🌿</i>Shilajit</a><a class="rn-cat" href="#herbs"><i>🪴</i>Herbs</a><a class="rn-cat" href="#spotlight"><i>⚡</i>Energy</a><a class="rn-cat" href="#combos"><i>🎁</i>Combos</a><a class="rn-cat" href="#cert"><i>🏅</i>Certified</a><a class="rn-cat" href="#reviews"><i>⭐</i>Reviews</a><a class="rn-cat" href="#price"><i>💰</i>Offers</a><a class="rn-cat" href="#faq"><i>❓</i>Help</a>
+</div></section>
+  <section class="hero ayur-hero" id="top">
     <div class="hero-badge ayur-badge">India's Trusted Ayurvedic Supplement</div>
     <h1>दिनभर चुस्त-दुरुस्त रहने का <span class="hl">आयुर्वेदिक तरीका</span></h1>
     <p class="sub">✅ 14 आयुर्वेदिक जड़ी-बूटियाँ • ✅ प्राकृतिक सामग्री • ✅ लैब टेस्टेड</p>
@@ -241,6 +249,26 @@ try {
 
   </section>
 
+<section id="shop"><div class="rn-sec-title"><h2>In the Spotlight</h2><p>Renee-style bestsellers • Tap Add to order</p><p><a href="#checkout">View all</a></p></div><div class="rn-products">
+<div class="rn-card"><div class="rn-card-img"><span class="rn-off">50% Off</span><span class="rn-tag">BESTSELLER</span><img src="https://cdn.avnideepayurveda.in/Avnideep-shilajit/shilajit%20for%20web.jpg" alt="6Pro 1 Month" loading="lazy"></div><div class="rn-card-body"><h4>Avnideep 6Pro Shilajit – 1 Month Pack</h4><div class="rn-stars">★★★★★ 4.8 | 12,000+ reviews</div><div class="rn-price"><s>₹2500</s><b>₹1250</b><em>Save ₹1250</em></div><button class="rn-add" type="button" onclick="openOrderPopup()">Add To Cart</button></div></div>
+<div class="rn-card"><div class="rn-card-img"><span class="rn-off">50% Off</span><span class="rn-tag">HOTSELLER</span><img src="https://cdn.avnideepayurveda.in/Avnideep-shilajit/shilajit%20main%20image/2.webp" alt="6Pro Energy Combo" loading="lazy"></div><div class="rn-card-body"><h4>Avnideep 6Pro – Energy & Daily Wellness Combo</h4><div class="rn-stars">★★★★★ 4.9 | 8,200+ reviews</div><div class="rn-price"><s>₹2500</s><b>₹1250</b><em>Free Delivery</em></div><button class="rn-add" type="button" onclick="openOrderPopup()">Add To Cart</button></div></div>
+<div class="rn-card"><div class="rn-card-img"><span class="rn-off">COD Available</span><span class="rn-tag">NEW LAUNCH</span><img src="https://cdn.avnideepayurveda.in/Avnideep-shilajit/shilajit%20main%20image/3.webp" alt="6Pro Herbal Pack" loading="lazy"></div><div class="rn-card-body"><h4>Avnideep 6Pro – 14 Herbs Ayurvedic Formula</h4><div class="rn-stars">★★★★★ 4.8 | 5,600+ reviews</div><div class="rn-price"><s>₹2500</s><b>₹1250</b><em>10-Day Guarantee</em></div><button class="rn-add" type="button" onclick="openOrderPopup()">Add To Cart</button></div></div>
+<div class="rn-card"><div class="rn-card-img"><span class="rn-off">Prepaid ₹999</span><span class="rn-tag">VALUE PACK</span><img src="https://cdn.avnideepayurveda.in/Avnideep-shilajit/shilajit%20main%20image/4.webp" alt="6Pro Value Pack" loading="lazy"></div><div class="rn-card-body"><h4>Avnideep 6Pro – Prepaid Offer Pack (Save ₹251)</h4><div class="rn-stars">★★★★★ 4.9 | 3,100+ reviews</div><div class="rn-price"><s>₹1250</s><b>₹999</b><em>Prepaid Only</em></div><button class="rn-add" type="button" onclick="openOrderPopup()">Add To Cart</button></div></div>
+</div></section>
+<section id="combos" style="padding-top:0"><div class="rn-tiles">
+<div class="rn-tile"><h3>🌿 Daily Energy Range</h3><p>Ayurvedic support for busy days</p><a href="#shop">Shop Now</a></div>
+<div class="rn-tile"><h3>⚡ 14 Herbs Formula</h3><p>Ashwagandha • Shilajit • Musli</p><a href="#herbs">Explore</a></div>
+<div class="rn-tile"><h3>🏅 Lab Tested Quality</h3><p>GMP • ISO • FSSAI • Lab report</p><a href="#cert">View Certificates</a></div>
+<div class="rn-tile"><h3>🎁 Combo & Gifts</h3><p>Free delivery + doctor consult</p><a href="#checkout">Claim Offer</a></div>
+</div>
+<div class="rn-trust" style="margin-top:14px"><div><i>🐰</i><span>Cruelty Free<br><small style="color:#777">Not tested on animals</small></span></div><div><i>🌱</i><span>100% Ayurvedic<br><small style="color:#777">Natural herbs only</small></span></div><div><i>🧪</i><span>Lab Tested<br><small style="color:#777">Third-party checked</small></span></div><div><i>🇮🇳</i><span>Made in India<br><small style="color:#777">Haridwar, Uttarakhand</small></span></div></div>
+</section>
+<section id="price" style="padding-top:0"><div class="rn-sec-title"><h2>Shop by Price</h2><p>Renee-style price buckets</p></div><div class="rn-pricegrid">
+<div class="rn-pricebox"><span>UNDER</span><b>₹999</b><span>PREPAID ONLY</span><br><a href="#checkout">SHOP</a></div>
+<div class="rn-pricebox"><span>UNDER</span><b>₹1250</b><span>COD PACK</span><br><a href="#checkout">SHOP</a></div>
+<div class="rn-pricebox"><span>BEST</span><b>50% OFF</b><span>LIMITED OFFER</span><br><a href="#checkout">SHOP</a></div>
+<div class="rn-pricebox"><span>FREE</span><b>🎁 Gift</b><span>DOCTOR CONSULT</span><br><a href="#checkout">CLAIM</a></div>
+</div></section>
 
   <div style="background:#ffffff;border-radius:18px;padding:10px;margin:20px 0;box-shadow:0 8px 24px rgba(0,0,0,0.1);display:flex;flex-direction:column;gap:10px;">
     <img src="https://cdn.avnideepayurveda.in/Avnideep-shilajit/shilajit%20main%20image/icon_bar_Mobile_copy.webp" width="100%" height="auto" alt="Free Delivery, COD, Ayurvedic, Money Back" loading="lazy" decoding="async" style="display:block;width:100%;height:auto;border-radius:12px;">
@@ -887,7 +915,7 @@ try {
   </section>
 
 </main>
-
+<section id="newsletter" style="background:#f7f3ec;border-top:1px solid #ece5d8"><div class="rn-sec-title"><h2>Subscribe to our newsletter</h2><p>Offers, Ayurveda tips & order updates</p></div><form class="rn-news" style="max-width:520px;margin:0 auto" onsubmit="event.preventDefault();alert('Thanks for subscribing!');"><input type="email" required placeholder="Email" aria-label="Email"><button type="submit">Subscribe</button></form></section>
 <footer class="footer ayur-footer">
   <div class="f-ayur-motto">🌿 प्रकृति का स्पर्श, आयुर्वेद का विश्वास</div>
   <div class="f-brand">Avnideep Ayurveda</div>

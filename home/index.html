@@ -410,8 +410,134 @@ footer.site-foot{margin-top:clamp(32px,5vw,60px)}
 .foot-search{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;padding:16px 0;border-top:1px solid rgba(255,255,255,.14);font-size:12.5px}
 .gotop{text-align:center;padding:10px 0}
 .gotop a{color:#fff;font-weight:700;font-size:13px;text-decoration:none}
+/* ambient video hero + static banners */
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.herobanners{display:grid;gap:0}
+.herobanners a{display:block}
+.herobanners img{width:100%;height:auto;display:block}
 /* mobile table guard */
 table.cmp{display:block;width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+/* ===== RENEE-STYLE STORE THEME (white/black/pink) ===== */
+:root{--pink:#E6007E;--black:#141414}
+body{background:#fff}
+.topbar{background:#141414}
+.oticker{background:#FCE4F1;border-bottom:1px solid #F6C6E0;color:#141414}
+header{background:#fff}
+.brand{color:#141414}.brand .brand-mark{background:#141414}
+.brand span:last-child{color:var(--pink)!important}
+.nav nav a{color:#141414}
+.nav nav a:hover{color:var(--pink);border-bottom-color:var(--pink)}
+.hsearch{flex:1;max-width:300px}
+.hsearch input{width:100%;padding:10px 16px;border:1.5px solid #E5E5E5;border-radius:999px;font-size:13.5px;background:#F6F6F6;color:#141414}
+.hsearch input:focus{outline:none;border-color:#141414;background:#fff}
+.nav-phone{color:#141414!important}
+.btn.gold,.pcard a.order,#comboBtn{background:#141414!important;color:#fff!important;box-shadow:none!important}
+.btn.gold:hover,.pcard a.order:hover{background:#000!important;transform:translateY(-1px)}
+.btn.ghost{border:1.5px solid #141414;color:#141414}
+.hero{background:#fff}
+.slide h1{color:#141414}.slide h1 .g{color:var(--pink)}
+.eyebrow{color:#141414;background:#FCE4F1;border-color:#F6C6E0}
+.certband-row{color:#141414}
+section.card{border:1px solid #EFEFEF;box-shadow:none}
+section.card h2{color:#141414}
+.lead,.slide p.sub,.meta{color:#6b7280!important}
+.catcircles{display:flex;gap:28px;justify-content:center;flex-wrap:wrap;padding:8px 0 4px}
+.catcircles a{text-align:center;text-decoration:none;color:#141414;font-weight:700;font-size:14px}
+.catcircles img{width:104px;height:104px;border-radius:50%;object-fit:cover;border:2px solid #FCE4F1;display:block;margin:0 auto 8px;background:#F6F6F6}
+.catcircles a:hover img{border-color:var(--pink)}
+.pcard{border:1px solid #EFEFEF!important;box-shadow:none!important}
+.pcard:hover{box-shadow:0 14px 30px -18px rgba(0,0,0,.25)!important;transform:translateY(-2px)}
+.ptag{background:#141414!important;letter-spacing:.06em}
+.price{color:#141414}
+.offpill{background:var(--pink)!important}
+.offer{border:1px dashed var(--pink)!important;background:#FFF5FA!important}
+.offer code{background:#141414!important}
+.doc-quote{border-color:var(--pink);color:#141414}
+.doc-frame::before{background:#FCE4F1}
+.bar .t i{background:#141414}
+table.cmp th{background:#141414}
+.faq summary{color:#141414}
+.faq details[open] summary::after{background:#141414;border-color:#141414}
+section.card.dark,.guar,.combo{background:#141414}
+.tickline span{background:#F6F6F6;border-color:#EFEFEF}
+footer.site-foot{background:#141414!important}
+.foot-join{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;justify-content:space-between;padding:20px 0;border-top:1px solid rgba(255,255,255,.14)}
+.foot-join b{color:#fff;display:block;font-size:15px}
+.foot-join span{color:#B9B9B9;font-size:13px}
+.foot-join a{background:var(--pink);color:#fff!important;text-decoration:none;font-weight:700;padding:11px 26px;border-radius:999px;font-size:14px}
+.site-foot h3{color:var(--pink)!important}
+@media(max-width:940px){.hsearch{order:3;flex-basis:100%;max-width:none}}
+@media(max-width:560px){.catcircles img{width:88px;height:88px}}
+/* ===== AYURVEDA STORE v2 (green palette + Renee-style layout) ===== */
+body{background:#FAF9F3!important;color:#1c1a15!important}
+.topbar{background:#0E3B2E!important;color:#fff!important}
+.oticker{background:#fff!important;color:#0E3B2E!important;border-bottom:1px solid #E8E2D2}
+header{background:#fff!important}
+.brand{color:#0E3B2E!important}
+.brand .brand-mark{background:#0E3B2E!important;color:#fff!important}
+.brand span:last-child{color:#8a6d00!important}
+.nav nav a{color:#0E3B2E!important}
+.nav nav a:hover{color:#1A7A4C!important;border-bottom-color:#1A7A4C!important}
+.hsearch input{border-color:#E8E2D2!important;background:#FAF9F3!important;color:#1c1a15}
+.nav-phone{color:#0E3B2E!important}
+.btn.gold,.pcard a.order{background:#0E3B2E!important;color:#fff!important;box-shadow:0 8px 20px -10px rgba(14,59,46,.5)!important}
+.btn.gold:hover,.pcard a.order:hover{background:#0B2E23!important}
+.btn.ghost{border:1.5px solid #0E3B2E;color:#0E3B2E}
+.hero{background:linear-gradient(180deg,#fff,#FAF9F3)}
+.hslides{position:relative;overflow:hidden}
+.hslide{display:none}.hslide.on{display:block;animation:heroFade .5s ease}
+@keyframes heroFade{from{opacity:.35}to{opacity:1}}
+.hslide img{width:100%;height:auto;display:block}
+.hdots{display:flex;gap:8px;justify-content:center;padding:12px 0 4px}
+.hdots button{width:26px;height:4px;border:0;border-radius:99px;background:#D8D2C0;cursor:pointer;padding:0}
+.hdots button.on{background:#0E3B2E}
+.eyebrow{color:#0E3B2E!important;background:#EAF4EC!important;border-color:#CFE4D4!important}
+section.card{background:#fff;border:1px solid #E8E2D2}
+section.card h2{color:#0E3B2E!important}
+.lead{color:#5b564a!important}
+.catcircles a{color:#0E3B2E}
+.catcircles img{border-color:#CFE4D4;background:#EAF4EC}
+.catcircles a:hover img{border-color:#0E3B2E}
+.cards{grid-template-columns:repeat(4,1fr)!important;max-width:none!important}
+.pcard{border:1px solid #E8E2D2!important}
+.ptag{background:#0E3B2E!important}
+.price{color:#0E3B2E}
+.offpill{background:#0E3B2E!important}
+.prate{color:#B77900!important}.prate span{color:#5b564a!important}
+.wish{border-color:#E8E2D2}
+.pcard.soon{display:grid;place-items:center;align-content:center;text-align:center;padding:28px 16px;gap:8px;background:linear-gradient(180deg,#fff,#F4F8F4);min-height:340px}
+.soonmono{width:56px;height:56px;border-radius:50%;background:#0E3B2E;color:#fff;display:grid;place-items:center;font-family:var(--font-display);font-size:24px}
+.pcard.soon b{color:#0E3B2E;font-size:16px}
+.notify{border:1.5px solid #0E3B2E;color:#0E3B2E;text-decoration:none;font-weight:700;font-size:13.5px;padding:10px 22px;border-radius:999px}
+.offer{background:#FFFBEB!important;border:1px dashed #0E3B2E!important}
+.offer code{background:#0E3B2E!important}
+.doc-quote{border-color:#1A7A4C;color:#0E3B2E}
+.doc-frame::before{background:#EAF4EC}
+.bar .t i{background:#0E3B2E}
+table.cmp th{background:#0E3B2E}
+.tickline span{background:#FAF9F3}
+.faq summary{color:#0E3B2E}
+.faq details[open] summary::after{background:#0E3B2E;border-color:#0E3B2E}
+section.card.dark{background:#0E3B2E}
+.certband-row{color:#0E3B2E!important}
+footer.site-foot{background:#0E3B2E!important}
+.site-foot h3{color:#C9A227!important}
+.site-foot .foot-logo span{color:#C9A227!important}
+.foot-join a{background:#fff!important;color:#0E3B2E!important}
+@media(max-width:900px){.cards{grid-template-columns:1fr 1fr!important}}
+@media(max-width:560px){.pcard.soon{min-height:280px}}
+/* ===== APP-STYLE CARDS ===== */
+.cards{gap:12px}
+.pcard.appcard{border-radius:20px;position:relative}
+.pcard .pimg{display:block;position:relative}
+.pcard .pimg img{margin:0}
+.wish{position:absolute;top:10px;right:10px;z-index:3;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:#fff;color:#8a8478;font-size:18px;line-height:1;cursor:pointer;display:grid;place-items:center;box-shadow:0 4px 12px rgba(0,0,0,.12)}
+.wish.on{color:#e0245e;border-color:#e0245e}
+.prate{color:#B77900;font-size:12.5px;font-weight:800}
+.prate span{color:var(--mut);font-weight:600}
+.rev{background:#fff;border-radius:18px;box-shadow:0 8px 20px -14px rgba(14,59,46,.25)}
+@media(max-width:900px){.cards{grid-template-columns:1fr 1fr;gap:10px;max-width:none}}
+@media(max-width:560px){.pcard .body{padding:12px;gap:7px}.pcard b{font-size:14.5px}.pcard .meta{font-size:12px}.price{font-size:20px}.offpill{font-size:10px}.pcard a.order{font-size:14px;padding:12px}.prate{font-size:11.5px}.wish{width:32px;height:32px;font-size:16px}}
 /* full-bleed creative slide (text hidden, image full width + clickable) */
 .slide.on.slide-full{display:block}
 .slide-full .slide-text{display:none}
@@ -427,31 +553,19 @@ table.cmp{display:block;width:100%;overflow-x:auto;-webkit-overflow-scrolling:to
 <header><div class="nav">
 <a class="brand" href="/home/"><span class="brand-mark">A</span>Avnideep <span>Ayurveda</span></a>
 <nav><a href="/home/">Home</a><a href="/shilajit/">Shilajit</a><a href="/pain-oil/">Pain Oil</a><a href="#products">Bestsellers</a><a href="#reviews">Reviews</a><a href="/contact-us">Contact</a></nav>
-<div class="nav-actions"><a class="nav-phone" href="tel:+917060101043">Call: +91 70601 01043</a><a class="btn gold sm" href="#products">Shop Now</a></div>
+<div class="nav-actions"><div class="hsearch"><input id="siteSearch" type="search" placeholder="Search products…" aria-label="Search products"></div><a class="nav-phone" href="tel:+917060101043">Call: +91 70601 01043</a><a class="btn gold sm" href="#products">Shop Now</a></div>
 </div></header>
 
 <div class="brandstrip"><div class="wrap"><b>Also available on:</b><span class="logo">Amazon</span><span class="logo">Flipkart</span><span class="logo">Meesho</span><span class="logo">Tata 1mg</span><span class="meta">★ 4.8 Google rated</span></div></div>
 
 <div class="hero">
-<div class="slides">
-<!-- Slide 1: Shilajit (responsive full banner) -->
-<div class="slide on slide-full">
-<div class="slide-text">
-<h1>Avnideep 6Pro Shilajit Capsules — Energy, Stamina & Vitality</h1>
-<p class="sub">Pure Himalayan Shilajit + 14 Ayurvedic herbs. Lab tested, COD available.</p>
+<h1 class="vh">Avnideep Ayurveda — Pure Himalayan Shilajit Capsules & Pain Relief Oil | Lab Tested, COD Available</h1>
+<div class="hslides" id="hslides">
+<div class="hslide on"><a href="/shilajit/" aria-label="Shop Shilajit"><picture><source media="(max-width:700px)" srcset="assets/banner-shilajit-mobile.webp"><img src="assets/banner-shilajit-desktop.webp" alt="Avnideep 6Pro Shilajit — Fuel your inner fire" fetchpriority="high"></picture></a></div>
+<div class="hslide"><a href="/pain-oil/" aria-label="Shop Pain Relief Oil"><picture><source media="(max-width:700px)" srcset="assets/banner-painoil-mobile.webp"><img src="assets/banner-painoil-desktop.webp" alt="Avnideep Pain Relief Oil — Dard se rahat" loading="lazy"></picture></a></div>
 </div>
-<div><a class="full-link" href="/shilajit/" aria-label="Shop Shilajit"><picture><source media="(max-width:700px)" srcset="assets/banner-shilajit-mobile.webp"><img src="assets/banner-shilajit-desktop.webp" alt="Avnideep 6Pro Stamina — Fuel your inner fire with herbal strength" fetchpriority="high"></picture></a></div>
+<div class="hdots" id="hdots"><button class="on" aria-label="Banner 1"></button><button aria-label="Banner 2"></button></div>
 </div>
-<!-- Slide 2: Pain Oil (responsive full banner) -->
-<div class="slide slide-full">
-<div class="slide-text">
-<h1>Avnideep Pain Relief Oil — Dard se rahat, har din aaram</h1>
-<p class="sub">Nirgundi, Gandhapura, Kapoor. Ghutne, kamar, joint dard me warming relief. COD available.</p>
-</div>
-<div><a class="full-link" href="/pain-oil/" aria-label="Shop Pain Relief Oil"><picture><source media="(max-width:700px)" srcset="assets/banner-painoil-mobile.webp"><img src="assets/banner-painoil-desktop.webp" alt="Avnideep Pain Relief Oil — Dard se rahat, har din aaram" loading="lazy"></picture></a></div>
-</div>
-</div>
-<div class="dots" id="dots"><button class="on" aria-label="slide 1"></button><button aria-label="slide 2"></button></div>
 <div class="trust"><div class="wrap"><span>✓ 100% Ayurvedic</span><span>✓ Lab tested purity & heavy metals</span><span>✓ AYUSH & GMP certified</span><span>✓ Made in India</span><span>✓ 7-day easy returns</span></div></div>
 </div>
 
@@ -467,24 +581,28 @@ table.cmp{display:block;width:100%;overflow-x:auto;-webkit-overflow-scrolling:to
 <div class="wrap">
 <section class="card" id="concern"><span class="eyebrow">Find the right product</span><h2>Select your concern</h2>
 <p class="lead">Sahi problem, sahi formulation — confuse mat hoiye.</p>
-<div class="tiles">
-<a class="tile t1" href="/shilajit/"><b>Energy, Stamina &amp; Strength</b><span class="tile-sub">Shilajit + adaptogens • daily 1 capsule →</span></a>
-<a class="tile t2" href="/pain-oil/"><b>Joint, Knee &amp; Back Pain</b><span class="tile-sub">Warming oil • 2x daily massage →</span></a>
+<div class="catcircles">
+<a href="/shilajit/"><img src="assets/shilajit-1.png" alt="Energy and stamina" loading="lazy"><span>Energy & Stamina</span></a>
+<a href="/pain-oil/"><img src="assets/oil-1.png" alt="Joint pain relief" loading="lazy"><span>Joint Pain Relief</span></a>
 </div></section>
 
 <section class="card" id="products"><span class="eyebrow">Bestsellers</span><h2>Most loved by customers</h2>
 <p class="lead">Every batch is made in an AYUSH certified facility and tested by a third-party lab for purity and heavy metals before packing.</p>
 <div class="cards">
-<div class="pcard"><span class="ptag">BEST SELLER</span><img src="assets/shilajit-1.png" alt="6Pro Shilajit Capsules" loading="lazy"><div class="body">
-<b>6Pro Shilajit Capsules</b><span class="meta">Energy • Stamina • Recovery • 14 herbs • 30 days</span>
+<div class="pcard appcard"><button class="wish" data-p="shilajit" aria-label="Add Shilajit to wishlist">♡</button><span class="ptag">BEST SELLER</span><a class="pimg" href="/shilajit/"><img src="assets/shilajit-1.png" alt="6Pro Shilajit Capsules" loading="lazy"></a><div class="body">
+<div class="prate">★★★★★ <span>4.8 · 2,481 ratings</span></div>
+<b>6Pro Shilajit Capsules</b><span class="meta">Energy • Stamina • Recovery • 14 herbs</span>
 <div class="price">₹999 <s>₹2,500</s> <span class="offpill">60% OFF</span></div>
-<div class="meta sm">Prepaid ₹999 • COD ₹1,250 • ★ 4.8 (2,481)</div>
-<a class="order" href="/#checkout">Order Shilajit →</a></div></div>
-<div class="pcard"><span class="ptag">POPULAR</span><img src="assets/oil-1.png" alt="Pain Relief Oil 60ml" loading="lazy"><div class="body">
+<div class="meta sm">Prepaid ₹999 • COD ₹1,250</div>
+<a class="order" href="/shilajit/">Order Shilajit →</a></div></div>
+<div class="pcard appcard"><button class="wish" data-p="oil" aria-label="Add Pain Oil to wishlist">♡</button><span class="ptag">POPULAR</span><a class="pimg" href="/pain-oil/"><img src="assets/oil-1.png" alt="Pain Relief Oil 60ml" loading="lazy"></a><div class="body">
+<div class="prate">★★★★★ <span>4.7 · 1,840 ratings</span></div>
 <b>Pain Relief Oil 60ml</b><span class="meta">Knee • Back • Joints • Nirgundi + Gandhapura</span>
 <div class="price">₹249 <s>₹499</s> <span class="offpill">50% OFF</span></div>
-<div class="meta sm">COD + Prepaid same • ★ 4.7 (1,840)</div>
+<div class="meta sm">COD + Prepaid same price</div>
 <a class="order" href="/pain-oil/#checkout">Order Pain Oil →</a></div></div>
+<div class="pcard soon"><span class="soonmono">A</span><b>New Launch</b><span class="meta">Coming Soon</span><a class="notify" href="https://wa.me/917060101043?text=Hi%20Avnideep%2C%20new%20launch%20par%20notify%20karein">Notify Me</a></div>
+<div class="pcard soon"><span class="soonmono">A</span><b>New Launch</b><span class="meta">Coming Soon</span><a class="notify" href="https://wa.me/917060101043?text=Hi%20Avnideep%2C%20new%20launch%20par%20notify%20karein">Notify Me</a></div>
 </div>
 <div class="offers mt">
 <div class="offer"><code>AVNI20</code> <b>20% off prepaid</b><br>UPI, cards, netbanking par checkout me auto-apply</div>
@@ -628,7 +746,7 @@ table.cmp{display:block;width:100%;overflow-x:auto;-webkit-overflow-scrolling:to
 <section class="card dark center-card"><span class="eyebrow ondark">Start today</span>
 <h2>Start Your Wellness Journey</h2>
 <p class="lead center">Experience authentic Ayurveda. 100% natural, safe &amp; effective solutions for a better life.</p>
-<div><a class="btn gold" href="#products">Shop Now</a><a class="btn ghost sm" href="/#checkout">Start with Shilajit</a></div>
+<div><a class="btn gold" href="#products">Shop Now</a><a class="btn ghost sm" href="/shilajit/">Start with Shilajit</a></div>
 <div class="grid4 mt">
 <div class="feat ondark">100% natural</div>
 <div class="feat ondark">Expert formulated</div>
@@ -705,6 +823,7 @@ Haridwar, Uttarakhand, India<br>
 </div>
 <div class="foot-search"><span class="foot-meta-h">Most searched</span><span class="foot-bar-links"><a href="/shilajit/">Shilajit Capsules</a><a href="/pain-oil/">Pain Relief Oil</a><a href="/home/#products">Bestsellers</a><a href="/shilajitpro/">Shilajit Pro</a></span></div>
 <div class="gotop"><a href="#top" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;">↑ Go to Top</a></div>
+<div class="foot-join"><div><b>Get offers on WhatsApp</b><span>New launches, discounts & order updates — no spam.</span></div><a href="https://wa.me/917060101043?text=Hi%20Avnideep%2C%20mujhe%20offers%20ke%20updates%20chahiye">Join Now</a></div>
 <div class="foot-bar">
 <span>© 2026 Avnideep Ayurveda. All rights reserved.</span>
 <span class="foot-bar-links"><a href="/privacy-policy">Privacy</a><a href="/terms-and-conditions">Terms</a><a href="/shipping-policy">Shipping</a><a href="/refund-policy">Refund</a><a href="/sitemap.xml">Sitemap</a></span>
@@ -715,12 +834,13 @@ Haridwar, Uttarakhand, India<br>
 
 <script>
 fbq('track','ViewContent',{content_name:'AVN-HOME',content_type:'product',value:249,currency:'INR'});
-var slides=document.querySelectorAll('.slide'),dots=document.querySelectorAll('#dots button'),cur=0,tm=null;
-function go(n){cur=(n+slides.length)%slides.length;for(var i=0;i<slides.length;i++){slides[i].classList.toggle('on',i===cur);dots[i].classList.toggle('on',i===cur);}restart();}
-function restart(){if(tm)clearTimeout(tm);tm=setTimeout(function(){go(cur+1);},6000);}
-for(var d=0;d<dots.length;d++)(function(k){dots[k].addEventListener('click',function(){go(k);});})(d);
-restart();
 function qp(n){try{return new URLSearchParams(location.search).get(n)||''}catch(e){return ''}}
+/* app-style wishlist (local only) */
+try{document.querySelectorAll('.wish').forEach(function(w){var k='avn_wish_'+(w.dataset.p||'x');if(localStorage.getItem(k)==='1'){w.classList.add('on');w.textContent='♥';}w.addEventListener('click',function(ev){ev.preventDefault();var on=w.classList.toggle('on');w.textContent=on?'♥':'♡';try{localStorage.setItem(k,on?'1':'0');}catch(_){}});});}catch(_){}
+ /* header live search (filters bestsellers) */
+(function(){var i=document.getElementById('siteSearch');if(!i)return;var cards=[].slice.call(document.querySelectorAll('#products .pcard'));i.addEventListener('input',function(){var q=i.value.trim().toLowerCase();cards.forEach(function(c){var t=(c.textContent||'').toLowerCase();c.style.display=(!q||t.indexOf(q)>-1)?'':'none';});});})();
+ /* hero carousel (auto + dots, pause on touch) */
+(function(){var s=[].slice.call(document.querySelectorAll('.hslide'));if(s.length<2)return;var d=document.getElementById('hdots'),cur=0,tm=null;function go(n){cur=(n+s.length)%s.length;s.forEach(function(x,i){x.classList.toggle('on',i===cur);});if(d)Array.prototype.forEach.call(d.children,function(b,i){b.classList.toggle('on',i===cur);});restart();}function restart(){if(tm)clearTimeout(tm);tm=setTimeout(function(){go(cur+1);},5000);}if(d)Array.prototype.forEach.call(d.children,function(b,i){b.addEventListener('click',function(){go(i);});});var hv=document.getElementById('hslides');if(hv){hv.addEventListener('pointerenter',function(){if(tm)clearTimeout(tm);});hv.addEventListener('pointerleave',restart);}restart();})();
 var __cf=document.getElementById('comboForm');if(__cf)__cf.addEventListener('submit',async function(e){
 e.preventDefault();
 var m=document.getElementById('c_msg'),b=document.getElementById('comboBtn');
