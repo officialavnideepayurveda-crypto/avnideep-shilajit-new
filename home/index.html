@@ -401,15 +401,25 @@ footer.site-foot{margin-top:clamp(32px,5vw,60px)}
 .site-foot .foot-cta{border-bottom:1px solid rgba(255,255,255,.14);margin-bottom:6px}
 .site-foot .foot-logo{display:flex;align-items:center;gap:9px}
 .site-foot .foot-logo::before{content:"A";width:34px;height:34px;border-radius:50%;background:#fff;color:#0E3B2E;display:grid;place-items:center;font-family:var(--font-display);font-size:18px;font-weight:600;flex:0 0 auto}
+/* taitva-store touches: offer ticker, off pills, most-searched */
+.oticker{background:#fff;border-bottom:1px solid var(--line);overflow:hidden;white-space:nowrap;font-size:12px;font-weight:700;color:var(--green);letter-spacing:.04em}
+.oticker-t{display:inline-block;padding:7px 0;animation:otick 30s linear infinite;will-change:transform}
+.oticker-t span{margin:0 26px}
+@keyframes otick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.offpill{background:#0E3B2E;color:#fff;font-size:11px;font-weight:800;padding:3px 10px;border-radius:999px;letter-spacing:.04em}
+.foot-search{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;padding:16px 0;border-top:1px solid rgba(255,255,255,.14);font-size:12.5px}
+.gotop{text-align:center;padding:10px 0}
+.gotop a{color:#fff;font-weight:700;font-size:13px;text-decoration:none}
 </style>
 <script>!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','1715387275770711');fbq('track','PageView');</script>
 <noscript><img height="1" width="1" style="display:none" alt="" src="https://www.facebook.com/tr?id=1715387275770711&ev=PageView&noscript=1"></noscript>
 </head>
 <body>
+<div class="oticker" aria-hidden="true"><div class="oticker-t"><span>Extra discounts at checkout</span><span>Free delivery above ₹499</span><span>COD available across India</span><span>Lab tested purity</span><span>Extra discounts at checkout</span><span>Free delivery above ₹499</span><span>COD available across India</span><span>Lab tested purity</span></div></div>
 <div class="topbar"><span>100% Ayurvedic & Herbal Products</span><span class="topbar-sep">•</span><span>Free Delivery on orders above ₹499</span><span class="topbar-sep">•</span><span>COD Available</span></div>
 <header><div class="nav">
 <a class="brand" href="/home/"><span class="brand-mark">A</span>Avnideep <span>Ayurveda</span></a>
-<nav><a href="/home/">Home</a><a href="/">Shilajit</a><a href="/pain-oil/">Pain Oil</a><a href="#products">Bestsellers</a><a href="#reviews">Reviews</a><a href="/contact-us">Contact</a></nav>
+<nav><a href="/home/">Home</a><a href="/shilajit/">Shilajit</a><a href="/pain-oil/">Pain Oil</a><a href="#products">Bestsellers</a><a href="#reviews">Reviews</a><a href="/contact-us">Contact</a></nav>
 <div class="nav-actions"><a class="nav-phone" href="tel:+917060101043">Call: +91 70601 01043</a><a class="btn gold sm" href="#products">Shop Now</a></div>
 </div></header>
 
@@ -468,7 +478,7 @@ footer.site-foot{margin-top:clamp(32px,5vw,60px)}
 <section class="card" id="concern"><span class="eyebrow">Find the right product</span><h2>Select your concern</h2>
 <p class="lead">Sahi problem, sahi formulation — confuse mat hoiye.</p>
 <div class="tiles">
-<a class="tile t1" href="/"><b>Energy, Stamina &amp; Strength</b><span class="tile-sub">Shilajit + adaptogens • daily 1 capsule →</span></a>
+<a class="tile t1" href="/shilajit/"><b>Energy, Stamina &amp; Strength</b><span class="tile-sub">Shilajit + adaptogens • daily 1 capsule →</span></a>
 <a class="tile t2" href="/pain-oil/"><b>Joint, Knee &amp; Back Pain</b><span class="tile-sub">Warming oil • 2x daily massage →</span></a>
 </div></section>
 
@@ -477,12 +487,12 @@ footer.site-foot{margin-top:clamp(32px,5vw,60px)}
 <div class="cards">
 <div class="pcard"><span class="ptag">BEST SELLER</span><img src="assets/shilajit-1.png" alt="6Pro Shilajit Capsules" loading="lazy"><div class="body">
 <b>6Pro Shilajit Capsules</b><span class="meta">Energy • Stamina • Recovery • 14 herbs • 30 days</span>
-<div class="price">₹999 <s>₹2,500</s></div>
+<div class="price">₹999 <s>₹2,500</s> <span class="offpill">60% OFF</span></div>
 <div class="meta sm">Prepaid ₹999 • COD ₹1,250 • ★ 4.8 (2,481)</div>
 <a class="order" href="/#checkout">Order Shilajit →</a></div></div>
 <div class="pcard"><span class="ptag">POPULAR</span><img src="assets/oil-1.png" alt="Pain Relief Oil 60ml" loading="lazy"><div class="body">
 <b>Pain Relief Oil 60ml</b><span class="meta">Knee • Back • Joints • Nirgundi + Gandhapura</span>
-<div class="price">₹249 <s>₹499</s></div>
+<div class="price">₹249 <s>₹499</s> <span class="offpill">50% OFF</span></div>
 <div class="meta sm">COD + Prepaid same • ★ 4.7 (1,840)</div>
 <a class="order" href="/pain-oil/#checkout">Order Pain Oil →</a></div></div>
 </div>
@@ -659,7 +669,7 @@ footer.site-foot{margin-top:clamp(32px,5vw,60px)}
 <nav aria-labelledby="fh-shop">
 <h3 id="fh-shop">Shop</h3>
 <ul>
-<li><a href="/">6Pro Shilajit Capsules</a></li>
+<li><a href="/shilajit/">6Pro Shilajit Capsules</a></li>
 <li><a href="/pain-oil/">Pain Relief Oil 60ml</a></li>
 <li><a href="/home/#products">Bestsellers</a></li>
 </ul>
@@ -703,6 +713,8 @@ Haridwar, Uttarakhand, India<br>
 <p>Avnideep 6Pro Shilajit is an Ayurvedic supplement, not a medicine. It is not intended to diagnose, treat, cure or prevent any disease. Individual results may vary. Always consult a qualified healthcare professional before starting any supplement — especially if you are pregnant, nursing, have a medical condition or are taking medication — and keep it out of reach of children.</p>
 <p>Payments are processed securely via Razorpay. All prices are in INR and inclusive of GST. Free delivery applies on orders above ₹499. Standard delivery takes 3–7 business days and timelines may vary by pincode.</p>
 </div>
+<div class="foot-search"><span class="foot-meta-h">Most searched</span><span class="foot-bar-links"><a href="/shilajit/">Shilajit Capsules</a><a href="/pain-oil/">Pain Relief Oil</a><a href="/home/#products">Bestsellers</a><a href="/shilajitpro/">Shilajit Pro</a></span></div>
+<div class="gotop"><a href="#top" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;">↑ Go to Top</a></div>
 <div class="foot-bar">
 <span>© 2026 Avnideep Ayurveda. All rights reserved.</span>
 <span class="foot-bar-links"><a href="/privacy-policy">Privacy</a><a href="/terms-and-conditions">Terms</a><a href="/shipping-policy">Shipping</a><a href="/refund-policy">Refund</a><a href="/sitemap.xml">Sitemap</a></span>
