@@ -423,11 +423,13 @@ ol.steps{margin:14px 0 0 20px;display:grid;gap:10px;font-size:14.5px}
 /* ==========================================================================
    9) ORDER POPUP — the on-page checkout (Renee/Shopify style sheet)
    ========================================================================== */
-.order-popup-overlay{background:rgba(24,18,14,.62)!important;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
-.order-popup{background:var(--rx-bg)!important;border-radius:24px!important;box-shadow:0 40px 90px -30px rgba(0,0,0,.5)!important;border:1px solid var(--rx-line)}
+.order-popup-overlay{position:fixed;inset:0;z-index:9999999;display:none;align-items:center;justify-content:center;padding:16px;opacity:0;transition:opacity .25s ease;overflow-y:auto;background:rgba(24,18,14,.62)!important;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.order-popup-overlay.active{display:flex;opacity:1}
+.order-popup{position:relative;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;margin:auto;background:var(--rx-bg)!important;border-radius:24px!important;box-shadow:0 40px 90px -30px rgba(0,0,0,.5)!important;border:1px solid var(--rx-line)}
 .order-popup .popup-header{background:linear-gradient(140deg,var(--rx-brand2),var(--rx-brand));color:#fff;padding:20px 22px;border-radius:24px 24px 0 0}
 .order-popup .popup-header h3{color:#fff!important;font-family:var(--rx-font-d);font-weight:600;font-size:21px;letter-spacing:-.01em}
 .order-popup .popup-header p{color:#CBD9D0!important;font-size:13px;margin-top:3px}
+@media(max-width:480px){.order-popup-overlay{padding:8px}.order-popup{max-height:92vh;border-radius:18px!important}.order-popup .popup-header{padding:16px 16px;border-radius:18px 18px 0 0}.order-popup .popup-header h3{font-size:18px}.checkout.bare{padding:14px 16px 16px}}
 .popup-close{background:rgba(255,255,255,.16)!important;color:#fff!important;border-radius:50%!important;width:34px;height:34px;font-size:19px!important}
 .checkout.bare{padding:20px 22px 22px}
 .checkout.bare .step-bar{margin:0 0 18px;background:var(--rx-cream);border:1px solid var(--rx-line);border-radius:14px;padding:12px}
