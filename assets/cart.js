@@ -19,6 +19,30 @@
       name: 'Pain Relief Oil', variant: '60ml',
       img: '/pain-oil/oil-1.png',
       cod: 249, prepaid: 249, mrp: 499, url: '/pain-oil/'
+    },
+    shilajit2: {
+      id: 'shilajit2', sku: 'AVN-6PRO-002',
+      name: '6Pro Shilajit Capsules', variant: 'Pack of 2',
+      img: '/home/assets/packs/shilajit-2.png',
+      cod: 2350, prepaid: 1899, mrp: 5000, url: '/shilajit/'
+    },
+    shilajit3: {
+      id: 'shilajit3', sku: 'AVN-6PRO-003',
+      name: '6Pro Shilajit Capsules', variant: 'Pack of 3',
+      img: '/home/assets/packs/shilajit-3.png',
+      cod: 3350, prepaid: 2699, mrp: 7500, url: '/shilajit/'
+    },
+    oil2: {
+      id: 'oil2', sku: 'AVN-OIL-002',
+      name: 'Pain Relief Oil', variant: 'Pack of 2',
+      img: '/home/assets/packs/oil-2.png',
+      cod: 449, prepaid: 449, mrp: 998, url: '/pain-oil/'
+    },
+    oil3: {
+      id: 'oil3', sku: 'AVN-OIL-003',
+      name: 'Pain Relief Oil', variant: 'Pack of 3',
+      img: '/home/assets/packs/oil-3.png',
+      cod: 649, prepaid: 649, mrp: 1497, url: '/pain-oil/'
     }
   };
   var KEY = 'avn_cart_v1', FREE_ABOVE = 499, SHIP_FEE = 49;
@@ -132,7 +156,7 @@
     var saved = mrpS - st;
     dr.querySelector('[data-cart-save]').innerHTML = saved > 0
       ? 'Aapki total bachat: <b>' + inr(saved) + '</b>' +
-        (cart.shilajit ? ' &nbsp;•&nbsp; <span class="pre-note">Prepaid par Shilajit sirf ₹999 (₹251 extra off)</span>' : '')
+        ((cart.shilajit || cart.shilajit2 || cart.shilajit3) ? ' &nbsp;•&nbsp; <span class="pre-note">Prepaid par Shilajit par extra off</span>' : '')
       : '';
 
     var co = dr.querySelector('[data-cart-checkout]');

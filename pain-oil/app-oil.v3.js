@@ -123,6 +123,15 @@ function openOrderPopup(){
   document.body.style.overflow = 'hidden';
   var form = document.getElementById('oForm');
   if(form) form.reset();
+  /* Carry PDP payment selection (COD/Prepaid box) into the checkout popup */
+  try{
+    var _psel = document.querySelector('.ap-pack[data-pay].on');
+    if(_psel){
+      var _pv = _psel.getAttribute('data-pay') === 'P' ? 'prepaid' : 'cod';
+      var _pr = document.querySelector('input[name="paymentMethod"][value="'+_pv+'"]');
+      if(_pr && !_pr.checked){ _pr.checked = true; }
+    }
+  }catch(e){}
   if(typeof updatePay === 'function') updatePay();
   setTimeout(function(){
     var n = document.getElementById('cName');
@@ -946,28 +955,39 @@ function initVideo(){
 
 
 var CHECKOUT_MODE = 'advance';
+/* PACK SIZE pricing (synced with PDP #apSize selector + cart.js bundles) */
+var AP_PACKS=[
+{pre:249,cod:249,mrp:499,sku:'AVN-OIL-001'},
+{pre:449,cod:449,mrp:998,sku:'AVN-OIL-002'},
+{pre:649,cod:649,mrp:1497,sku:'AVN-OIL-003'}];
+function apPack(){try{var p=JSON.parse(localStorage.getItem('avn_pack')||'null');if(p&&p.page==='oil'&&p.i>=0&&p.i<AP_PACKS.length)return AP_PACKS[p.i];}catch(e){}return AP_PACKS[0];}
+function apPackN(){try{var p=JSON.parse(localStorage.getItem('avn_pack')||'null');if(p&&p.page==='oil'&&p.i>0)return ' (Pack of '+(p.i+1)+')';}catch(e){}return '';}
 function getPay(){
   var c = $('input[name="paymentMethod"]:checked');
   return c ? c.value : 'advance';
 }
 function updatePay(){
   var m = getPay();
-  var amt = m === 'prepaid' ? 249 : 249;
-  $('#sAmt').textContent = '₹'+amt;
-  $('#sTot').textContent = '₹'+amt;
+  var PK = apPack();
+  var amt = m === 'prepaid' ? PK.pre : PK.cod;
+  var rest = PK.cod - 100;
+  var amtF = '₹'+Number(amt).toLocaleString('en-IN');
+  var restF = '₹'+Number(rest).toLocaleString('en-IN');
+  $('#sAmt').textContent = amtF;
+  $('#sTot').textContent = amtF;
   $('#sSave').hidden = m!=='prepaid';
   var btn = $('#oBtn');
   if(btn){
     var mainText, subText;
     if(m === 'prepaid'){
-      mainText = '⚡ Order Now - ₹249';
+      mainText = '⚡ Order Now - '+amtF;
       subText = '🔒 Secure Online Payment';
     } else if(CHECKOUT_MODE === 'full_cod'){
-      mainText = '⚡ Order Now (COD) - ₹249';
-      subText = '🔒 No advance • Pay ₹249 on delivery';
+      mainText = '⚡ Order Now (COD) - '+amtF;
+      subText = '🔒 No advance • Pay '+amtF+' on delivery';
     } else {
       mainText = '🔖 Book with ₹100 Advance';
-      subText = '🔐 Pay ₹100 via Razorpay • Pay ₹149 cash on delivery';
+      subText = '🔐 Pay ₹100 via Razorpay • Pay '+restF+' cash on delivery';
     }
     btn.innerHTML = '<span>'+mainText+'</span><small>'+subText+'</small>';
   }
@@ -978,7 +998,7 @@ function updatePay(){
     } else if(CHECKOUT_MODE === 'full_cod'){
       ct.textContent = '🔐 FULL COD • No advance payment';
     } else {
-      ct.textContent = '🔐 ₹100 Advance • Pay ₹149 cash on delivery';
+      ct.textContent = '🔐 ₹100 Advance • Pay '+restF+' cash on delivery';
     }
   }
   var cT = $('#codCardTitle'), cS = $('#codCardSub');
@@ -988,23 +1008,41 @@ function updatePay(){
       if(cS) cS.textContent = 'Pay on delivery (₹100 advance)';
     } else if(CHECKOUT_MODE === 'full_cod'){
       if(cT) cT.textContent = '💵 FULL COD';
-      if(cS) cS.textContent = 'Pay ₹249 on delivery • No advance';
+      if(cS) cS.textContent = 'Pay ₹'+PK.cod+' on delivery • No advance';
     } else {
       if(cT) cT.textContent = '💰 ₹100 Advance + COD';
-      if(cS) cS.textContent = '₹100 now via Razorpay • Pay ₹149 cash on delivery';
+      if(cS) cS.textContent = '₹100 now via Razorpay • Pay '+restF+' cash on delivery';
     }
   }
   // Savings line
   var sv = $('#sSaveAmt');
   if(sv){
-    var total = 250;
+    var total = PK.mrp - PK.pre;
     sv.textContent = '₹' + total;
   }
+  // Pack-aware pay-card prices + summary (matches PDP #apSize selection)
+  try{
+    var fmt = function(n){return '₹'+Number(n).toLocaleString('en-IN');};
+    var preB = $('.pay-card.recommended .pay-prices b');
+    if(preB) preB.textContent = fmt(PK.pre);
+    var preS = $('.pay-card.recommended .pay-prices small');
+    if(preS) preS.textContent = fmt(PK.mrp);
+    var sb = $('.pay-card.recommended .save-badge');
+    if(sb) sb.textContent = 'Save '+fmt(PK.mrp-PK.pre);
+    var codB = $('.pay-grid .pay-card:not(.recommended) .pay-top > b');
+    if(codB) codB.textContent = fmt(PK.cod);
+    var nm = $('.summary .s-row span');
+    if(nm) nm.textContent = 'Avnideep Pain Oil (60ml)'+apPackN();
+    var svB = $('#sSave b');
+    if(svB) svB.textContent = '- '+fmt(PK.mrp-PK.pre);
+  }catch(e){}
   $$('.pay-card').forEach(function(c){
     var i = $('input[name="paymentMethod"]', c);
     c.classList.toggle('selected', !!(i && i.checked));
   });
 }
+/* Expose pack-aware updater for popup open + PDP pack selector */
+try{window.updatePay = updatePay;}catch(e){}
 
 
 function initPay(){
@@ -1203,10 +1241,10 @@ function build(status){
     paymentMethod: m === 'prepaid' ? 'prepaid' : (CHECKOUT_MODE === 'full_cod' ? 'cod' : 'advance_cod'),
 
 
-    amount: m === 'prepaid' ? 249 : 249,
+    amount: m === 'prepaid' ? apPack().pre : apPack().cod,
 
 
-    product: 'Avnideep Pain Relief Oil 60ml',
+    product: 'Avnideep Pain Relief Oil 60ml' + apPackN(),
 
 
     status: status,
@@ -1642,7 +1680,7 @@ function initForm(){
 
 
 
-      trackFbEvent('Lead', {value:payload.amount, currency:'INR', content_name:'AVN-OIL-001', content_ids:['AVN-OIL-001']}, null, {name: (payload.name||''), phone: (payload.phone||'')});
+      trackFbEvent('Lead', {value:payload.amount, currency:'INR', content_name:apPack().sku, content_ids:[apPack().sku]}, null, {name: (payload.name||''), phone: (payload.phone||'')});
 
 
 
@@ -1727,7 +1765,7 @@ function initForm(){
         var rzpResult = await openRazorpayCheckout(payload, 100);
         if (rzpResult.success) {
           payload.paymentMethod = 'advance_cod';
-          payload.paymentNote = '₹100 advance paid via Razorpay (' + (rzpResult.razorpay_payment_id || '') + ') • Pay ₹149 cash on delivery';
+          payload.paymentNote = '₹100 advance paid via Razorpay (' + (rzpResult.razorpay_payment_id || '') + ') • Pay ₹' + Number(apPack().cod - 100).toLocaleString('en-IN') + ' cash on delivery';
           try {
             var advRes = await sendOrder(payload, 0);
             if (advRes && advRes.ok !== false) {
