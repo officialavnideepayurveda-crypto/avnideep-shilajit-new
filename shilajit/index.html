@@ -649,7 +649,7 @@ function capiCookie(n){try{var m=document.cookie.match(new RegExp('(?:^|; )'+n+'
 function sendCAPIEvent(eventName,eventID,customData,userExtra){try{var payload={event_name:eventName,event_id:eventID,custom_data:customData||{},event_source_url:window.location.href,user_data:Object.assign({client_user_agent:navigator.userAgent||'',fbp:capiCookie('_fbp'),fbc:capiCookie('_fbc')},userExtra||{})};fetch('/api/events',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}).catch(function(){});}catch(e){}}
 try{var vcPageEventId='vc_page_'+Date.now()+'_'+Math.random().toString(36).substring(2,8);if(typeof fbq==='function')fbq('track','ViewContent',{value:999,currency:'INR',content_name:'AVN-6PRO-001',content_type:'product',content_ids:['AVN-6PRO-001'],eventID:vcPageEventId});sendCAPIEvent('ViewContent',vcPageEventId,{value:999,currency:'INR',content_name:'AVN-6PRO-001',content_type:'product',content_ids:['AVN-6PRO-001']});}catch(e){}
 </script>
-<link rel="stylesheet" href="/assets/renee-theme.css?v=rx8">
+<link rel="stylesheet" href="/assets/renee-theme.css?v=rx10">
 <script src="/assets/cart.js" defer></script>>
 </head>
 <body>
@@ -678,7 +678,51 @@ try{var vcPageEventId='vc_page_'+Date.now()+'_'+Math.random().toString(36).subst
 <a href="/">Home</a><a href="/shilajit/" class="on">Shilajit</a><a href="/pain-oil/">Pain Oil</a><a href="/home/#reviews">Reviews</a><a href="/contact-us">Contact</a>
 </div></div>
 </header>
-<div class="sbanner"><picture><source media="(max-width:700px)" srcset="/home/assets/banner-shilajit-mobile.png"><img src="/home/assets/banner-shilajit-desktop.png" alt="Avnideep 6Pro Shilajit — Fuel your inner fire with herbal strength" fetchpriority="high"></picture></div>
+<div class="crumb"><a href="/">Home</a> › <a href="/shilajit/">6Pro Shilajit</a> › Capsules ₹999</div>
+
+<div class="ap-hero" id="product">
+<div class="ap-gal">
+<span class="ap-off">60%<br>OFF</span>
+<img class="main" id="mainImg" src="/home/assets/shilajit-1.png" alt="Avnideep 6Pro Shilajit Capsules">
+<div class="thumbs" id="thumbs"><img src="/home/assets/shilajit-2.png" alt="Shilajit capsules"><img src="/home/assets/showcase-1.png" alt="Shilajit strength range"><img src="/home/assets/lookbook-1.png" alt="Original Shilajit resin range"></div>
+</div>
+<div>
+<div class="ap-brand">Avnideep Ayurveda &bull; Wellness</div>
+<h1 class="ap-h1">6Pro Shilajit — Dinbhar Energy Aur Stamina Ka Ayurvedic Tarika</h1>
+<div class="ap-rate"><span class="chip">4.8 &#9733;</span><span class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span><span class="txt">4.8 | 2,481+ verified reviews</span></div>
+<div class="ap-price"><b>&#8377;999</b><s>&#8377;2,500</s><span class="off">-&#8377;1,501 OFF</span><span class="sale">Sale</span></div>
+<div class="ap-sub">30 capsules &bull; Prepaid &#8377;999 &bull; COD &#8377;1,250 &bull; MRP inclusive of taxes</div>
+<div class="ap-usp"><div><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M6.5 9.5h.01M17.5 14.5h.01"/></svg><span>COD Available</span></div>
+<div><svg viewBox="0 0 24 24"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7z"/><circle cx="7" cy="18.5" r="1.6"/><circle cx="17" cy="18.5" r="1.6"/></svg><span>Free Delivery</span></div>
+<div><svg viewBox="0 0 24 24"><path d="M3 7v6h6M21 12a9 9 0 1 1-3-6.7L15 8"/></svg><span>7-Day Returns</span></div></div>
+<div class="ap-packlabel">Apna option chunein</div>
+<div class="ap-packs"><div class="ap-pack" data-pay="C" role="button" tabindex="0"><span class="pct">50% OFF</span><span class="tag">COD</span><b style="margin-top:8px">Cash on Delivery</b><div class="p1">&#8377;1,250<s>&#8377;2,500</s></div><span style="font-size:11px;color:var(--ap-mut)">Pehle product, phir paise</span></div>
+<div class="ap-pack on" data-pay="P" role="button" tabindex="0"><span class="pct">60% OFF</span><span class="tag">Best Value</span><b style="margin-top:8px">Prepaid (UPI/Card)</b><div class="p1">&#8377;999<s>&#8377;1,250</s></div><span style="font-size:11px;color:var(--ap-mut)">&#8377;251 aur bachao</span></div>
+<a class="ap-pack wa" href="https://wa.me/917060101043?text=Avnideep%206Pro%20Shilajit%20order%20karna%20hai%20%E2%82%B9999" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" style="width:22px;height:22px;stroke:#0b6d4e;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin=""><path d="M21 11.5a8.5 8.5 0 0 1-12.4 7.6L3 21l1.9-5.6A8.5 8.5 0 1 1 21 11.5z"/></svg><b>WhatsApp par Order</b><span style="font-size:11px;color:var(--ap-mut)">Chat karke order karein</span></a></div>
+<div class="ap-qtyrow">
+<span class="ap-qty"><button type="button" id="apMinus" aria-label="Kam">&#8722;</button><span id="apQtyVal">1</span><button type="button" id="apPlus" aria-label="Zyada">+</button></span>
+<a class="ap-atc" href="#cart" data-cart-add="shilajit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7h12l1.5 13.5a1.5 1.5 0 0 1-1.5 1.5H6a1.5 1.5 0 0 1-1.5-1.5L6 7z"/><path d="M9 10V6a3 3 0 0 1 6 0v4"/></svg> Add to Cart</a>
+<a class="ap-buynow" href="/#checkout" data-scroll="checkout"><svg viewBox="0 0 24 24"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/></svg> Buy Now</a>
+</div>
+<div class="ap-secure"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg> 100% Secure Checkout &bull; 30 second me order &bull; COD available</div>
+<div class="ap-tline"><div class="tl-line"></div>
+<div class="ap-step done"><span class="ico"><svg viewBox="0 0 24 24"><path d="M21 8l-9-4-9 4v8l9 4 9-4z"/><path d="M3 8l9 4 9-4M12 12v8"/></svg></span><b class="tl-d1">Aaj</b><span>Order placed</span></div>
+<div class="ap-step done"><span class="ico"><svg viewBox="0 0 24 24"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7z"/><circle cx="7" cy="18.5" r="1.6"/><circle cx="17" cy="18.5" r="1.6"/></svg></span><b class="tl-d2">&mdash;</b><span>Dispatch</span></div>
+<div class="ap-step"><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 21s7-6.1 7-11a7 7 0 1 0-14 0c0 4.9 7 11 7 11z"/><circle cx="12" cy="10" r="2.4"/></svg></span><b class="tl-d3">&mdash;</b><span>Delivered</span></div>
+</div>
+<div class="ap-offers-h">Active Offers</div>
+<div class="ap-coupons offers"><div class="ap-coup o"><span class="ap-ribbon">WELCOME</span><div class="lt">&#8377;100<br>OFF</div><div class="rt"><div class="lab">First Order</div><div class="txt">&#8377;100 off first order par (&#8377;599+)</div><code>FIRST10</code></div></div>
+<div class="ap-coup g"><span class="ap-ribbon">SHIPPING</span><div class="lt">FREE<br>SHIP</div><div class="rt"><div class="lab">Delivery</div><div class="txt">&#8377;499+ ke orders par free delivery</div><code>FREESHIP</code></div></div>
+<div class="ap-coup p"><span class="ap-ribbon">PREPAID</span><div class="lt">20%<br>OFF</div><div class="rt"><div class="lab">Prepaid Offer</div><div class="txt">Prepaid orders par extra off — checkout par copy karein</div><code>AVNI20</code></div></div></div>
+<div class="ap-bens"><div class="ap-ben"><span class="bi"><svg viewBox="0 0 24 24"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/></svg></span><b>Roz ki energy aur stamina</b></div>
+<div class="ap-ben"><span class="bi"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></span><b>Recovery me sahayak</b></div>
+<div class="ap-ben"><span class="bi"><svg viewBox="0 0 24 24"><path d="M4 20C4 11 9 5 20 4c0 11-5 16-14 16" /><path d="M4 20c4-6 8-9 12-10"/></svg></span><b>14 classical Ayurvedic herbs</b></div>
+<div class="ap-ben"><span class="bi"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg></span><b>Har batch lab tested</b></div></div>
+</div>
+</div>
+<div class="ap-tabs"><a href="#p-benefits" class="on">Description</a><a href="#p-ingredients" class="">Key Ingredients</a><a href="#p-howto" class="">How To Use</a><a href="#p-details" class="">Product Details</a></div>
+
+
 <div class="wrap"><section class="shook"><span class="eyebrow">Energy &bull; Stamina &bull; Vitality</span>
 <h1>Subah se hi thakaan mehsoos hoti hai?</h1>
 <p>Dinbhar ki bhagdod, thode se kaam me stamina ka khatm ho jana, poori neend ke baad bhi freshness na milna — ye sthiti sharirik roop se hi nahi, mansik roop se bhi thaka deti hai. Rozmarra ki energy ki kami dheere-dheere confidence par bhi asar daalne lagti hai.</p>
@@ -697,49 +741,10 @@ try{var vcPageEventId='vc_page_'+Date.now()+'_'+Math.random().toString(36).subst
 <p class="sagit">Kya ye pareshaniyan aapki rozmarra ki zindagi par asar daal rahi hain?</p>
 </section></div>
 
-<div class="crumb"><a href="/">Home</a> › <a href="/shilajit/">6Pro Shilajit</a> › Capsules ₹999</div>
-
-<div class="wrap">
-<div class="hero" id="product">
-<div class="gallery">
-<img class="main" id="mainImg" src="/home/assets/shilajit-1.png" alt="Avnideep 6Pro Shilajit Capsules">
-<div class="thumbs" id="thumbs">
-<img src="/home/assets/shilajit-2.png" alt="Shilajit capsules"><img src="/home/assets/showcase-1.png" alt="Shilajit strength range"><img src="/home/assets/lookbook-1.png" alt="Original Shilajit resin range">
-</div>
-</div>
-<div>
-<span class="goldpill">India's Trusted Ayurvedic Supplement</span>
-<h1>Dinbhar Energy Aur Stamina Ka <span class="hl">Ayurvedic Tarika</span> — 6Pro Shilajit</h1>
-<div class="rating">★★★★★ 4.8 | 2,481+ verified reviews</div>
-<div class="pricebox"><span class="old">₹2,500</span><span class="new">₹999</span><span class="save">60% OFF</span></div>
-<div class="pricenote">Prepaid ₹999 • COD ₹1,250 • MRP inclusive of taxes • 30 capsules • <b>Sirf ₹33/day</b></div>
-<ul class="tick">
-<li>Pure Himalayan Shilajit resin + 14 Ayurvedic herbs (Ashwagandha, Gokshura, Kaunch Beej)</li>
-<li>Fulvic acid standardised, heavy-metal tested — har batch third-party lab checked</li>
-<li>Roz ki energy, stamina aur recovery ke liye — sirf 1 capsule daily</li>
-<li>Cash on Delivery + Free delivery + WhatsApp order support</li>
-</ul>
-<div class="bonus">
-<div><b>Free</b> doctor consultation (₹500 value)</div>
-<div><b>Free</b> express delivery (₹150 value)</div>
-<div><b>7-day</b> easy returns guarantee</div>
-</div>
-<div class="cta">
-<a class="buy" href="/#checkout" data-scroll="checkout">Order now — ₹999</a>
-<a class="buy rx-atc" href="#cart" data-cart-add="shilajit">Add to Cart</a>
-<a class="wa" href="https://wa.me/917060101043?text=Avnideep%206Pro%20Shilajit%20order%20karna%20hai%20%E2%82%B9999">WhatsApp par Order</a>
-</div>
-<div class="secure">100% Secure Checkout • 30 second me order • Prepaid & COD dono</div>
-<div class="badges"><span>✓ COD Available</span><span>✓ Free Delivery</span><span>✓ Lab Tested</span><span>✓ GMP Certified</span></div>
-<div class="urg">Launch offer — <b>60% off + free delivery</b> sirf aaj ke orders par</div>
-<div class="offers"><b>Offers:</b> <code>AVNI20</code> prepaid par extra off • <code>FIRST10</code> first order ₹100 off (₹599+) • <code>FREESHIP</code> free delivery ₹499+</div>
-<div class="del"><b>Delivery check:</b> <input id="pinCheck" placeholder="Pincode" maxlength="6" inputmode="numeric"> <button type="button" id="pinBtn">Check</button> <span id="pinMsg" style="display:block;margin-top:6px"></span></div>
-</div>
-</div>
 
 <div class="certband"><div class="wrap certband-row"><span>✓ AYUSH Certified Facility</span><span>✓ GMP Certified</span><span>✓ Third-Party Lab Tested</span><span>✓ COD Available</span></div></div>
 
-<section class="card"><h2>Kyon kaam karta hai?</h2>
+<section class="card" id="p-benefits"><h2>Kyon kaam karta hai?</h2>
 <div class="grid2">
 <div class="bene"><b>Shuddh Himalayan Shilajit</b><br>18,000 ft se collected resin — fulvic acid standardised.</div>
 <div class="bene"><b>14 Ayurvedic herbs</b><br>Ashwagandha, Gokshura, Kaunch Beej, Safed Musli + 10 classical herbs.</div>
@@ -757,7 +762,7 @@ try{var vcPageEventId='vc_page_'+Date.now()+'_'+Math.random().toString(36).subst
 <div class="sol"><b>Agar haan</b> — to roz 1 capsule + 4–6 weeks consistency. Herbs dheere kaam karte hain, routine banaye rakhein. <a href="/#checkout">Order karke shuru karein →</a></div>
 </section>
 
-<section class="card"><h2>Key Ayurvedic Ingredients</h2>
+<section class="card" id="p-ingredients"><h2>Key Ayurvedic Ingredients</h2>
 <div class="bgrid">
 <div class="bcard"><span class="bnum">Botanical 01</span><img src="herbs/shilajit-resin.png" alt="Shuddh Himalayan Shilajit" loading="lazy"><b>Shuddh Himalayan Shilajit</b><p>Fulvic acid standardised resin — energy aur stamina ko support karne wala paramparik tatva.</p></div>
 <div class="bcard"><span class="bnum">Botanical 02</span><img src="herbs/ashwagandha.png" alt="Ashwagandha" loading="lazy"><b>Ashwagandha</b><p>Stress management aur strength ko support karne me sahayak classical herb.</p></div>
@@ -768,7 +773,7 @@ try{var vcPageEventId='vc_page_'+Date.now()+'_'+Math.random().toString(36).subst
 </div>
 </section>
 
-<section class="card"><h2>Kaise use karein? (Daily, 4–6 weeks)</h2>
+<section class="card" id="p-howto"><h2>Kaise use karein? (Daily, 4–6 weeks)</h2>
 <ol class="steps">
 <li>Roz subah naste ke baad <b>1 capsule</b> gungune paani ya doodh ke saath</li>
 <li>Jarurat par shaam ko 1 aur — din me max 2</li>
@@ -783,7 +788,7 @@ try{var vcPageEventId='vc_page_'+Date.now()+'_'+Math.random().toString(36).subst
 
 <div class="press"><b>AS FEATURED ON</b><br><span>Amazon</span>•<span>Flipkart</span>•<span>Tata 1mg</span>•<span>Meesho</span></div>
 
-<div class="guar">
+<div class="guar" id="p-details">
 <img src="/assets/images/guarantee-card.webp" alt="10 din Money Back Guarantee" loading="lazy">
 <div><b>7-Day Easy Returns + COD Bharosa</b><p>Product se 100% satisfied nahi? 7 din me easy return. COD par pehle product haath me lo, phir payment karo. T&C apply.</p></div>
 </div>
@@ -994,7 +999,7 @@ try{var vcPageEventId='vc_page_'+Date.now()+'_'+Math.random().toString(36).subst
 </div>
 
 
-<div class="sticky" id="sticky"><a href="/#checkout" data-scroll="checkout">Order 6Pro Shilajit — ₹999<small>★ 4.8 • Free delivery • COD available</small></a></div>
+<div class="sticky ap-sticky" id="sticky"><img src="/home/assets/shilajit-1.png" alt="Avnideep 6Pro Shilajit Capsules (30)"><div class="si"><b>6Pro Shilajit Capsules</b><span class="p">&#8377;999 <s>&#8377;2,500</s></span></div><div class="sb"><a class="ap-atc" href="#cart" data-cart-add="shilajit">Add to Cart</a><a class="ap-buynow" href="/#checkout" data-scroll="checkout">Buy Now</a></div></div>
 
 <div class="rx-news"><div class="rx-wrap" style="max-width:1180px;margin:auto;padding:0 16px"><div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px;padding:26px 0">
 <div><b>Confused about which product suits you?</b><p style="font-size:13px;color:var(--rx-mut);margin:2px 0 0">WhatsApp 9:00 AM – 7:00 PM (Mon–Sat) — product, dosage ya delivery, kuch bhi pooch lein.</p></div>
@@ -1069,11 +1074,42 @@ try{var vcPageEventId='vc_page_'+Date.now()+'_'+Math.random().toString(36).subst
 
 
 <script>
+(function(){
+try{
+var q=document.getElementById('apQtyVal');
+var qn=1;
+var mi=document.getElementById('apMinus'),pl=document.getElementById('apPlus');
+if(q&&mi)mi.onclick=function(){qn=Math.max(1,qn-1);q.textContent=qn;};
+if(q&&pl)pl.onclick=function(){qn=Math.min(9,qn+1);q.textContent=qn;};
+document.querySelectorAll('.ap-pack[data-pay]').forEach(function(p){
+p.addEventListener('click',function(){
+document.querySelectorAll('.ap-pack[data-pay]').forEach(function(x){x.classList.remove('on');});
+p.classList.add('on');
+var pay=p.getAttribute('data-pay');
+var bn=document.querySelector('.ap-buynow');
+if(bn&&pay)bn.setAttribute('data-pay',pay);
+try{localStorage.setItem('avn_pay_pref',pay);}catch(e){}
+});
+p.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();p.click();}});
+});
+var m=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function fd(d){return d.getDate()+' '+m[d.getMonth()];}
+var t=new Date();
+var d1=document.querySelector('.tl-d1'),d2=document.querySelector('.tl-d2'),d3=document.querySelector('.tl-d3');
+if(d1)d1.textContent=fd(t);
+if(d2){var x=new Date(t.getTime()+3*86400000);d2.textContent=fd(x);}
+if(d3){var y=new Date(t.getTime()+4*86400000),z=new Date(t.getTime()+5*86400000);d3.textContent=fd(y)+' - '+z.getDate();}
+var tabs=document.querySelectorAll('.ap-tabs a');
+tabs.forEach(function(a){a.addEventListener('click',function(){tabs.forEach(function(x){x.classList.remove('on')});a.classList.add('on');});});
+}catch(e){}
+})();
+</script>
+<script>
 var main=document.getElementById('mainImg');
 document.getElementById('thumbs').addEventListener('click',function(e){if(e.target.tagName==='IMG'){main.src=e.target.src;var all=this.querySelectorAll('img');for(var i=0;i<all.length;i++)all[i].classList.remove('on');e.target.classList.add('on');}});
 window.addEventListener('scroll',function(){document.getElementById('sticky').classList.toggle('show',window.scrollY>450);},{passive:true});
 document.querySelectorAll('.offers code').forEach(function(c){c.style.cursor='pointer';c.title='Tap to copy';c.addEventListener('click',function(){var t=c.textContent.trim();function done(){var o=c.getAttribute('data-code')||t;c.textContent='Copied ✓';setTimeout(function(){c.textContent=o;},1200);}c.setAttribute('data-code',t);if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done).catch(done);}else{var i=document.createElement('input');i.value=t;document.body.appendChild(i);i.select();try{document.execCommand('copy');}catch(e){}document.body.removeChild(i);done();}});});
-document.getElementById('pinBtn').addEventListener('click',async function(){
+var _pb=document.getElementById('pinBtn'); if(_pb) _pb.addEventListener('click',async function(){
 var c=document.getElementById('pinCheck').value.trim(),m=document.getElementById('pinMsg');
 if(!/^\d{6}$/.test(c)){m.textContent='Sahi 6-digit pincode likhein.';return}
 m.textContent='Checking...';

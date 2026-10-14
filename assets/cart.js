@@ -187,7 +187,7 @@
   /* ---------- global delegation ---------- */
   document.addEventListener('click', function (e) {
     var t;
-    if ((t = e.target.closest('[data-cart-add]'))) { e.preventDefault(); add(t.getAttribute('data-cart-add'), 1); return; }
+    if ((t = e.target.closest('[data-cart-add]'))) { e.preventDefault(); var qEl = document.getElementById('apQtyVal'); var qq = qEl ? (parseInt(qEl.textContent, 10) || 1) : 1; add(t.getAttribute('data-cart-add'), qq); return; }
     if ((t = e.target.closest('[data-cart-open]'))) { e.preventDefault(); openDr(); return; }
     if ((t = e.target.closest('[data-cart-close]'))) { closeDr(); return; }
     if ((t = e.target.closest('[data-cart-checkout]'))) { checkout(); return; }
