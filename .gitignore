@@ -20,3 +20,10 @@ fix_trust_badges.js
 
 # Admin panel (moved to separate project)
 admin-panel/
+
+# Unused source/original uploads (compressed copies are deployed instead)
+home/assets/pain oil pack/
+home/assets/shilajit pack/
+home/assets/From Tired to Energized.png
+home/assets/6pro-white-bg.png
+home/assets/shilajit-new.png
