@@ -7,7 +7,8 @@ import { resolve, dirname } from 'node:path';
 const ROOT = resolve(fileURLToPath(import.meta.url), '..', '..');
 
 const PAGES = {
-  home: readFileSync(resolve(ROOT, 'home/index.html'), 'utf8'),
+  // duplicate /home page removed — the real homepage is now index.html at the repo root
+  home: readFileSync(resolve(ROOT, 'index.html'), 'utf8'),
   painOil: readFileSync(resolve(ROOT, 'pain-oil/index.html'), 'utf8'),
   shilajit: readFileSync(resolve(ROOT, 'shilajit/index.html'), 'utf8'),
 };
@@ -59,7 +60,7 @@ describe('checkout hooks stay wired', () => {
 
   it('every local image referenced by the 3 pages exists on disk', () => {
     const missing = [];
-    for (const [html, dir] of [[PAGES.home, 'home'], [PAGES.painOil, 'pain-oil'], [PAGES.shilajit, 'shilajit']]) {
+    for (const [html, dir] of [[PAGES.home, ''], [PAGES.painOil, 'pain-oil'], [PAGES.shilajit, 'shilajit']]) {
       for (const disk of localImages(html, dir)) {
         if (!existsSync(disk)) missing.push(disk.replace(ROOT, ''));
       }

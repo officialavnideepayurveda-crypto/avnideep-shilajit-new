@@ -8,7 +8,8 @@ import { JSDOM, VirtualConsole } from 'jsdom';
 const ROOT = resolve(fileURLToPath(import.meta.url), '..', '..');
 
 const PAGES = [
-  { label: 'home', file: 'home/index.html' },
+  // duplicate /home page removed — the real homepage is now index.html at the repo root
+  { label: 'home', file: 'index.html' },
   { label: 'pain-oil', file: 'pain-oil/index.html' },
 ];
 
