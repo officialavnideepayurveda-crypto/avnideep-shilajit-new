@@ -649,7 +649,7 @@ function capiCookie(n){try{var m=document.cookie.match(new RegExp('(?:^|; )'+n+'
 function sendCAPIEvent(eventName,eventID,customData,userExtra){try{var payload={event_name:eventName,event_id:eventID,custom_data:customData||{},event_source_url:window.location.href,user_data:Object.assign({client_user_agent:navigator.userAgent||'',fbp:capiCookie('_fbp'),fbc:capiCookie('_fbc')},userExtra||{})};fetch('/api/events',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}).catch(function(){});}catch(e){}}
 try{var vcPageEventId='vc_page_'+Date.now()+'_'+Math.random().toString(36).substring(2,8);if(typeof fbq==='function')fbq('track','ViewContent',{value:999,currency:'INR',content_name:'AVN-6PRO-001',content_type:'product',content_ids:['AVN-6PRO-001'],eventID:vcPageEventId});sendCAPIEvent('ViewContent',vcPageEventId,{value:999,currency:'INR',content_name:'AVN-6PRO-001',content_type:'product',content_ids:['AVN-6PRO-001']});}catch(e){}
 </script>
-<link rel="stylesheet" href="/assets/renee-theme.css?v=rx11">
+<link rel="stylesheet" href="/assets/renee-theme.css?v=rx12">
 <script src="/assets/cart.js" defer></script>
 </head>
 <body>
@@ -737,6 +737,7 @@ try{var vcPageEventId='vc_page_'+Date.now()+'_'+Math.random().toString(36).subst
 <figure class="pban"><picture><source media="(max-width:700px)" srcset="banners/hero1-m.jpg"><img src="banners/hero1-d.jpg" alt="Low stamina aur confidence ki pareshaniyan — Avnideep 6Pro Shilajit" loading="lazy"></picture></figure></div>
 
 
+<div class="wrap">
 <div class="certband"><div class="wrap certband-row"><span>✓ AYUSH Certified Facility</span><span>✓ GMP Certified</span><span>✓ Third-Party Lab Tested</span><span>✓ COD Available</span></div></div>
 
 <section class="card" id="p-benefits"><h2>4 Benefits of Avnideep 6Pro</h2>

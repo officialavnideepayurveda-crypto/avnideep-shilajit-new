@@ -34,6 +34,8 @@
   --rx-ease:cubic-bezier(.22,.61,.36,1);
 }
 
+/* kill the UA default 8px body margin — otherwise the whole page sits in an 8px frame */
+body{margin:0}
 body{background:var(--rx-bg)}
 ::selection{background:var(--rx-brand);color:#fff}
 
