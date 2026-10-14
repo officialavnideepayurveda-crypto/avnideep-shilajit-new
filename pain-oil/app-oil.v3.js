@@ -2677,7 +2677,7 @@ function initSocialProof(){
     if(msgEl) msgEl.innerHTML = random(messages);
 
 
-    img.setAttribute('src', random(bottleImages));
+    if(img) img.setAttribute('src', random(bottleImages));
 
 
 
