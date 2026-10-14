@@ -649,7 +649,7 @@ function capiCookie(n){try{var m=document.cookie.match(new RegExp('(?:^|; )'+n+'
 function sendCAPIEvent(eventName,eventID,customData,userExtra){try{var payload={event_name:eventName,event_id:eventID,custom_data:customData||{},event_source_url:window.location.href,user_data:Object.assign({client_user_agent:navigator.userAgent||'',fbp:capiCookie('_fbp'),fbc:capiCookie('_fbc')},userExtra||{})};fetch('/api/events',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}).catch(function(){});}catch(e){}}
 try{var vcPageEventId='vc_page_'+Date.now()+'_'+Math.random().toString(36).substring(2,8);if(typeof fbq==='function')fbq('track','ViewContent',{value:999,currency:'INR',content_name:'AVN-6PRO-001',content_type:'product',content_ids:['AVN-6PRO-001'],eventID:vcPageEventId});sendCAPIEvent('ViewContent',vcPageEventId,{value:999,currency:'INR',content_name:'AVN-6PRO-001',content_type:'product',content_ids:['AVN-6PRO-001']});}catch(e){}
 </script>
-<link rel="stylesheet" href="/assets/renee-theme.css?v=rx10">
+<link rel="stylesheet" href="/assets/renee-theme.css?v=rx11">
 <script src="/assets/cart.js" defer></script>
 </head>
 <body>
@@ -657,7 +657,7 @@ try{var vcPageEventId='vc_page_'+Date.now()+'_'+Math.random().toString(36).subst
 <div class="topbar">100% Ayurvedic & Herbal Products • Free Delivery above ₹499</div>
 <header class="rx-header"><div class="rx-nav">
 <a class="rx-logo" href="/" aria-label="Avnideep Ayurveda home">
-<img class="rx-logo-img" src="https://cdn.avnideepayurveda.in/product-images/logoyes.png" alt="Avnideep Ayurveda" fetchpriority="high">
+<img class="rx-logo-img" src="https://cdn.avnideepayurveda.in/product-images/logoyes.png" alt="Avnideep Ayurveda" width="120" height="74" fetchpriority="high">
 </a>
 <nav class="rx-links" aria-label="Main">
 <a href="/">Home</a>
