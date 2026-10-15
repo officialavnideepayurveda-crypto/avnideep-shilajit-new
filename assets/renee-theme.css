@@ -694,8 +694,11 @@ header{position:static}
    ========================================================================== */
 .rx-range{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 @media(max-width:700px){.rx-range{grid-template-columns:1fr}}
-.rx-range a{position:relative;display:block;border-radius:18px;overflow:hidden;box-shadow:var(--rx-shadow)}
-.rx-range img{width:100%;display:block;aspect-ratio:16/9;object-fit:cover;transition:transform .5s var(--rx-ease)}
+.rx-range a{position:relative;display:block;border-radius:18px;overflow:hidden;box-shadow:var(--rx-shadow);background:#0E3B2E}
+.rx-range img{width:100%;display:block;height:260px;transition:transform .5s var(--rx-ease)}
+.rx-range img.tile-wide{object-fit:cover;object-position:center}
+.rx-range img.tile-sq{object-fit:contain;padding:6px}
+@media(max-width:700px){.rx-range img{height:220px}}
 .rx-range a:hover img{transform:scale(1.03)}
 .rx-range .cap{position:absolute;left:0;right:0;bottom:0;padding:18px;background:linear-gradient(180deg,transparent,rgba(10,20,15,.82));color:#fff;display:flex;align-items:center;justify-content:space-between;gap:10px}
 .rx-range .cap b{font-family:var(--rx-font-d);font-weight:600;font-size:18px;letter-spacing:-.01em}
