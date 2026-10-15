@@ -95,8 +95,9 @@ ol.steps{margin:8px 0 0 18px;display:grid;gap:8px;font-size:15px}
 .prob li{margin:6px 0 6px 18px;font-size:14.5px}
 .sol{background:var(--soft);border:1px solid var(--bd);border-radius:16px;padding:16px;margin-top:10px;font-size:14.5px}
 .sol a{color:var(--green);font-weight:800}
-.docstrip{display:grid;grid-template-columns:90px 1fr;gap:12px;align-items:center;background:var(--green);color:#fff;border-radius:16px;padding:14px;margin:14px 0}
-.docstrip img{width:90px;height:110px;object-fit:cover;object-position:top;border-radius:45px 45px 12px 12px;border:2px solid #C9A227;background:#fff}
+.docstrip{display:grid;grid-template-columns:150px 1fr;gap:16px;align-items:center;background:var(--green);color:#fff;border-radius:16px;padding:16px;margin:14px 0}
+.docstrip img{width:150px;height:185px;object-fit:cover;object-position:top;border-radius:75px 75px 14px 14px;border:2px solid #C9A227;background:#fff}
+@media(max-width:640px){.docstrip{grid-template-columns:118px 1fr;gap:12px;padding:14px}.docstrip img{width:118px;height:148px;border-radius:59px 59px 12px 12px}}
 .docstrip small{color:#E8E2D2}
 .press{background:#fff;border-top:1px solid var(--line);border-bottom:1px solid var(--line);text-align:center;padding:12px;font-size:12.5px;color:var(--mut)}
 .press b{color:var(--green);letter-spacing:.12em;font-size:11px}
@@ -649,10 +650,10 @@ function capiCookie(n){try{var m=document.cookie.match(new RegExp('(?:^|; )'+n+'
 function sendCAPIEvent(eventName,eventID,customData,userExtra){try{var payload={event_name:eventName,event_id:eventID,custom_data:customData||{},event_source_url:window.location.href,user_data:Object.assign({client_user_agent:navigator.userAgent||'',fbp:capiCookie('_fbp'),fbc:capiCookie('_fbc')},userExtra||{})};fetch('/api/events',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}).catch(function(){});}catch(e){}}
 try{var vcPageEventId='vc_page_'+Date.now()+'_'+Math.random().toString(36).substring(2,8);if(typeof fbq==='function')fbq('track','ViewContent',{value:999,currency:'INR',content_name:'AVN-6PRO-001',content_type:'product',content_ids:['AVN-6PRO-001'],eventID:vcPageEventId});sendCAPIEvent('ViewContent',vcPageEventId,{value:999,currency:'INR',content_name:'AVN-6PRO-001',content_type:'product',content_ids:['AVN-6PRO-001']});}catch(e){}
 </script>
-<link rel="stylesheet" href="/assets/renee-theme.css?v=rx12">
+<link rel="stylesheet" href="/assets/renee-theme.css?v=rx13">
 <script src="/assets/cart.js" defer></script>
 </head>
-<body>
+<body class="has-mnav">
 <div class="ticker">Launch offer — <b>60% off</b> Shilajit • Offer ends in <b id="tkTimer">04:45:00</b> • <b>COD available</b></div>
 <div class="topbar">100% Ayurvedic & Herbal Products • Free Delivery above ₹499</div>
 <header class="rx-header"><div class="rx-nav">
@@ -836,7 +837,7 @@ render();
 </ol>
 <p style="font-size:13px;color:var(--mut);margin-top:8px">Pregnancy me, kisi bimari ya dawai ke saath — pehle doctor se poochhein. Bachchon ki pahunch se door rakhein.</p>
 <div class="docstrip">
-<img src="/home/assets/doctor.webp" alt="Dr. Srishti Sharma — Avnideep Ayurveda Chief Expert" loading="lazy">
+<img src="/home/assets/doctor.webp" alt="Dr. Srishti Sharma — Avnideep Ayurveda Chief Expert" loading="lazy" decoding="async" width="150" height="185">
 <div><b>Dr. Srishti Sharma</b> ★★★★★<br><small>B.A.M.S., M.D. (Ayurveda) • 15+ yrs • “Energy ke liye roz 1 capsule + 4–6 weeks consistency — Ayurveda dheere par gehara kaam karta hai.”</small></div>
 </div></section>
 
@@ -2128,5 +2129,11 @@ if('serviceWorker' in navigator){
 (function(){try{var g=document.querySelector('.gallery'),img=document.getElementById('mainImg');if(!g||!img)return;if(window.matchMedia&&matchMedia('(hover: none)').matches)return;g.addEventListener('pointermove',function(e){try{var b=g.getBoundingClientRect(),x=(e.clientX-b.left)/b.width-.5,y=(e.clientY-b.top)/b.height-.5;img.style.transform='rotateY('+(x*10).toFixed(2)+'deg) rotateX('+(-y*10).toFixed(2)+'deg)';}catch(_){}});g.addEventListener('pointerleave',function(){img.style.transform='';});}catch(_){}})();
 </script>
 <script src="app-shilajit.v3.js?v=shiljit1"></script>
+<nav class="mnav" aria-label="Mobile menu">
+<a href="/" aria-label="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>Home</a>
+<a href="/shilajit/" class="on" aria-label="Shilajit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="M12 6c-4 0-7 3-7 8 0 4 3 8 7 8s7-4 7-8c0-5-3-8-7-8z"/></svg>Shilajit</a>
+<a href="/pain-oil/" aria-label="Pain Oil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v6L4.5 18a2.4 2.4 0 0 0 2.1 3.5h10.8a2.4 2.4 0 0 0 2.1-3.5L14 8V2"/><path d="M8.5 2h7"/></svg>Pain Oil</a>
+<button type="button" data-cart-open aria-label="Cart"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7h12l1.2 12.2a1.8 1.8 0 0 1-1.8 1.8H6.6a1.8 1.8 0 0 1-1.8-1.8L6 7z"/><path d="M9 10V6a3 3 0 0 1 6 0v4"/></svg>Cart<span class="cart-n" data-cart-count>0</span></button>
+</nav>
 </body>
 </html>

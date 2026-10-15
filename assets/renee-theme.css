@@ -1152,3 +1152,32 @@ html.cart-lock,html.cart-lock body{overflow:hidden}
 .apwhy-card p{font-size:11.5px}
 .apwhy-pill{margin-top:20px}
 }
+
+/* ==========================================================================
+   30) MOBILE STICKY BUY-BAR FIX + BOTTOM NAV (product pages)
+   - sticky bar: no overflow on narrow screens, safe-area aware
+   - .mnav: fixed bottom menu, mobile only, pages opt-in via body.has-mnav
+   ========================================================================== */
+.mnav{display:none}
+@media(max-width:560px){
+.sticky.ap-sticky{gap:8px;padding:8px 10px;padding-bottom:calc(8px + env(safe-area-inset-bottom));width:calc(100% - 12px)}
+.ap-sticky .si{min-width:0;flex:1 1 auto}
+.ap-sticky .si b{max-width:30vw;font-size:12.5px}
+.ap-sticky .sb{margin-left:0;flex:1 1 auto;min-width:0}
+.ap-sticky .sb .ap-buynow,.ap-sticky .sb .ap-atc{flex:1 1 0;min-width:0;padding:11px 6px;font-size:12px;gap:5px}
+}
+@media(max-width:400px){
+.ap-sticky .si,.ap-sticky img{display:none}
+.sticky.ap-sticky{gap:8px}
+.ap-sticky .sb{flex:1}
+}
+@media(max-width:760px){
+body.has-mnav{padding-bottom:66px}
+.mnav{position:fixed;left:0;right:0;bottom:0;z-index:80;display:grid;grid-template-columns:repeat(4,1fr);background:rgba(255,255,255,.97);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-top:1px solid #e9e1cf;box-shadow:0 -8px 24px rgba(14,59,46,.1);padding-bottom:env(safe-area-inset-bottom)}
+.mnav a,.mnav button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 4px 8px;font-size:10.5px;font-weight:700;color:#5c5648;text-decoration:none;background:none;border:0;cursor:pointer;font-family:inherit;position:relative;line-height:1.2}
+.mnav svg{width:21px;height:21px;flex:0 0 auto}
+.mnav .on{color:#0E3B2E}
+.mnav .cart-n{position:absolute;top:3px;left:calc(50% + 2px);min-width:17px;height:17px;padding:0 4px;border-radius:99px;background:#C2447C;color:#fff;font-size:10px;font-weight:800;display:none;place-items:center;line-height:17px}
+.mnav .cart-n.on{display:grid}
+body.has-mnav .sticky.ap-sticky{bottom:calc(58px + env(safe-area-inset-bottom))}
+}

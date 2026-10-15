@@ -292,8 +292,9 @@ footer a{color:#fff}
 .del{background:#eef6f0;border:1px solid #cfe4d4;border-radius:12px;padding:12px;margin:12px 0;font-size:13.5px}
 .del input{width:110px;padding:9px;border:1.5px solid #cfe4d4;border-radius:9px;font-size:14px}
 .del button{background:#0E3B2E;color:#fff;border:0;padding:9px 14px;border-radius:9px;font-weight:700;cursor:pointer}
-.docstrip{display:grid;grid-template-columns:90px 1fr;gap:12px;align-items:center;background:linear-gradient(135deg,#0E3B2E,#1d5c4b);color:#fff;border-radius:16px;padding:14px;margin:14px 0}
-.docstrip img{width:90px;height:110px;object-fit:cover;object-position:top;border-radius:45px 45px 12px 12px;border:2px solid #C9A227;background:#fff}
+.docstrip{display:grid;grid-template-columns:150px 1fr;gap:16px;align-items:center;background:linear-gradient(135deg,#0E3B2E,#1d5c4b);color:#fff;border-radius:16px;padding:16px;margin:14px 0}
+.docstrip img{width:150px;height:185px;object-fit:cover;object-position:top;border-radius:75px 75px 14px 14px;border:2px solid #C9A227;background:#fff}
+@media(max-width:640px){.docstrip{grid-template-columns:118px 1fr;gap:12px;padding:14px}.docstrip img{width:118px;height:148px;border-radius:59px 59px 12px 12px}}
 .docstrip small{color:#e8e2d2}
 .bars{display:grid;gap:6px;margin-top:10px;font-size:12.5px}
 .bar{display:grid;grid-template-columns:44px 1fr 36px;gap:8px;align-items:center}
@@ -365,11 +366,12 @@ table.cmp tr td:first-child{font-weight:700;color:#0E3B2E}
 .pcard2 p{font-size:13.5px;color:var(--mut)}
 .sagit{margin:18px auto 4px;font-weight:700;color:var(--green);font-size:16px;max-width:640px}
 .bgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:12px}
-.bcard{background:var(--cream);border:1px solid var(--line);border-radius:16px;padding:18px}
+.bcard{background:var(--cream);border:1px solid var(--line);border-radius:16px;padding:18px;text-align:center}
 .bcard .bnum{font-size:10.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#8a6d00}
 .bcard b{color:var(--green);display:block;margin:6px 0 4px;font-size:16px}
 .bcard p{font-size:13.5px;color:var(--mut)}
-.bcard img{width:72px;height:72px;border-radius:50%;object-fit:cover;border:2px solid var(--line);display:block;margin:8px auto;background:#fff}
+.bcard img{width:96px;height:96px;border-radius:50%;object-fit:cover;border:2px solid var(--line);display:block;margin:10px auto;background:#fff}
+@media(max-width:640px){.bgrid{grid-template-columns:1fr 1fr;gap:10px}.bcard{padding:14px 10px}.bcard b{font-size:14px}.bcard p{font-size:12px}.bcard img{width:88px;height:88px}}
 .cgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-top:12px}
 .ccard{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;text-align:center;box-shadow:0 10px 26px -20px rgba(14,59,46,.3)}
 .ccard b{color:var(--green);display:block;font-size:15.5px;margin-bottom:4px}
@@ -514,7 +516,7 @@ try {
 
 </script>
 </head>
-<body>
+<body class="has-mnav">
 <div class="ticker"><b>50% off</b> aaj ke orders par • Offer ends in <b id="tkTimer">04:45:00</b> • <b>COD available</b></div>
 <div class="topbar">Free Delivery | <b>COD Available</b> | 60ml Pain Relief Oil sirf <b>₹249</b></div>
 <header class="rx-header"><div class="rx-nav">
@@ -631,20 +633,20 @@ try {
 
 <section id="p-ingredients" class="card"><h2>Key Ayurvedic Ingredients</h2>
 <div class="bgrid">
-<div class="bcard"><span class="bnum">Botanical 01</span><img src="herbs/circle/nirgundi.webp" alt="Nirgundi" loading="lazy"><b>Nirgundi</b><p>Stiff, dukhte joints ko relax karne wali classical herb.</p></div>
-<div class="bcard"><span class="bnum">Botanical 02</span><img src="herbs/circle/gandhapura.webp" alt="Gandhapura" loading="lazy"><b>Gandhapura</b><p>Wintergreen — initial warmth ke baad cooling sukoon.</p></div>
-<div class="bcard"><span class="bnum">Botanical 03</span><img src="herbs/circle/kapoor.webp" alt="Kapoor" loading="lazy"><b>Kapoor</b><p>Blood flow ko support aur soothing comfort.</p></div>
-<div class="bcard"><span class="bnum">Botanical 04</span><img src="herbs/circle/pudina.webp" alt="Pudina" loading="lazy"><b>Pudina</b><p>Cooling freshness ke saath soothing comfort.</p></div>
-<div class="bcard"><span class="bnum">Botanical 05</span><img src="herbs/circle/malkangani.webp" alt="Malkangani" loading="lazy"><b>Malkangani</b><p>Warming comfort — circulation ko support kare.</p></div>
-<div class="bcard"><span class="bnum">Botanical 06</span><img src="herbs/circle/lavang.webp" alt="Lavang" loading="lazy"><b>Lavang</b><p>Warming herb — deep comfort me sahayak.</p></div>
-<div class="bcard"><span class="bnum">Botanical 07</span><img src="herbs/circle/dalchini.webp" alt="Dalchini" loading="lazy"><b>Dalchini</b><p>Warming spice — comfort blend ka hissa.</p></div>
-<div class="bcard"><span class="bnum">Botanical 08</span><img src="herbs/circle/chir-pine.webp" alt="Chir Pine" loading="lazy"><b>Chir Pine</b><p>Circulation support ke liye paramparik tatva.</p></div>
-<div class="bcard"><span class="bnum">Botanical 09</span><img src="herbs/circle/khas.webp" alt="Khas Khas" loading="lazy"><b>Khas Khas</b><p>Cooling herb — comfort routine me sahayak.</p></div>
-<div class="bcard"><span class="bnum">Botanical 10</span><img src="herbs/circle/alsi.webp" alt="Alsi" loading="lazy"><b>Alsi</b><p>Daily wellness ko support karne wala paramparik beej.</p></div>
-<div class="bcard"><span class="bnum">Botanical 11</span><img src="herbs/circle/nilgiri.webp" alt="Nilgiri" loading="lazy"><b>Nilgiri</b><p>Freshness aur comfort ke liye jana-mana patta.</p></div>
-<div class="bcard"><span class="bnum">Botanical 12</span><img src="herbs/circle/til.webp" alt="Til Taila" loading="lazy"><b>Til Taila</b><p>Herbs ko tissue tak pahunchane wala halka, non-sticky base.</p></div>
+<div class="bcard"><span class="bnum">Botanical 01</span><img src="herbs/circle/nirgundi.webp" alt="Nirgundi" loading="lazy" decoding="async" width="96" height="96"><b>Nirgundi</b><p>Stiff, dukhte joints ko relax karne wali classical herb.</p></div>
+<div class="bcard"><span class="bnum">Botanical 02</span><img src="herbs/circle/gandhapura.webp" alt="Gandhapura" loading="lazy" decoding="async" width="96" height="96"><b>Gandhapura</b><p>Wintergreen — initial warmth ke baad cooling sukoon.</p></div>
+<div class="bcard"><span class="bnum">Botanical 03</span><img src="herbs/circle/kapoor.webp" alt="Kapoor" loading="lazy" decoding="async" width="96" height="96"><b>Kapoor</b><p>Blood flow ko support aur soothing comfort.</p></div>
+<div class="bcard"><span class="bnum">Botanical 04</span><img src="herbs/circle/pudina.webp" alt="Pudina" loading="lazy" decoding="async" width="96" height="96"><b>Pudina</b><p>Cooling freshness ke saath soothing comfort.</p></div>
+<div class="bcard"><span class="bnum">Botanical 05</span><img src="herbs/circle/malkangani.webp" alt="Malkangani" loading="lazy" decoding="async" width="96" height="96"><b>Malkangani</b><p>Warming comfort — circulation ko support kare.</p></div>
+<div class="bcard"><span class="bnum">Botanical 06</span><img src="herbs/circle/lavang.webp" alt="Lavang" loading="lazy" decoding="async" width="96" height="96"><b>Lavang</b><p>Warming herb — deep comfort me sahayak.</p></div>
+<div class="bcard"><span class="bnum">Botanical 07</span><img src="herbs/circle/dalchini.webp" alt="Dalchini" loading="lazy" decoding="async" width="96" height="96"><b>Dalchini</b><p>Warming spice — comfort blend ka hissa.</p></div>
+<div class="bcard"><span class="bnum">Botanical 08</span><img src="herbs/circle/chir-pine.webp" alt="Chir Pine" loading="lazy" decoding="async" width="96" height="96"><b>Chir Pine</b><p>Circulation support ke liye paramparik tatva.</p></div>
+<div class="bcard"><span class="bnum">Botanical 09</span><img src="herbs/circle/khas.webp" alt="Khas Khas" loading="lazy" decoding="async" width="96" height="96"><b>Khas Khas</b><p>Cooling herb — comfort routine me sahayak.</p></div>
+<div class="bcard"><span class="bnum">Botanical 10</span><img src="herbs/circle/alsi.webp" alt="Alsi" loading="lazy" decoding="async" width="96" height="96"><b>Alsi</b><p>Daily wellness ko support karne wala paramparik beej.</p></div>
+<div class="bcard"><span class="bnum">Botanical 11</span><img src="herbs/circle/nilgiri.webp" alt="Nilgiri" loading="lazy" decoding="async" width="96" height="96"><b>Nilgiri</b><p>Freshness aur comfort ke liye jana-mana patta.</p></div>
+<div class="bcard"><span class="bnum">Botanical 12</span><img src="herbs/circle/til.webp" alt="Til Taila" loading="lazy" decoding="async" width="96" height="96"><b>Til Taila</b><p>Herbs ko tissue tak pahunchane wala halka, non-sticky base.</p></div>
 </div>
-<img class="wideimg" src="herbal-infographic.png" alt="11+ prakritik jadi-bootiyon ki shakti" loading="lazy" decoding="async">
+<img class="wideimg" src="herbal-infographic.webp" alt="11+ prakritik jadi-bootiyon ki shakti" loading="lazy" decoding="async">
 </section>
 
 <section id="p-howto" class="card"><h2>Kaise use karein? (2x daily, 4–6 weeks)</h2>
@@ -656,11 +658,11 @@ try {
 </ol>
 <p style="font-size:13px;color:#6b655a;margin-top:8px">External use only. Kati-phati skin, aankhon par na lagayein. Pregnancy me doctor se poochhein.</p>
 <div class="docstrip">
-<img src="doctor.webp" alt="Dr. Srishti Sharma — Avnideep Ayurveda Chief Expert" loading="lazy">
+<img src="doctor.webp" alt="Dr. Srishti Sharma — Avnideep Ayurveda Chief Expert" loading="lazy" decoding="async" width="150" height="185">
 <div><b>Dr. Srishti Sharma</b> <span class="doc-stars">★★★★★</span><br><small>B.A.M.S., M.D. (Ayurveda) • 15+ yrs • “Joint pain me daily 5-min warming massage + 4–6 weeks consistency — herbs cause par kaam karte hain.”</small></div>
 </div></section>
 
-<img class="wideimg" src="usage-guide.png" alt="Kaise upyog karein - 3 aasan steps" loading="lazy" decoding="async">
+<img class="wideimg" src="usage-guide.webp" alt="Kaise upyog karein - 3 aasan steps" loading="lazy" decoding="async">
 
 <div class="press"><b>AS FEATURED ON</b><br><span>Amazon</span>•<span>Flipkart</span>•<span>Tata 1mg</span>•<span>Meesho</span></div>
 
@@ -736,7 +738,7 @@ try {
 <div class="ccard"><b>100% Ayurvedic</b><p>Chuni hui prakritik jadi-bootiyon se taiyaar.</p></div>
 </div></section>
 
-<img class="wideimg" src="remedy-collage.png" alt="Dard ab rok nahi payega - jodon, maanspeshiyon aur kamar dard se rahat" loading="lazy" decoding="async">
+<img class="wideimg" src="remedy-collage.webp" alt="Dard ab rok nahi payega - jodon, maanspeshiyon aur kamar dard se rahat" loading="lazy" decoding="async">
 
 <div class="combo">
 <h2>Energy Bhi Chahiye? 6Pro Shilajit Try Karein</h2>
@@ -2386,7 +2388,7 @@ footer.site-foot .wrap{padding:0 16px;font-size:13.5px}
   else boot();
 })();
 </script>
-<link rel="stylesheet" href="/assets/renee-theme.css?v=rx12">
+<link rel="stylesheet" href="/assets/renee-theme.css?v=rx13">
 <script src="/assets/cart.js" defer></script>
 <script>
 /* YouTube click-to-play facade — Error-153 safe, faster page load */
@@ -2410,5 +2412,11 @@ function vfacStop(item){
   delete box.dataset.playing;
 }
 </script>
+<nav class="mnav" aria-label="Mobile menu">
+<a href="/" aria-label="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>Home</a>
+<a href="/shilajit/" aria-label="Shilajit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="M12 6c-4 0-7 3-7 8 0 4 3 8 7 8s7-4 7-8c0-5-3-8-7-8z"/></svg>Shilajit</a>
+<a href="/pain-oil/" class="on" aria-label="Pain Oil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v6L4.5 18a2.4 2.4 0 0 0 2.1 3.5h10.8a2.4 2.4 0 0 0 2.1-3.5L14 8V2"/><path d="M8.5 2h7"/></svg>Pain Oil</a>
+<button type="button" data-cart-open aria-label="Cart"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7h12l1.2 12.2a1.8 1.8 0 0 1-1.8 1.8H6.6a1.8 1.8 0 0 1-1.8-1.8L6 7z"/><path d="M9 10V6a3 3 0 0 1 6 0v4"/></svg>Cart<span class="cart-n" data-cart-count>0</span></button>
+</nav>
 </body>
 </html>
