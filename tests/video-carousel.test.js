@@ -49,7 +49,7 @@ function selectedDot(region) {
 
 for (const { label, file } of PAGES) {
   describe(`video carousel — ${label}`, () => {
-    it('renders all five reviews as slides with lazy YouTube embeds', async () => {
+    it('renders all five reviews as click-to-play facades (no eager iframes)', async () => {
       const { window } = load(file);
       await settle();
 
@@ -57,14 +57,25 @@ for (const { label, file } of PAGES) {
       expect(region).toBeTruthy();
       expect(region.querySelectorAll('.vcar-item')).toHaveLength(VIDEOS);
 
-      const frames = region.querySelectorAll('iframe');
-      expect(frames).toHaveLength(VIDEOS);
-      for (const frame of frames) {
-        expect(frame.getAttribute('src')).toContain('youtube-nocookie.com/embed/');
-        // enablejsapi is what lets the slider pause a video that slides out of view
-        expect(frame.getAttribute('src')).toContain('enablejsapi=1');
-        expect(frame.getAttribute('loading')).toBe('lazy');
+      // perf: zero eager iframes on page load
+      expect(region.querySelectorAll('iframe')).toHaveLength(0);
+
+      // five facades, each with a valid YouTube id + thumbnail
+      const facades = region.querySelectorAll('.yt-facade[data-yt]');
+      expect(facades).toHaveLength(VIDEOS);
+      for (const b of facades) {
+        expect(b.getAttribute('data-yt')).toMatch(/^[A-Za-z0-9_-]{6,16}$/);
+        const thumb = b.querySelector('img');
+        expect(thumb).toBeTruthy();
+        expect(thumb.getAttribute('src')).toContain('i.ytimg.com/vi/');
       }
+
+      // clicking a facade lazy-loads the iframe
+      facades[0].click();
+      await settle();
+      const frames = region.querySelectorAll('iframe');
+      expect(frames).toHaveLength(1);
+      expect(frames[0].getAttribute('src')).toContain('youtube-nocookie.com/embed/');
 
       // the old static grid must be gone
       expect(window.document.querySelector('.video-grid')).toBeNull();

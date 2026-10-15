@@ -35,11 +35,21 @@ function escHtml(s) {
   }[c]));
 }
 
+function normalizePhone(raw) {
+  // Strip non-digits, then country/trunk prefixes so pasted "+91 98765 43210"
+  // becomes the correct 10-digit subscriber number (frontend slices to 10
+  // chars which corrupts +91 pastes into "9198765432").
+  let d = String(raw || "").replace(/\D/g, "");
+  if (d.length === 12 && d.startsWith("91")) d = d.slice(2);
+  else if (d.length === 11 && d.startsWith("0")) d = d.slice(1);
+  return d.slice(0, 15);
+}
+
 function normalizeOrder(body, ip) {
   return {
     order_id: body.orderId || `AVN-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
     name: String(body.name || "").trim().slice(0, 100),
-    phone: String(body.phone || "").trim().slice(0, 15),
+    phone: normalizePhone(body.phone),
     pincode: String(body.pincode || "").trim().slice(0, 6),
     address: String(body.address || "").trim().slice(0, 500),
     payment_method: String(body.paymentMethod || "cod").trim().toLowerCase(),
@@ -148,7 +158,7 @@ let ordersSchemaBootstrapped = false;
 async function ensureOrdersTable(env) {
   if (!env?.DB || ordersSchemaBootstrapped) return true;
   try {
-    if ((await env.RATE_LIMIT_KV?.get('d1_schema_orders_v1')) === '1') {
+    if ((await env.RATE_LIMIT_KV?.get('d1_schema_orders_v2')) === '1') {
       ordersSchemaBootstrapped = true;
       return true;
     }
@@ -183,6 +193,7 @@ async function ensureOrdersTable(env) {
       payment_captured INTEGER DEFAULT 0,
       webhook_verified INTEGER DEFAULT 0,
       refund_status TEXT DEFAULT '',
+      purchase_capi_sent INTEGER DEFAULT 0,
       updated_at TEXT DEFAULT ''
     )`).run();
     ordersSchemaBootstrapped = true;
@@ -203,7 +214,7 @@ async function saveToD1(order, env) {
     // Auto-create orders table only once (KV flag) - avoids 14 D1 statements on every order
     let schemaDone = null;
     if (ordersSchemaBootstrapped) { schemaDone = '1'; }
-    else { try { schemaDone = await env.RATE_LIMIT_KV.get('d1_schema_orders_v1'); } catch (e) {} }
+    else { try { schemaDone = await env.RATE_LIMIT_KV.get('d1_schema_orders_v2'); } catch (e) {} }
     if (schemaDone !== '1') {
     // Auto-create orders table if not exists (handles first run after deploy)
     let bootstrapOk = true;
@@ -238,6 +249,7 @@ async function saveToD1(order, env) {
           payment_captured INTEGER DEFAULT 0,
           webhook_verified INTEGER DEFAULT 0,
           refund_status TEXT DEFAULT '',
+          purchase_capi_sent INTEGER DEFAULT 0,
           updated_at TEXT DEFAULT ''
         )`
       ).run();
@@ -271,6 +283,9 @@ async function saveToD1(order, env) {
         await env.DB.prepare(`ALTER TABLE orders ADD COLUMN refund_status TEXT DEFAULT ''`).run();
       } catch (alterErr) { if (String(alterErr.message || alterErr).indexOf('duplicate column name') < 0 && String(alterErr.message || alterErr).indexOf('already exists') < 0) { bootstrapOk = false; console.log("D1_ALTER_COLUMN_FAILED", String(alterErr.message || alterErr).slice(0, 100)); } }
       try {
+        await env.DB.prepare(`ALTER TABLE orders ADD COLUMN purchase_capi_sent INTEGER DEFAULT 0`).run();
+      } catch (alterErr) { if (String(alterErr.message || alterErr).indexOf('duplicate column name') < 0 && String(alterErr.message || alterErr).indexOf('already exists') < 0) { bootstrapOk = false; console.log("D1_ALTER_COLUMN_FAILED", String(alterErr.message || alterErr).slice(0, 100)); } }
+      try {
         await env.DB.prepare(`ALTER TABLE orders ADD COLUMN updated_at TEXT DEFAULT ''`).run();
       } catch (alterErr) { if (String(alterErr.message || alterErr).indexOf('duplicate column name') < 0 && String(alterErr.message || alterErr).indexOf('already exists') < 0) { bootstrapOk = false; console.log("D1_ALTER_COLUMN_FAILED", String(alterErr.message || alterErr).slice(0, 100)); } }
     } catch (tableErr) {
@@ -279,7 +294,7 @@ async function saveToD1(order, env) {
     }
     if (bootstrapOk) {
       // Mark schema ready (30-day KV TTL; re-runs once after expiry - cheap and safe)
-      try { await env.RATE_LIMIT_KV.put('d1_schema_orders_v1', '1', { expirationTtl: 86400 * 30 }); } catch (e) {}
+      try { await env.RATE_LIMIT_KV.put('d1_schema_orders_v2', '1', { expirationTtl: 86400 * 30 }); } catch (e) {}
       ordersSchemaBootstrapped = true;
     }
     }
@@ -951,7 +966,7 @@ console.log('[KV-VERIFY] order write', { key: rateKey, type: 'rate_limit' });
           } catch (capiErr) {
             console.error("DUP_PURCHASE_CAPI_FAILED", String(capiErr.message || capiErr));
           }
-          return new Response(
+    return new Response(
             JSON.stringify({
               ok: true,
               orderId: existingOrderId,
@@ -1197,7 +1212,12 @@ export async function onRequestPatch({ request, env, waitUntil }) {
         const updateRes = await env.DB.prepare(
           `UPDATE orders SET ${setClauses.join(", ")} WHERE order_id = ?`
         ).bind(...bindValues).run();
-        d1UpdateOk = updateRes.success;
+        // success=true even with 0 matched rows — check meta.changes so a
+        // confirm for a never-saved order does NOT report ok / fire notifications
+        const changed = updateRes && updateRes.meta && typeof updateRes.meta.changes === "number"
+          ? updateRes.meta.changes
+          : (updateRes && updateRes.success ? 1 : 0);
+        d1UpdateOk = updateRes.success && changed > 0;
         
         // Fetch updated order for notifications
         dbOrder = await env.DB.prepare("SELECT * FROM orders WHERE order_id = ?").bind(orderId).first();
@@ -1254,6 +1274,16 @@ export async function onRequestPatch({ request, env, waitUntil }) {
       })());
     }
     
+    if (isPaymentConfirm && !d1UpdateOk && env.DB) {
+      // Payment succeeded but no order row exists (fire-and-forget POST never
+      // landed). Don't fake success — frontend retries, admin sees the failure.
+      // (PATCH is fire-and-forget from thank-you page, so no UX impact.)
+      return new Response(
+        JSON.stringify({ ok: false, error: "Order not found. Please retry or contact support.", orderId: orderId }),
+        { status: 404, headers: jsonH }
+      );
+    }
+
     return new Response(
       JSON.stringify({
         ok: true,

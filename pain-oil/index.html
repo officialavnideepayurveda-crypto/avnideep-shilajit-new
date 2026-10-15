@@ -282,6 +282,10 @@ footer a{color:#fff}
 .sticky a{display:block;text-align:center;background:linear-gradient(135deg,#C9A227,#a88417);color:#1d1a10;font-weight:800;padding:15px;border-radius:16px;text-decoration:none;box-shadow:0 14px 34px rgba(0,0,0,.3)}
 .vid{position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:12px;background:#000}
 .vid iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:0}
+.yt-facade{position:absolute;inset:0;width:100%;height:100%;border:0;padding:0;background:#000;cursor:pointer;display:block}
+.yt-facade img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.yt-play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:68px;height:48px;border-radius:12px;background:rgba(255,0,0,.9);color:#fff;font-size:20px;display:grid;place-items:center}
+.yt-facade:hover .yt-play{background:#f00}
 .crumb{max-width:1080px;margin:auto;padding:10px 16px 0;font-size:12.5px;color:#6b655a}
 .crumb a{color:#0E3B2E;text-decoration:none;font-weight:700}
 .gallery img.main{transition:transform .35s ease}
@@ -678,23 +682,23 @@ try {
 <div class="vcar-view">
 <div class="vcar-track" data-vcar-track>
 <div class="vcar-item" role="group" aria-roledescription="slide" aria-label="Video 1 of 5">
-<div class="vid"><iframe src="https://www.youtube-nocookie.com/embed/JNseM3P0884?enablejsapi=1" title="Customer Review 1" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
+<div class="vid"><button class="yt-facade" type="button" data-yt="JNseM3P0884" aria-label="Play Customer Review 1"><img src="https://i.ytimg.com/vi/JNseM3P0884/hqdefault.jpg" alt="Customer Review 1" loading="lazy" decoding="async" width="480" height="360"><span class="yt-play" aria-hidden="true">▶</span></button></div>
 <div class="vcar-cap">Customer Review 1</div>
 </div>
 <div class="vcar-item" role="group" aria-roledescription="slide" aria-label="Video 2 of 5">
-<div class="vid"><iframe src="https://www.youtube-nocookie.com/embed/9zwEJKjwAyM?enablejsapi=1" title="Customer Review 2" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
+<div class="vid"><button class="yt-facade" type="button" data-yt="9zwEJKjwAyM" aria-label="Play Customer Review 2"><img src="https://i.ytimg.com/vi/9zwEJKjwAyM/hqdefault.jpg" alt="Customer Review 2" loading="lazy" decoding="async" width="480" height="360"><span class="yt-play" aria-hidden="true">▶</span></button></div>
 <div class="vcar-cap">Customer Review 2</div>
 </div>
 <div class="vcar-item" role="group" aria-roledescription="slide" aria-label="Video 3 of 5">
-<div class="vid"><iframe src="https://www.youtube-nocookie.com/embed/XhpGvknbW5U?enablejsapi=1" title="Customer Review 3" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
+<div class="vid"><button class="yt-facade" type="button" data-yt="XhpGvknbW5U" aria-label="Play Customer Review 3"><img src="https://i.ytimg.com/vi/XhpGvknbW5U/hqdefault.jpg" alt="Customer Review 3" loading="lazy" decoding="async" width="480" height="360"><span class="yt-play" aria-hidden="true">▶</span></button></div>
 <div class="vcar-cap">Customer Review 3</div>
 </div>
 <div class="vcar-item" role="group" aria-roledescription="slide" aria-label="Video 4 of 5">
-<div class="vid"><iframe src="https://www.youtube-nocookie.com/embed/NpayAnzUOx8?enablejsapi=1" title="Customer Review 4" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
+<div class="vid"><button class="yt-facade" type="button" data-yt="NpayAnzUOx8" aria-label="Play Customer Review 4"><img src="https://i.ytimg.com/vi/NpayAnzUOx8/hqdefault.jpg" alt="Customer Review 4" loading="lazy" decoding="async" width="480" height="360"><span class="yt-play" aria-hidden="true">▶</span></button></div>
 <div class="vcar-cap">Customer Review 4</div>
 </div>
 <div class="vcar-item" role="group" aria-roledescription="slide" aria-label="Video 5 of 5">
-<div class="vid"><iframe src="https://www.youtube-nocookie.com/embed/94kf4_OU4C0?enablejsapi=1" title="Customer Review 5" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
+<div class="vid"><button class="yt-facade" type="button" data-yt="94kf4_OU4C0" aria-label="Play Customer Review 5"><img src="https://i.ytimg.com/vi/94kf4_OU4C0/hqdefault.jpg" alt="Customer Review 5" loading="lazy" decoding="async" width="480" height="360"><span class="yt-play" aria-hidden="true">▶</span></button></div>
 <div class="vcar-cap">Customer Review 5</div>
 </div>
 </div>
@@ -2411,6 +2415,19 @@ function vfacStop(item){
   var b=box.querySelector('.vfac-btn');if(b)b.style.display='';
   delete box.dataset.playing;
 }
+/* YouTube facade: load iframe only on click — saves ~1MB + connections on page load */
+document.addEventListener('click',function(e){
+  var b=e.target&&e.target.closest?e.target.closest('.yt-facade'):null;
+  if(!b||!b.dataset||!b.dataset.yt)return;
+  var id=b.dataset.yt.replace(/[^A-Za-z0-9_-]/g,'').slice(0,16);
+  var f=document.createElement('iframe');
+  f.src='https://www.youtube-nocookie.com/embed/'+id+'?autoplay=1&rel=0&modestbranding=1';
+  f.title=b.getAttribute('aria-label')||'Video';
+  f.allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+  f.allowFullscreen=true;
+  f.style.cssText='position:absolute;top:0;left:0;width:100%;height:100%;border:0';
+  b.replaceWith(f);
+});
 </script>
 <nav class="mnav" aria-label="Mobile menu">
 <a href="/" aria-label="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>Home</a>

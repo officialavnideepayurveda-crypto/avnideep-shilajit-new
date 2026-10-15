@@ -602,3 +602,48 @@ describe('Order API â€” validation', () => {
     expect(data.error).toContain('Access denied');
   });
 });
+
+describe("Phone normalization — +91 / 0 prefix paste", () => {
+  it("should save +91-prefixed paste as the correct 10-digit number", async () => {
+    const { onRequestPost } = await import("../functions/api/order.js");
+    const body = {
+      orderId: "AVN-test-phone91",
+      name: "Prefix User",
+      phone: "+91 98765 43210",
+      paymentMethod: "cod",
+      amount: 1250,
+    };
+    const request = new Request("https://shop.avnideep.in/api/order", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const response = await onRequestPost({ request, env: mockEnv, waitUntil: () => {} });
+    const data = await response.json();
+    expect(response.status).toBe(200);
+    expect(data.ok).toBe(true);
+    expect(mockD1.hasOrder("AVN-test-phone91")).toBe(true);
+    expect(mockD1._store.get("AVN-test-phone91").phone).toBe("9876543210");
+  });
+
+  it("should strip a leading 0 trunk prefix", async () => {
+    const { onRequestPost } = await import("../functions/api/order.js");
+    const body = {
+      orderId: "AVN-test-phone0",
+      name: "Trunk User",
+      phone: "09876543210",
+      paymentMethod: "cod",
+      amount: 249,
+    };
+    const request = new Request("https://shop.avnideep.in/api/order", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const response = await onRequestPost({ request, env: mockEnv, waitUntil: () => {} });
+    const data = await response.json();
+    expect(response.status).toBe(200);
+    expect(data.ok).toBe(true);
+    expect(mockD1._store.get("AVN-test-phone0").phone).toBe("9876543210");
+  });
+});
