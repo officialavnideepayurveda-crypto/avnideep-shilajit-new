@@ -16,7 +16,7 @@
 //  - Adds X-Cache: HIT/MISS for verification
 
 export async function onRequest(context) {
-  const { request, next, waitUntil } = context;
+  const { request, next, waitUntil, env } = context;
 
   if (request.method !== "GET") return next();
 
@@ -58,11 +58,26 @@ export async function onRequest(context) {
     const headers = new Headers(response.headers);
     headers.set("Cache-Control", "public, max-age=0, s-maxage=600, must-revalidate");
     headers.set("X-Cache", "MISS");
-    const toCache = new Response(response.body, {
-      status: response.status,
-      statusText: response.statusText,
-      headers,
-    });
+    // Admin-managed Meta Pixel injection: replace the baked-in Pixel ID with
+    // the one set in admin panel (settings/tracking). Best-effort — page must
+    // NEVER break because of this.
+    let bodyText = null;
+    try {
+      const pixel = await getPixelId(env);
+      if (pixel && pixel !== DEFAULT_PIXEL) {
+        const raw = await response.text();
+        if (raw.includes(DEFAULT_PIXEL)) {
+          bodyText = raw.split(DEFAULT_PIXEL).join(pixel);
+        }
+      }
+    } catch (e) {}
+    const toCache = bodyText !== null
+      ? new Response(bodyText, { status: response.status, statusText: response.statusText, headers })
+      : new Response(response.body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers,
+      });
     if (typeof waitUntil === "function") {
       waitUntil(cache.put(cacheKey, toCache.clone()));
     } else {
@@ -72,4 +87,23 @@ export async function onRequest(context) {
   }
 
   return response;
+}
+
+// ---- admin-managed Meta Pixel (edge injection) ----
+const DEFAULT_PIXEL = "1715387275770711";
+let pixelCache = { value: "", at: 0 };
+async function getPixelId(env) {
+  try {
+    if (Date.now() - pixelCache.at < 5 * 60 * 1000 && pixelCache.value) return pixelCache.value;
+    if (!env?.DB) return DEFAULT_PIXEL;
+    const row = await env.DB.prepare(
+      "SELECT value FROM settings WHERE section = ? AND key = ?"
+    ).bind("tracking", "meta_pixel_id").first();
+    const v = String(row?.value || "").trim();
+    const pixel = /^\d{8,20}$/.test(v) ? v : DEFAULT_PIXEL;
+    pixelCache = { value: pixel, at: Date.now() };
+    return pixel;
+  } catch (e) {
+    return DEFAULT_PIXEL;
+  }
 }

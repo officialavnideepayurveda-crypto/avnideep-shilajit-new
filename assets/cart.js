@@ -47,6 +47,24 @@
   };
   var KEY = 'avn_cart_v1', FREE_ABOVE = 499, SHIP_FEE = 49;
 
+  /* ---------- admin catalog overrides (set by site-sync.js from /api/products) ---------- */
+  function AP() { return window.AVN_ADMIN_PRODUCTS || {}; }
+  function isOOS(id) { return !!(window.AVN_OOS && window.AVN_OOS[id]); }
+  function P(id) {
+    var o = AP()[id];
+    if (!o) return PRODUCTS[id];
+    var base = PRODUCTS[id] || { id: id, variant: '', url: '/' };
+    return {
+      id: id, sku: o.sku || base.sku || id,
+      name: o.name || base.name, variant: base.variant,
+      img: o.img || base.img,
+      cod: (o.cod != null ? o.cod : base.cod),
+      prepaid: (o.prepaid != null ? o.prepaid : base.prepaid),
+      mrp: (o.mrp != null ? o.mrp : base.mrp),
+      url: base.url
+    };
+  }
+
   /* ---------- storage ---------- */
   function load() { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } }
   function store() { try { localStorage.setItem(KEY, JSON.stringify(cart)); } catch (e) {} }
@@ -55,7 +73,7 @@
   /* ---------- helpers ---------- */
   function ids() { return Object.keys(cart).filter(function (k) { return cart[k] > 0; }); }
   function itemCount() { var n = 0; ids().forEach(function (k) { n += cart[k]; }); return n; }
-  function sum(fn) { var s = 0; ids().forEach(function (k) { s += fn(PRODUCTS[k]) * cart[k]; }); return s; }
+  function sum(fn) { var s = 0; ids().forEach(function (k) { var p = P(k); if (p) s += fn(p) * cart[k]; }); return s; }
   function inr(n) { return '₹' + n.toLocaleString('en-IN'); }
   function track(event, params) { try { if (typeof fbq === 'function') fbq('track', event, params); } catch (e) {} }
 
@@ -113,7 +131,8 @@
         '</div>';
     } else {
       list.innerHTML = ids().map(function (k) {
-        var p = PRODUCTS[k], q = cart[k];
+        var p = P(k), q = cart[k];
+        if (!p) return '';
         var save = (p.mrp - p.cod) * q;
         return '' +
         '<div class="cart-it" data-key="' + k + '">' +
@@ -170,10 +189,10 @@
 
   /* ---------- actions ---------- */
   function add(id, q) {
-    if (!PRODUCTS[id]) return;
+    if (!P(id) || isOOS(id)) return;
     cart[id] = (cart[id] || 0) + (q || 1);
     store(); renderBadge();
-    track('AddToCart', { content_ids: [PRODUCTS[id].sku], content_name: PRODUCTS[id].name, value: PRODUCTS[id].cod * (q || 1), currency: 'INR' });
+    track('AddToCart', { content_ids: [P(id).sku], content_name: P(id).name, value: P(id).cod * (q || 1), currency: 'INR' });
     openDr();
   }
 
@@ -183,7 +202,7 @@
     track('InitiateCheckout', { value: sub(), currency: 'INR', num_items: itemCount() });
     closeDr();
     if (ks.length === 1) {
-      var p = PRODUCTS[ks[0]];
+      var p = P(ks[0]);
       var here = location.pathname.replace(/\/$/, '');
       var there = p.url.replace(/\/$/, '');
       if (here === there && typeof openOrderPopup === 'function') { try { openOrderPopup(); } catch (e) {} }
@@ -197,7 +216,7 @@
     if (!ids().length) { location.href = 'https://wa.me/917060101043?text=' + encodeURIComponent('Hi Avnideep, mujhe order karna hai'); return; }
     var lines = ['*🛒 New Order — Avnideep Ayurveda*', ''];
     ids().forEach(function (k) {
-      var p = PRODUCTS[k];
+      var p = P(k); if (!p) return;
       lines.push('• ' + p.name + ' (' + p.variant + ') × ' + cart[k] + ' — ' + inr(p.cod * cart[k]));
     });
     var st = sub();

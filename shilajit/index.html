@@ -689,7 +689,7 @@ try{var vcPageEventId='vc_page_'+Date.now()+'_'+Math.random().toString(36).subst
 <div class="ap-hero" id="product">
 <div class="ap-gal">
 <span class="ap-off">60%<br>OFF</span>
-<img class="main" id="mainImg" src="/home/assets/shilajit-1.png" alt="Avnideep 6Pro Shilajit Capsules">
+<img class="main" id="mainImg" src="/home/assets/shilajit-1.png" alt="Avnideep 6Pro Shilajit Capsules" data-pimg="shilajit">
 <div class="thumbs" id="thumbs"><img src="/home/assets/shilajit-2.png" alt="Shilajit capsules"><img src="/home/assets/showcase-1.png" alt="Shilajit strength range"><img src="/home/assets/lookbook-1.png" alt="Original Shilajit resin range"></div>
 </div>
 <div>
@@ -1060,7 +1060,7 @@ render();
 </div>
 
 
-<div class="sticky ap-sticky" id="sticky"><img src="/home/assets/shilajit-1.png" alt="Avnideep 6Pro Shilajit Capsules (30)"><div class="si"><b>6Pro Shilajit Capsules</b><span class="p">&#8377;999 <s>&#8377;2,500</s></span></div><div class="sb"><a class="ap-atc" href="#cart" data-cart-add="shilajit">Add to Cart</a><a class="ap-buynow" href="/#checkout" data-scroll="checkout">Buy Now</a></div></div>
+<div class="sticky ap-sticky" id="sticky"><img src="/home/assets/shilajit-1.png" alt="Avnideep 6Pro Shilajit Capsules (30)" data-pimg="shilajit"><div class="si"><b>6Pro Shilajit Capsules</b><span class="p">&#8377;999 <s>&#8377;2,500</s></span></div><div class="sb"><a class="ap-atc" href="#cart" data-cart-add="shilajit">Add to Cart</a><a class="ap-buynow" href="/#checkout" data-scroll="checkout">Buy Now</a></div></div>
 
 <div class="rx-news"><div class="rx-wrap" style="max-width:1180px;margin:auto;padding:0 16px"><div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px;padding:26px 0">
 <div><b>Confused about which product suits you?</b><p style="font-size:13px;color:var(--rx-mut);margin:2px 0 0">WhatsApp 9:00 AM – 7:00 PM (Mon–Sat) — product, dosage ya delivery, kuch bhi pooch lein.</p></div>
@@ -2134,6 +2134,7 @@ if('serviceWorker' in navigator){
 <script>
 (function(){try{var g=document.querySelector('.gallery'),img=document.getElementById('mainImg');if(!g||!img)return;if(window.matchMedia&&matchMedia('(hover: none)').matches)return;g.addEventListener('pointermove',function(e){try{var b=g.getBoundingClientRect(),x=(e.clientX-b.left)/b.width-.5,y=(e.clientY-b.top)/b.height-.5;img.style.transform='rotateY('+(x*10).toFixed(2)+'deg) rotateX('+(-y*10).toFixed(2)+'deg)';}catch(_){}});g.addEventListener('pointerleave',function(){img.style.transform='';});}catch(_){}})();
 </script>
+<script src="/assets/site-sync.js?v=1" defer></script>
 <script src="app-shilajit.v3.js?v=shiljit1"></script>
 </body>
 </html>
