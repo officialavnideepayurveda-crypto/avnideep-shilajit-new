@@ -213,7 +213,6 @@ try {
         <button class="slider-dot" data-slide="2" aria-label="Slide 3"></button>
         <button class="slider-dot" data-slide="3" aria-label="Slide 4"></button>
         <button class="slider-dot" data-slide="4" aria-label="Slide 5"></button>
-        <button class="slider-dot" data-slide="5" aria-label="Slide 6"></button>
       </div>
     </div>
 
@@ -1824,7 +1823,7 @@ if(document.readyState === 'loading'){
 // SW for repeat visit speed - registered after load + delay (won't compete with critical resources)
 
 // ===== Hero Image Slider =====
-(function(){var t=document.getElementById('sliderTrack');if(!t)return;var s=t.querySelectorAll('.slider-slide'),d=document.querySelectorAll('.slider-dot'),c=0,i;function g(n){s.forEach(function(x){x.classList.remove('active')});d.forEach(function(x){x.classList.remove('active')});s[n].classList.add('active');d[n].classList.add('active');c=n;}function n(){g((c+1)%s.length);}function a(){i=setInterval(n,4000);}function o(){clearInterval(i);}d.forEach(function(dot){dot.addEventListener('click',function(){var idx=parseInt(this.dataset.slide);if(!isNaN(idx)){o();g(idx);a();}});});var startX=0;t.addEventListener('touchstart',function(e){startX=e.changedTouches[0].screenX;o();},{passive:true});t.addEventListener('touchend',function(e){var diff=startX-e.changedTouches[0].screenX;if(Math.abs(diff)>50){if(diff>0)n();else g((c-1+s.length)%s.length);}a();},{passive:true});a();})();
+(function(){var t=document.getElementById('sliderTrack');if(!t)return;var s=t.querySelectorAll('.slider-slide'),d=document.querySelectorAll('.slider-dot'),c=0,i;function g(n){if(n<0||n>=s.length)return;s.forEach(function(x){x.classList.remove('active')});d.forEach(function(x){x.classList.remove('active')});s[n].classList.add('active');if(d[n])d[n].classList.add('active');c=n;}function n(){g((c+1)%s.length);}function a(){i=setInterval(n,4000);}function o(){clearInterval(i);}d.forEach(function(dot){dot.addEventListener('click',function(){var idx=parseInt(this.dataset.slide);if(!isNaN(idx)){o();g(idx);a();}});});var startX=0;t.addEventListener('touchstart',function(e){startX=e.changedTouches[0].screenX;o();},{passive:true});t.addEventListener('touchend',function(e){var diff=startX-e.changedTouches[0].screenX;if(Math.abs(diff)>50){if(diff>0)n();else g((c-1+s.length)%s.length);}a();},{passive:true});a();})();
 if('serviceWorker' in navigator){
   window.addEventListener('load', function(){
     setTimeout(function(){

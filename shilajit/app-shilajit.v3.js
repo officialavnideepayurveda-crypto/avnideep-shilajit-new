@@ -12,10 +12,13 @@
 (function () {
   try {
     var ref = new URLSearchParams(window.location.search).get('ref');
-    if (ref && /^[A-Z0-9]{4,16}$/i.test(ref)) {
+    // STRICT FIX: only valid partner codes (AVN + 6 unambiguous chars) may
+    // overwrite the cookie. Junk ?ref= (e.g. TEST) must NOT clobber a prior
+    // valid referral — matches server CODE_RE in functions/api/_lib/attribution.js
+    if (ref && /^AVN[A-HJ-KM-NP-Z2-9]{6}$/i.test(ref.trim())) {
       // WARN-4 FIX: write a timestamp cookie so the server can enforce the 30-day window
       var secure = location.protocol === 'https:' ? '; Secure' : '';
-      document.cookie = 'avnideep_ref=' + encodeURIComponent(ref.toUpperCase()) +
+      document.cookie = 'avnideep_ref=' + encodeURIComponent(ref.trim().toUpperCase()) +
         '; max-age=2592000; path=/; SameSite=Lax' + secure;
       document.cookie = 'avnideep_ref_ts=' + Math.floor(Date.now() / 1000) +
         '; max-age=2592000; path=/; SameSite=Lax' + secure;
