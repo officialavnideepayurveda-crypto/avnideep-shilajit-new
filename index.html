@@ -18,7 +18,9 @@
 <link rel="shortcut icon" href="https://cdn.avnideepayurveda.in/Avnideep-shilajit/shilajit%20for%20web.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..700&display=swap">
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..700&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..700&display=swap"></noscript>
 <link rel="preconnect" href="https://cdn.avnideepayurveda.in" crossorigin>
 <link rel="dns-prefetch" href="https://cdn.avnideepayurveda.in">
 <link rel="dns-prefetch" href="https://connect.facebook.net">
@@ -72,7 +74,7 @@
 @media(max-width:520px){.vcar-arrow{width:34px;height:34px;font-size:19px}.vcar-prev{left:-4px}.vcar-next{right:-4px}}
 @media(prefers-reduced-motion:reduce){.vcar-track{transition:none}}
 </style>
-<link rel="stylesheet" href="/assets/renee-theme.css?v=rx12">
+<link rel="stylesheet" href="/assets/renee-theme.css?v=rx14">
 <script src="/assets/cart.js" defer></script>
 <script>window.addEventListener('load',function(){function l(){if(window.fbq)return;!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','1715387275770711');fbq('track','PageView');}if('requestIdleCallback' in window){requestIdleCallback(l,{timeout:4000});}else{setTimeout(l,2500);}});</script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-HTH3FR9SF6"></script>
@@ -202,8 +204,8 @@ gtag('config', 'G-HTH3FR9SF6');
 <section class="rx-section" style="padding-bottom:0"><div class="wrap">
 <div class="rx-head"><h2>Our Range</h2></div>
 <div class="rx-range">
-<a href="/shilajit/"><img src="/home/assets/hero-stamina-wide.png" alt="Avnideep Stamina range" loading="lazy"><span class="cap"><b>Energy &amp; Stamina Range</b><span>Shop now</span></span></a>
-<a href="/pain-oil/"><img src="/home/assets/showcase-2.png" alt="Avnideep Relief range" loading="lazy"><span class="cap"><b>Pain Relief Range</b><span>Shop now</span></span></a>
+<a href="/shilajit/"><picture><source type="image/webp" srcset="/home/assets/hero-stamina-wide.webp"><img src="/home/assets/hero-stamina-wide.png" alt="Avnideep Stamina range" loading="lazy" decoding="async" width="2087" height="754"></picture><span class="cap"><b>Energy &amp; Stamina Range</b><span>Shop now</span></span></a>
+<a href="/pain-oil/"><img src="/home/assets/showcase-2.png" alt="Avnideep Relief range" loading="lazy" decoding="async"></a>
 </div>
 </div></section>
 
@@ -589,11 +591,20 @@ start();
 </footer>
 
 <script>
-fbq('track','ViewContent',{content_name:'AVN-HOME',content_type:'product',value:249,currency:'INR'});
+try{if(typeof fbq==='function')fbq('track','ViewContent',{content_name:'AVN-HOME',content_type:'product',value:249,currency:'INR'});}catch(e){}
 var slides=document.querySelectorAll('.slide'),dots=document.querySelectorAll('#dots button'),cur=0,tm=null;
-function go(n){cur=(n+slides.length)%slides.length;for(var i=0;i<slides.length;i++){slides[i].classList.toggle('on',i===cur);dots[i].classList.toggle('on',i===cur);}restart();}
-function restart(){if(tm)clearTimeout(tm);tm=setTimeout(function(){go(cur+1);},6000);}
+function go(n){if(!slides.length)return;cur=(n+slides.length)%slides.length;for(var i=0;i<slides.length;i++){slides[i].classList.toggle('on',i===cur);if(dots[i])dots[i].classList.toggle('on',i===cur);}restart();}
+function restart(){if(tm)clearTimeout(tm);tm=setTimeout(function(){go(cur+1);},5000);}
 for(var d=0;d<dots.length;d++)(function(k){dots[k].addEventListener('click',function(){go(k);});})(d);
+/* hand swipe for hero banner */
+(function(){var fr=document.querySelector('.rx-frames');if(!fr)return;var sx=0,dx=0,drag=false;
+fr.addEventListener('touchstart',function(e){sx=e.changedTouches[0].screenX;dx=0;if(tm)clearTimeout(tm);},{passive:true});
+fr.addEventListener('touchend',function(e){dx=e.changedTouches[0].screenX-sx;if(Math.abs(dx)>45)go(dx<0?cur+1:cur-1);else restart();},{passive:true});
+fr.addEventListener('mousedown',function(e){drag=true;sx=e.clientX;dx=0;if(tm)clearTimeout(tm);});
+window.addEventListener('mouseup',function(e){if(!drag)return;drag=false;dx=e.clientX-sx;if(Math.abs(dx)>45)go(dx<0?cur+1:cur-1);else restart();});
+/* pause auto-slide when tab hidden */
+document.addEventListener('visibilitychange',function(){if(document.hidden){if(tm)clearTimeout(tm);}else restart();});
+})();
 restart();
 function qp(n){try{return new URLSearchParams(location.search).get(n)||''}catch(e){return ''}}
 </script>

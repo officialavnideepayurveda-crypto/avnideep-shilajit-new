@@ -127,6 +127,14 @@ body{background:var(--rx-bg)}
 .rx-hero .slide{display:none}
 .rx-hero .slide.on{display:block;animation:rxFade .5s var(--rx-ease)}
 .rx-hero img{width:100%;display:block}
+.rx-hero .slide picture{display:block}
+@media(min-width:701px){
+.rx-hero img{height:clamp(240px,34vw,420px);object-fit:cover;object-position:center}
+}
+@media(max-width:700px){
+.rx-hero .rx-frames{max-width:520px;margin-left:auto;margin-right:auto}
+.rx-hero img{height:min(118vw,500px);object-fit:cover;object-position:top}
+}
 @keyframes rxFade{from{opacity:.4}to{opacity:1}}
 .rx-hero-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:3;width:42px;height:42px;border-radius:50%;border:0;background:rgba(255,255,255,.92);color:var(--rx-brand);font-size:22px;font-weight:700;cursor:pointer;box-shadow:0 8px 20px rgba(0,0,0,.18);display:grid;place-items:center;transition:background .2s;line-height:1}
 .rx-hero-nav:hover{background:#fff}
