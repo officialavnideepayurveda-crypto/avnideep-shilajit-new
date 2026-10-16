@@ -26,6 +26,13 @@ async function withTimeout(promise, ms = 5000, name = "request") {
 
 const REQUIRED = ["name", "phone", "paymentMethod", "amount"];
 
+// Order-total sanity range in ₹ (see "Step 4b" below before changing these).
+// Cheapest catalogue price today is ₹249 (oil) and the biggest coupon is ₹100
+// off with a ₹599 minimum spend, so ₹99 is comfortably below any genuine total
+// while blocking the "₹1 / 0 / negative / NaN order" abuse.
+const MIN_ORDER_AMOUNT = 99;
+const MAX_ORDER_AMOUNT = 100000;
+
 // ============================================================
 // HELPERS
 // ============================================================
@@ -794,6 +801,11 @@ export async function onRequestPost({ request, env, waitUntil }) {
     const now = Date.now();
     const WINDOW_MS = 60000;
     const MAX_REQUESTS = 30;  // 30/IP/min - enough for shared IPs
+    // Per-phone quota — this is now the ONLY bound for a known phone, because the
+    // IP check is skipped for them (see the phoneBypass branch below).
+    const PHONE_WINDOW_MS = 600000;   // 10 minutes
+    const PHONE_WINDOW_S = 600;       // KV TTL in seconds (>= PHONE_WINDOW_MS)
+    const MAX_PHONE_REQUESTS = 10;    // 10 orders per phone per 10 min
 
     try {
       // PHONE BYPASS: Check if this phone was seen before (handles refreshes)
@@ -820,7 +832,35 @@ export async function onRequestPost({ request, env, waitUntil }) {
       const phoneKey = seenPhone ? `seen_phone:${seenPhone}` : null;
 
       if (phoneBypass && phoneKey) {
-        // Known phone: skip the IP burst check. No KV write needed - the key already exists.
+        // BUG FIX — this branch used to be EMPTY. A known phone skipped the IP
+        // rate limit and hit no other limit either, so a single phone number
+        // could place unlimited orders (and `seen_phone:<phone>` is written by
+        // this very code on the first attempt, so it self-armed). Skipping the
+        // IP check is still right — a shared mobile/CGNAT IP must not block a
+        // genuine returning buyer — but it has to be bounded, so a known phone
+        // now gets its own per-phone quota instead of unlimited requests.
+        const phoneRateKey = `phone_orders:${seenPhone}`;
+        console.log('[KV-VERIFY] order read', { key: phoneRateKey, type: 'phone_quota' });
+        const phoneRecord = await env.RATE_LIMIT_KV.get(phoneRateKey, { type: 'json' }).catch(() => null);
+        const phoneTimestamps = Array.isArray(phoneRecord?.timestamps)
+          ? phoneRecord.timestamps.filter(t => (now - t) < PHONE_WINDOW_MS)
+          : [];
+
+        if (phoneTimestamps.length >= MAX_PHONE_REQUESTS) {
+          console.log("PHONE_RATE_LIMIT_EXCEEDED", { phone: seenPhone, count: phoneTimestamps.length });
+          return new Response(
+            JSON.stringify({
+              ok: false,
+              error: "Too many requests. WhatsApp par order karein: https://wa.me/917060101043",
+              retry_after: 60,
+              whatsapp: "https://wa.me/917060101043?text=Mujhe order karna hai"
+            }),
+            { status: 429, headers: jsonHeaders(env) }
+          );
+        }
+        console.log('[KV-VERIFY] order write', { key: phoneRateKey, type: 'phone_quota' });
+        phoneTimestamps.push(now);
+        await env.RATE_LIMIT_KV.put(phoneRateKey, JSON.stringify({ count: phoneTimestamps.length, timestamps: phoneTimestamps }), { expirationTtl: PHONE_WINDOW_S }).catch(() => {});
       } else {
         // IP-based rate limiting for unknown visitors.
         console.log('[KV-VERIFY] order read', { key: rateKey, type: 'rate_limit' });
@@ -886,6 +926,27 @@ console.log('[KV-VERIFY] order write', { key: rateKey, type: 'rate_limit' });
         { status: 400, headers: jsonHeaders(env) }
       );
     }
+
+    // Step 4b: Validate the order total.
+    // BUG FIX — amount was taken verbatim from the client, so 1, 0, -500,
+    // "abc"/NaN and 999999999 were all accepted and saved as real orders.
+    const amount = Number(order.amount);
+    if (!Number.isFinite(amount)) {
+      return new Response(
+        JSON.stringify({ ok: false, error: "Invalid order amount." }),
+        { status: 400, headers: jsonHeaders(env) }
+      );
+    }
+    if (amount < MIN_ORDER_AMOUNT || amount > MAX_ORDER_AMOUNT) {
+      return new Response(
+        JSON.stringify({
+          ok: false,
+          error: `Order amount must be between Rs.${MIN_ORDER_AMOUNT} and Rs.${MAX_ORDER_AMOUNT}.`
+        }),
+        { status: 400, headers: jsonHeaders(env) }
+      );
+    }
+    order.amount = Math.round(amount * 100) / 100;
 
     // Step 5: 🛡️ DUPLICATE DETECTION - Two-layer check
     // Layer 1: Exact order_id match in D1 (handles retries with same ID)

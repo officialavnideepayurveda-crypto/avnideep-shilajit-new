@@ -26,6 +26,20 @@ const AUTH_SCHEMA = `
   CREATE INDEX IF NOT EXISTS idx_cust_sessions_mobile ON customer_sessions(mobile);
 `;
 
+// BUG FIX — D1's exec()/prepare() runs SQL line-by-line, so any statement that
+// spans multiple lines fails with "incomplete input: SQLITE_ERROR". The old
+// `env.DB.exec(AUTH_SCHEMA)` therefore ALWAYS failed, `customers` /
+// `customer_sessions` were never created, and every check/login/register call
+// returned 500. (Same root cause already fixed in _lib/attribution.js.)
+// Split the schema into single-line statements and run them one at a time.
+const AUTH_SCHEMA_STATEMENTS = AUTH_SCHEMA
+  .split("\n")
+  .filter((ln) => !ln.trim().startsWith("--"))
+  .join("\n")
+  .split(";")
+  .map((s) => s.replace(/\s+/g, " ").trim())
+  .filter(Boolean);
+
 const COOKIE_NAME = "avn_cust";
 const SESSION_DAYS = 30;
 const MAX_FAILS = 5;
@@ -110,7 +124,9 @@ async function ensureSchema(env) {
     try {
       if ((await env.RATE_LIMIT_KV?.get("d1_schema_auth_v1")) === "1") return true;
     } catch (e) {}
-    await env.DB.exec(AUTH_SCHEMA);
+    for (const stmt of AUTH_SCHEMA_STATEMENTS) {
+      await env.DB.prepare(stmt).run();
+    }
     try { await env.RATE_LIMIT_KV?.put("d1_schema_auth_v1", "1", { expirationTtl: 86400 * 30 }); } catch (e) {}
     return true;
   } catch (e) {

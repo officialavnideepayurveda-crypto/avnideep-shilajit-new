@@ -22,6 +22,31 @@ const PRODUCT_SCHEMA = `
   );
 `;
 
+// BUG FIX — same D1 line-by-line SQL limitation as auth.js/_lib/attribution.js:
+// PRODUCT_SCHEMA spans multiple lines, so `DB.exec(PRODUCT_SCHEMA)` always threw
+// "incomplete input: SQLITE_ERROR" (silently swallowed below). On any database
+// that didn't already have a `products` table (created by the admin worker), the
+// following SELECT threw "no such table" and /api/products returned 500.
+const PRODUCT_SCHEMA_STATEMENTS = PRODUCT_SCHEMA
+  .split("\n")
+  .filter((ln) => !ln.trim().startsWith("--"))
+  .join("\n")
+  .split(";")
+  .map((s) => s.replace(/\s+/g, " ").trim())
+  .filter(Boolean);
+
+// Bootstrap once per isolate (same pattern as leads.js / order.js) so we don't
+// issue a DDL write on every catalog request.
+let productsSchemaBootstrapped = false;
+
+async function ensureProductsTable(env) {
+  if (productsSchemaBootstrapped) return;
+  for (const stmt of PRODUCT_SCHEMA_STATEMENTS) {
+    await env.DB.prepare(stmt).run();
+  }
+  productsSchemaBootstrapped = true;
+}
+
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -36,7 +61,7 @@ function json(data, status = 200) {
 export async function onRequestGet({ env }) {
   try {
     if (!env?.DB) return json({ ok: false, error: "DB unavailable" }, 500);
-    try { await env.DB.exec(PRODUCT_SCHEMA); } catch (e) {}
+    try { await ensureProductsTable(env); } catch (e) {}
     const res = await env.DB.prepare(
       "SELECT * FROM products WHERE active = 1 ORDER BY sort_order ASC, id ASC"
     ).all();
