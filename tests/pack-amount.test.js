@@ -399,13 +399,13 @@ describe('no pack-of-1 hard-coding left in the checkout code', () => {
   });
 
   it('JS URLs are cache-busted so customers with a stale 1-year-immutable copy re-download', () => {
-    expect(shilajit).toContain('app-shilajit.v3.js?v=20261017cart');
+    expect(shilajit).toContain('app-shilajit.v3.js?v=20261017lockfix');
     expect(shilajit).not.toContain('app-shilajit.v3.js?v=packfix20261016');
-    expect(oil).toContain('app-oil.v3.js?v=20261017cart');
+    expect(oil).toContain('app-oil.v3.js?v=20261017lockfix');
     expect(oil).not.toContain('app-oil.v3.js?v=packfix20261016');
     // hair-oil/balm app bundles were edited too
-    expect(read('hair-oil/index.html')).toContain('app-hairoil.v3.js?v=20261017cart');
-    expect(read('herbal-balm/index.html')).toContain('app-balm.v3.js?v=20261017cart');
+    expect(read('hair-oil/index.html')).toContain('app-hairoil.v3.js?v=20261017lockfix');
+    expect(read('herbal-balm/index.html')).toContain('app-balm.v3.js?v=20261017lockfix');
     // cart.js changed too -> every page that loads it must use the new URL
     for (const page of ['index.html', 'shilajit/index.html', 'pain-oil/index.html', 'hair-oil/index.html', 'herbal-balm/index.html']) {
       expect(read(page), page).toContain('/assets/cart.js?v=rx28');
