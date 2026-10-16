@@ -10,10 +10,15 @@
   Cache-Control: public, max-age=3600, must-revalidate
 /
   Cache-Control: public, max-age=3600, must-revalidate
+# JS/CSS are served under STABLE names (cart.js, app-shilajit.v3.js, ...) and
+# are not content-hashed, so they must never be `immutable`: that pinned the
+# CDN edge and returning browsers to a single copy for a year, which made every
+# subsequent deploy invisible (a stale cart.js shipped alongside fresh HTML).
+# A short TTL with must-revalidate lets a deploy propagate within minutes.
 /*.js
-  Cache-Control: public, max-age=31536000, immutable
+  Cache-Control: public, max-age=300, must-revalidate
 /*.css
-  Cache-Control: public, max-age=31536000, immutable
+  Cache-Control: public, max-age=300, must-revalidate
 /sw.js
   Cache-Control: public, max-age=0, must-revalidate
 /*.woff2
