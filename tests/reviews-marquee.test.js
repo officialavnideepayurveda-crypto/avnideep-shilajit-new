@@ -10,19 +10,23 @@ const dom = (rel) => new JSDOM(read(rel)).window.document;
 
 describe('scrolling reviews marquee (Glowasy-style, 2 opposite rows)', () => {
   const pages = ['index.html', 'shilajit/index.html', 'pain-oil/index.html'];
+  const reviewMq = (d) => [...d.querySelectorAll('.revmq')].filter((m) =>
+    (m.getAttribute('aria-label') || '').toLowerCase().includes('review'));
+  const herbsMq = (d) => [...d.querySelectorAll('.revmq')].filter((m) =>
+    (m.getAttribute('aria-label') || '').toLowerCase().includes('ingredient'));
   for (const page of pages) {
     it(`${page}: marquee with 2 opposite-direction rows`, () => {
       const d = dom(page);
-      const mq = d.querySelector('.revmq');
-      expect(mq, page + ' needs .revmq').toBeTruthy();
-      const rows = mq.querySelectorAll('.revmq-row');
+      const mqs = reviewMq(d);
+      expect(mqs.length, page + ' needs a reviews .revmq').toBe(1);
+      const rows = mqs[0].querySelectorAll('.revmq-row');
       expect(rows.length).toBe(2);
       expect(rows[1].classList.contains('rev')).toBe(true);
     });
 
     it(`${page}: each row loops seamlessly (exact duplicate set)`, () => {
       const d = dom(page);
-      d.querySelectorAll('.revmq-track').forEach((track) => {
+      reviewMq(d).forEach((mq) => mq.querySelectorAll('.revmq-track').forEach((track) => {
         const cards = [...track.children];
         expect(cards.length % 2).toBe(0);
         const half = cards.length / 2;
@@ -31,17 +35,41 @@ describe('scrolling reviews marquee (Glowasy-style, 2 opposite rows)', () => {
           expect(cards[i].textContent).toBe(cards[i + half].textContent);
           expect(cards[i + half].getAttribute('aria-hidden')).toBe('true');
         }
-      });
+      }));
     });
   }
 
+  it('PDP herbs ride the same auto-scroll rows (shilajit 6, pain-oil 12, seamless halves)', () => {
+    const counts = { 'shilajit/index.html': 6, 'pain-oil/index.html': 12 };
+    for (const page of Object.keys(counts)) {
+      const d = dom(page);
+      const mqs = herbsMq(d);
+      expect(mqs.length, page + ' needs a herbs .revmq').toBe(1);
+      const tracks = mqs[0].querySelectorAll('.revmq-track');
+      expect(tracks.length).toBe(2);
+      let total = 0;
+      tracks.forEach((track) => {
+        const cards = [...track.children].filter((c) => c.classList.contains('bcard'));
+        expect(cards.length % 2).toBe(0);
+        const half = cards.length / 2;
+        expect(half).toBeGreaterThanOrEqual(2);
+        for (let i = 0; i < half; i++) {
+          expect(cards[i].textContent).toBe(cards[i + half].textContent);
+          expect(cards[i + half].getAttribute('aria-hidden')).toBe('true');
+        }
+        total += half;
+      });
+      expect(total).toBe(counts[page]);
+    }
+  });
+
   it('home mixes shilajit + oil reviews; PDP pages stay product-specific', () => {
-    const home = dom('index.html').querySelector('.revmq').textContent;
+    const home = reviewMq(dom('index.html'))[0].textContent;
     expect(home).toContain('Shilajit');
     expect(home).toContain('Pain Oil');
-    const oil = dom('pain-oil/index.html').querySelector('.revmq').textContent;
+    const oil = reviewMq(dom('pain-oil/index.html'))[0].textContent;
     expect(oil).not.toContain('Shilajit');
-    const shi = dom('shilajit/index.html').querySelector('.revmq').textContent;
+    const shi = reviewMq(dom('shilajit/index.html'))[0].textContent;
     expect(shi).not.toContain('Pain Relief Oil');
     expect(shi).not.toContain('Pain Oil');
   });
@@ -55,7 +83,7 @@ describe('scrolling reviews marquee (Glowasy-style, 2 opposite rows)', () => {
   });
 
   it('pages load the marquee css (cache-busted past rx20)', () => {
-    const versions = { 'index.html': 'rx25', 'shilajit/index.html': 'rx25', 'pain-oil/index.html': 'rx25' };
+    const versions = { 'index.html': 'rx27', 'shilajit/index.html': 'rx27', 'pain-oil/index.html': 'rx27' };
     for (const page of Object.keys(versions)) {
       expect(read(page), page).toContain('/assets/renee-theme.css?v=' + versions[page]);
       expect(read(page), page).not.toContain('/assets/renee-theme.css?v=rx20');

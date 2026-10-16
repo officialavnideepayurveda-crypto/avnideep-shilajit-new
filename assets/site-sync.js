@@ -102,11 +102,17 @@
     e.preventDefault();
     var id = t.getAttribute('data-site-add');
     try {
-      var key = 'avn_cart_v1';
-      var cart = JSON.parse(localStorage.getItem(key) || '{}');
-      cart[id] = (cart[id] || 0) + 1;
-      localStorage.setItem(key, JSON.stringify(cart));
-      if (window.AVN_CART && window.AVN_CART.renderBadges) window.AVN_CART.renderBadges();
+      if (window.AVN_CART && window.AVN_CART.add) {
+        // cart.js owns the cart: going through it opens the drawer, updates the
+        // badge and fires AddToCart, and keeps its in-memory copy in sync.
+        window.AVN_CART.add(id, 1);
+      } else {
+        var key = 'avn_cart_v1';
+        var cart = JSON.parse(localStorage.getItem(key) || '{}');
+        cart[id] = (cart[id] || 0) + 1;
+        localStorage.setItem(key, JSON.stringify(cart));
+        if (window.AVN_CART && window.AVN_CART.renderBadges) window.AVN_CART.renderBadges();
+      }
       document.dispatchEvent(new CustomEvent('avn:cart-add', { detail: { id: id } }));
     } catch (err) {}
   });

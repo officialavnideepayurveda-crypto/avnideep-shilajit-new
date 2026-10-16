@@ -656,8 +656,9 @@ function capiCookie(n){try{var m=document.cookie.match(new RegExp('(?:^|; )'+n+'
 function sendCAPIEvent(eventName,eventID,customData,userExtra){try{var payload={event_name:eventName,event_id:eventID,custom_data:customData||{},event_source_url:window.location.href,user_data:Object.assign({client_user_agent:navigator.userAgent||'',fbp:capiCookie('_fbp'),fbc:capiCookie('_fbc')},userExtra||{})};fetch('/api/events',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}).catch(function(){});}catch(e){}}
 try{var vcPageEventId='vc_page_'+Date.now()+'_'+Math.random().toString(36).substring(2,8);if(typeof fbq==='function')fbq('track','ViewContent',{value:999,currency:'INR',content_name:'AVN-6PRO-001',content_type:'product',content_ids:['AVN-6PRO-001'],eventID:vcPageEventId});sendCAPIEvent('ViewContent',vcPageEventId,{value:999,currency:'INR',content_name:'AVN-6PRO-001',content_type:'product',content_ids:['AVN-6PRO-001']});}catch(e){}
 </script>
-<link rel="stylesheet" href="/assets/renee-theme.css?v=rx25">
-<script src="/assets/cart.js?v=rx24" defer></script>
+<link rel="stylesheet" href="/assets/renee-theme.css?v=rx27">
+<script src="/assets/cart.js?v=rx26" defer></script>
+<script src="/assets/auth.js?v=1" defer></script>
 </head>
 <body>
 <div class="ticker">Launch offer — <b>60% off</b> Shilajit • Offer ends in <b id="tkTimer">04:45:00</b> • <b>COD available</b></div>
@@ -670,6 +671,8 @@ try{var vcPageEventId='vc_page_'+Date.now()+'_'+Math.random().toString(36).subst
 <a href="/">Home</a>
 <a href="/shilajit/" class="on">Shilajit</a>
 <a href="/pain-oil/">Pain Oil</a>
+<a href="/hair-oil/">Hair Oil</a>
+<a href="/herbal-balm/">Herbal Balm</a>
 <a href="/#reviews">Reviews</a>
 <a href="/contact-us">Contact</a>
 </nav>
@@ -681,7 +684,7 @@ try{var vcPageEventId='vc_page_'+Date.now()+'_'+Math.random().toString(36).subst
 </div>
 </div>
 <div class="rx-catbar"><div class="rx-catbar-in">
-<a href="/">Home</a><a href="/shilajit/" class="on">Shilajit</a><a href="/pain-oil/">Pain Oil</a><a href="/#reviews">Reviews</a><a href="/contact-us">Contact</a>
+<a href="/">Home</a><a href="/shilajit/" class="on">Shilajit</a><a href="/pain-oil/">Pain Oil</a><a href="/hair-oil/">Hair Oil</a><a href="/herbal-balm/">Herbal Balm</a><a href="/#reviews">Reviews</a><a href="/contact-us">Contact</a>
 </div></div>
 </header>
 <div class="crumb"><a href="/">Home</a> › <a href="/shilajit/">6Pro Shilajit</a> › Capsules ₹999</div>
@@ -689,8 +692,8 @@ try{var vcPageEventId='vc_page_'+Date.now()+'_'+Math.random().toString(36).subst
 <div class="ap-hero" id="product">
 <div class="ap-gal">
 <span class="ap-off">60%<br>OFF</span>
-<img class="main" id="mainImg" src="/home/assets/shilajit-1.png" alt="Avnideep 6Pro Shilajit Capsules" data-pimg="shilajit">
-<div class="thumbs" id="thumbs"><img src="/home/assets/shilajit-2.png" alt="Shilajit capsules"><img src="/home/assets/showcase-1.png" alt="Shilajit strength range"><img src="/home/assets/lookbook-1.png" alt="Original Shilajit resin range"></div>
+<img class="main" id="mainImg" src="gallery/g1.webp" alt="Avnideep 6Pro Shilajit Capsules" data-pimg="shilajit">
+<div class="thumbs" id="thumbs"><img class="on" src="gallery/g1.webp" alt="Avnideep 6Pro Shilajit bottle"><img src="gallery/g2.webp" alt="Shilajit capsules pack"><img src="gallery/g3.webp" alt="How to use Shilajit"><img src="gallery/g4.webp" alt="Shilajit benefits"><img src="gallery/g5.webp" alt="Shilajit daily routine"><img src="gallery/g6.webp" alt="Shilajit results"></div>
 </div>
 <div>
 <div class="ap-brand">Avnideep Ayurveda &bull; Wellness</div>
@@ -756,83 +759,25 @@ try{var vcPageEventId='vc_page_'+Date.now()+'_'+Math.random().toString(36).subst
 </div></section>
 
 <section class="card" id="p-ingredients"><h2>Key Ayurvedic Ingredients</h2>
-<div class="hsl" data-hsl role="region" aria-roledescription="carousel" aria-label="Ayurvedic ingredients" tabindex="0">
-<button class="hsl-arrow hsl-prev" type="button" data-hsl-prev aria-label="Pichle herbs">‹</button>
-<div class="hsl-view"><div class="hsl-track" data-hsl-track>
+<div class="revmq" role="region" aria-label="Ayurvedic ingredients, auto-scrolling">
+<div class="revmq-row"><div class="revmq-track">
 <div class="bcard"><span class="bnum">Botanical 01</span><img src="herbs/shilajit-resin.png" alt="Shuddh Himalayan Shilajit" loading="lazy"><b>Shuddh Himalayan Shilajit</b><p>Fulvic acid standardised resin — energy aur stamina ko support karne wala paramparik tatva.</p></div>
 <div class="bcard"><span class="bnum">Botanical 02</span><img src="herbs/ashwagandha.png" alt="Ashwagandha" loading="lazy"><b>Ashwagandha</b><p>Stress management aur strength ko support karne me sahayak classical herb.</p></div>
 <div class="bcard"><span class="bnum">Botanical 03</span><img src="herbs/gokshura.png" alt="Gokshura" loading="lazy"><b>Gokshura</b><p>Vitality aur healthy circulation ko support karne me sahayak.</p></div>
+<div class="bcard" aria-hidden="true"><span class="bnum">Botanical 01</span><img src="herbs/shilajit-resin.png" alt="" loading="lazy"><b>Shuddh Himalayan Shilajit</b><p>Fulvic acid standardised resin — energy aur stamina ko support karne wala paramparik tatva.</p></div>
+<div class="bcard" aria-hidden="true"><span class="bnum">Botanical 02</span><img src="herbs/ashwagandha.png" alt="" loading="lazy"><b>Ashwagandha</b><p>Stress management aur strength ko support karne me sahayak classical herb.</p></div>
+<div class="bcard" aria-hidden="true"><span class="bnum">Botanical 03</span><img src="herbs/gokshura.png" alt="" loading="lazy"><b>Gokshura</b><p>Vitality aur healthy circulation ko support karne me sahayak.</p></div>
+</div></div>
+<div class="revmq-row rev"><div class="revmq-track">
 <div class="bcard"><span class="bnum">Botanical 04</span><b>Kaunch Beej</b><p>Paramparik Ayurvedic routine me upyog kiya jane wala beej.</p></div>
 <div class="bcard"><span class="bnum">Botanical 05</span><img src="herbs/safed-musli.png" alt="Safed Musli" loading="lazy"><b>Safed Musli</b><p>Traditional energy herb — dinbhar ki phurti ko support kare.</p></div>
 <div class="bcard"><span class="bnum">Botanical 06</span><b>+ 9 Classical Herbs</b><p>Santulit 14-herb formulation — koi steroid nahi, koi milawat nahi.</p></div>
+<div class="bcard" aria-hidden="true"><span class="bnum">Botanical 04</span><b>Kaunch Beej</b><p>Paramparik Ayurvedic routine me upyog kiya jane wala beej.</p></div>
+<div class="bcard" aria-hidden="true"><span class="bnum">Botanical 05</span><img src="herbs/safed-musli.png" alt="" loading="lazy"><b>Safed Musli</b><p>Traditional energy herb — dinbhar ki phurti ko support kare.</p></div>
+<div class="bcard" aria-hidden="true"><span class="bnum">Botanical 06</span><b>+ 9 Classical Herbs</b><p>Santulit 14-herb formulation — koi steroid nahi, koi milawat nahi.</p></div>
 </div></div>
-<button class="hsl-arrow hsl-next" type="button" data-hsl-next aria-label="Agli herbs">›</button>
-<div class="hsl-dots" role="tablist" aria-label="Herb chunein" data-hsl-dots></div>
 </div>
 </section>
-<script>
-(function(){
-try{
-var el=document.querySelector('[data-hsl]');
-if(!el)return;
-var track=el.querySelector('[data-hsl-track]');
-var items=[].slice.call(el.querySelectorAll('.bcard'));
-var dotsWrap=el.querySelector('[data-hsl-dots]');
-var prev=el.querySelector('[data-hsl-prev]');
-var next=el.querySelector('[data-hsl-next]');
-if(!track||!items.length||!dotsWrap||!prev||!next)return;
-var idx=0,pages=1;
-function gap(){var cs=getComputedStyle(track);var g=parseFloat(cs.columnGap||cs.gap);return isNaN(g)?12:g;}
-function perView(){var w=items[0].getBoundingClientRect().width,g=gap();if(!w)return 1;return Math.max(1,Math.round((track.clientWidth+g)/(w+g)));}
-function syncDots(){for(var i=0;i<dotsWrap.children.length;i++){dotsWrap.children[i].setAttribute('aria-selected',i===idx?'true':'false');}}
-function buildDots(){
-pages=Math.max(1,items.length-perView()+1);
-if(idx>pages-1)idx=pages-1;
-while(dotsWrap.children.length>pages)dotsWrap.removeChild(dotsWrap.lastChild);
-while(dotsWrap.children.length<pages){
-var b=document.createElement('button'),i=dotsWrap.children.length;
-b.type='button';b.className='hsl-dot';b.setAttribute('role','tab');
-b.setAttribute('aria-label','Herb '+(i+1)+' par jaayein');
-b.setAttribute('data-hsl-dot',i);
-dotsWrap.appendChild(b);
-}
-syncDots();
-}
-function render(){
-if(idx>pages-1)idx=pages-1;
-if(idx<0)idx=0;
-var w=items[0].getBoundingClientRect().width+gap();
-track.style.transform='translate3d('+(-idx*w)+'px,0,0)';
-prev.disabled=idx<=0;
-next.disabled=idx>=pages-1;
-syncDots();
-}
-function go(n){var m=pages-1;idx=n<0?0:(n>m?m:n);render();}
-prev.addEventListener('click',function(){go(idx-1);});
-next.addEventListener('click',function(){go(idx+1);});
-dotsWrap.addEventListener('click',function(e){
-var t=e.target;
-while(t&&t!==dotsWrap&&!t.getAttribute('data-hsl-dot'))t=t.parentNode;
-if(t&&t!==dotsWrap)go(parseInt(t.getAttribute('data-hsl-dot'),10));
-});
-el.addEventListener('keydown',function(e){
-if(e.key==='ArrowLeft'){go(idx-1);e.preventDefault();}
-else if(e.key==='ArrowRight'){go(idx+1);e.preventDefault();}
-});
-var sx=null,dragging=false;
-track.addEventListener('pointerdown',function(e){sx=e.clientX;dragging=true;});
-track.addEventListener('pointerup',function(e){
-if(!dragging)return;dragging=false;
-var dx=e.clientX-sx;
-if(Math.abs(dx)>45)go(dx<0?idx+1:idx-1);else render();
-});
-var rt=null;
-window.addEventListener('resize',function(){clearTimeout(rt);rt=setTimeout(function(){buildDots();render();},150);});
-buildDots();
-render();
-}catch(e){}
-})();
-</script>
 
 <section class="card" id="p-howto"><h2>Kaise use karein? (Daily, 4–6 weeks)</h2>
 <ol class="steps">
@@ -1104,6 +1049,8 @@ render();
 <ul>
 <li><a href="/shilajit/">6Pro Shilajit Capsules</a></li>
 <li><a href="/pain-oil/">Pain Relief Oil 60ml</a></li>
+<li><a href="/hair-oil/">Herbal Hair Oil 100ml</a></li>
+<li><a href="/herbal-balm/">Herbal Balm 10g</a></li>
 <li><a href="/#products">Bestsellers</a></li>
 </ul>
 </nav>
@@ -2193,7 +2140,7 @@ if('serviceWorker' in navigator){
 <script>
 (function(){try{var g=document.querySelector('.gallery'),img=document.getElementById('mainImg');if(!g||!img)return;if(window.matchMedia&&matchMedia('(hover: none)').matches)return;g.addEventListener('pointermove',function(e){try{var b=g.getBoundingClientRect(),x=(e.clientX-b.left)/b.width-.5,y=(e.clientY-b.top)/b.height-.5;img.style.transform='rotateY('+(x*10).toFixed(2)+'deg) rotateX('+(-y*10).toFixed(2)+'deg)';}catch(_){}});g.addEventListener('pointerleave',function(){img.style.transform='';});}catch(_){}})();
 </script>
-<script src="/assets/site-sync.js?v=1" defer></script>
+<script src="/assets/site-sync.js?v=2" defer></script>
 <script src="app-shilajit.v3.js?v=packfix20261016"></script>
 </body>
 </html>

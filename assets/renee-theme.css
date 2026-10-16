@@ -278,6 +278,10 @@ body{background:var(--rx-bg)}
 .revmq-track{display:flex;width:max-content;animation:revmqL 55s linear infinite}
 .revmq-row.rev .revmq-track{animation-name:revmqR;animation-duration:68s}
 .revmq-track>.rx-rev,.revmq-track>.rv{flex:0 0 auto;width:min(330px,80vw);margin-right:12px}
+/* herbs marquee cards — same auto-scroll rows as reviews (revmq) */
+.revmq-track>.bcard{flex:0 0 auto;width:min(270px,74vw);margin-right:12px}
+.revmq-track>.bcard img{width:96px;height:96px;object-fit:cover;border-radius:50%;margin:8px auto 6px;display:block}
+.revmq-track>.bcard:hover{transform:none}
 .revmq-row:hover .revmq-track,.revmq-row:active .revmq-track{animation-play-state:paused}
 @keyframes revmqL{to{transform:translateX(-50%)}}
 @keyframes revmqR{from{transform:translateX(-50%)}to{transform:translateX(0)}}
@@ -1243,3 +1247,67 @@ button.oos,a.oos{pointer-events:none}
 .rx-mnav-call{text-align:center;text-decoration:none;font-weight:800;font-size:13px;color:var(--rx-brand);padding:11px;border:1.5px solid var(--rx-brand);border-radius:999px}
 html.mnav-lock,html.mnav-lock body{overflow:hidden}
 @media(prefers-reduced-motion:reduce){.rx-mnav,.rx-mnav-ov{transition:none}}
+
+/* ==========================================================================
+   32) CUSTOMER LOGIN + MY ORDERS (mobile + PIN, partner-style)
+   ========================================================================== */
+.rx-acctbtn{position:relative;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border:1.5px solid var(--rx-line);border-radius:50%;background:#fff;color:var(--rx-brand);cursor:pointer;margin:0 8px 0 0;padding:0;flex:0 0 auto;transition:border-color .2s,background .2s}
+.rx-acctbtn:hover{border-color:var(--rx-brand);background:var(--rx-soft)}
+.rx-acctbtn svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.rx-acctbtn .acct-n{position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;padding:0 4px;border-radius:99px;background:var(--rx-brand);color:#fff;font-size:10.5px;font-weight:800;display:none;place-items:center;line-height:18px}
+.rx-acctbtn .acct-n.on{display:grid}
+@media(max-width:960px){.rx-acctbtn{display:none}}
+@media(max-width:560px){.rx-acctbtn{width:36px;height:36px;margin-right:6px}}
+/* login modal */
+.auth-ov{position:fixed;inset:0;background:rgba(16,26,20,.55);backdrop-filter:blur(3px);z-index:100000005;opacity:0;pointer-events:none;transition:opacity .25s;display:flex;align-items:center;justify-content:center;padding:16px}
+.auth-ov.on{opacity:1;pointer-events:auto}
+.auth-modal{position:relative;width:min(400px,100%);background:#FFFDFB;border-radius:22px;border:1px solid var(--rx-line);box-shadow:0 40px 90px -30px rgba(0,0,0,.5);padding:26px 22px 22px;max-height:92dvh;overflow-y:auto}
+.auth-x{position:absolute;top:12px;right:12px;width:34px;height:34px;border:1.5px solid var(--rx-line);border-radius:50%;background:#fff;color:var(--rx-ink);font-size:19px;line-height:1;cursor:pointer;display:grid;place-items:center}
+.auth-x:hover{border-color:var(--rx-brand);color:var(--rx-brand)}
+.auth-x.light{border-color:rgba(255,255,255,.35);background:transparent;color:#fff}
+.auth-h b{display:block;font-family:var(--rx-font-d);font-weight:600;font-size:21px;color:var(--rx-ink)}
+.auth-h span{display:block;font-size:12.5px;color:var(--rx-mut);margin-top:3px}
+.auth-err{display:none;background:#FDECEA;color:#B3261E;border:1px solid #F5C6C2;border-radius:12px;padding:10px 14px;font-size:13px;font-weight:600;margin:14px 0 0}
+.auth-field{margin:14px 0 0}
+.auth-field label{display:block;font-size:12.5px;font-weight:800;color:var(--rx-ink);margin-bottom:6px}
+.auth-field input{width:100%;border:1.5px solid var(--rx-line);background:#FCFBF6;border-radius:12px;padding:13px 14px;font-size:16px;color:var(--rx-ink);outline:none;box-sizing:border-box}
+.auth-field input:focus{border-color:var(--rx-brand);box-shadow:0 0 0 3px rgba(18,59,44,.1)}
+.auth-modal .phone-input-wrap{display:flex;align-items:stretch;border:1.5px solid var(--rx-line);border-radius:12px;overflow:hidden;background:#FCFBF6}
+.auth-modal .phone-input-wrap input{border:0;background:transparent;flex:1;min-width:0}
+.auth-btn{display:block;width:100%;border:0;border-radius:12px;background:linear-gradient(135deg,var(--rx-brand),var(--rx-brand2));color:#fff;font-weight:800;font-size:15px;padding:14px;cursor:pointer;margin-top:16px;text-decoration:none;text-align:center;box-sizing:border-box}
+.auth-btn:hover{filter:brightness(1.08)}
+.auth-btn:disabled{opacity:.55;cursor:wait}
+.auth-link{display:block;width:100%;border:0;background:none;color:var(--rx-brand);font-weight:700;font-size:13px;cursor:pointer;margin-top:10px;text-decoration:underline;text-underline-offset:3px}
+.auth-note{font-size:11.5px;color:var(--rx-mut);text-align:center;margin:12px 0 0;line-height:1.6}
+html.auth-lock,html.auth-lock body{overflow:hidden}
+/* my-orders drawer (right slide-in, cart family) */
+.auth-dov{position:fixed;inset:0;background:rgba(16,26,20,.5);backdrop-filter:blur(2px);z-index:100000005;opacity:0;pointer-events:none;transition:opacity .25s}
+.auth-dov.on{opacity:1;pointer-events:auto}
+.auth-dr{position:fixed;top:0;right:0;bottom:0;width:min(420px,94vw);background:#FFFDFB;z-index:100000006;display:flex;flex-direction:column;transform:translateX(102%);transition:transform .32s cubic-bezier(.22,.61,.36,1);box-shadow:-18px 0 50px rgba(14,32,25,.18);border-left:1px solid var(--rx-line)}
+.auth-dr.on{transform:translateX(0)}
+.auth-drh{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;background:var(--rx-brand,#0E3B2E);color:#fff}
+.auth-drh b{font-size:17px;font-family:'Fraunces',Georgia,serif;font-weight:600;display:block}
+.auth-drsub{font-size:11.5px;opacity:.75}
+.auth-items{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:12px}
+.auth-ord{background:#fff;border:1px solid #EDE1D5;border-radius:14px;padding:12px 14px}
+.auth-ord .ord-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.auth-ord .ord-top b{font-size:13.5px;color:#2B211B;line-height:1.3}
+.ord-st{flex:0 0 auto;font-size:10.5px;font-weight:800;padding:4px 10px;border-radius:999px;letter-spacing:.03em}
+.ord-st.placed{background:#FFF4E0;color:#8a5a00}
+.ord-st.done{background:#E7F4EC;color:#1C7A4D}
+.ord-st.ship{background:#E8F0FE;color:#1A56DB}
+.ord-st.cancel{background:#FDECEA;color:#B3261E}
+.ord-meta{display:flex;justify-content:space-between;font-size:11.5px;color:#8A796C;margin-top:6px}
+.ord-bot{font-size:13px;font-weight:800;color:#2B211B;margin-top:6px}
+.auth-loading,.auth-empty{text-align:center;color:#6B5544;font-size:13.5px;padding:30px 10px}
+.auth-empty .e-ico{font-size:36px}
+.auth-empty b{font-family:'Fraunces',Georgia,serif;font-size:16px;color:#2B211B;display:block;margin:6px 0}
+.auth-empty p{margin:0 0 10px;font-size:12.5px}
+.auth-empty .auth-btn{width:auto;display:inline-block;padding:10px 22px}
+.auth-drf{border-top:1px solid #EDE1D5;padding:14px 18px;background:#fff}
+.auth-call{display:block;text-align:center;text-decoration:none;font-weight:800;font-size:13px;color:var(--rx-brand);padding:11px;border:1.5px solid var(--rx-brand);border-radius:999px}
+.auth-dr .auth-note{margin-top:8px}
+[data-auth-slot] a{display:flex;align-items:center;justify-content:space-between;text-decoration:none;color:var(--rx-ink);font-weight:700;font-size:14px;padding:13px 14px;border-radius:12px}
+[data-auth-slot] a small{color:var(--rx-mut);font-weight:600;font-size:11px}
+[data-auth-slot] a:hover{background:var(--rx-soft);color:var(--rx-brand)}
+@media(prefers-reduced-motion:reduce){.auth-ov,.auth-dov,.auth-dr{transition:none}}

@@ -43,6 +43,42 @@
       name: 'Pain Relief Oil', variant: 'Pack of 3',
       img: '/home/assets/packs/oil-3.png',
       cod: 649, prepaid: 649, mrp: 1497, url: '/pain-oil/'
+    },
+    hair: {
+      id: 'hair', sku: 'AVN-HAIR-001',
+      name: 'Herbal Hair Oil', variant: '100ml',
+      img: '/hair-oil/gallery/g1.webp',
+      cod: 465, prepaid: 465, mrp: 499, url: '/hair-oil/'
+    },
+    hair2: {
+      id: 'hair2', sku: 'AVN-HAIR-002',
+      name: 'Herbal Hair Oil', variant: 'Pack of 2',
+      img: '/hair-oil/gallery/g1.webp',
+      cod: 899, prepaid: 899, mrp: 998, url: '/hair-oil/'
+    },
+    hair3: {
+      id: 'hair3', sku: 'AVN-HAIR-003',
+      name: 'Herbal Hair Oil', variant: 'Pack of 3',
+      img: '/hair-oil/gallery/g1.webp',
+      cod: 1299, prepaid: 1299, mrp: 1497, url: '/hair-oil/'
+    },
+    balm: {
+      id: 'balm', sku: 'AVN-BALM-001',
+      name: 'Herbal Balm', variant: '10g Pack of 5',
+      img: '/herbal-balm/gallery/g1.webp',
+      cod: 299, prepaid: 299, mrp: 349, url: '/herbal-balm/'
+    },
+    balm2: {
+      id: 'balm2', sku: 'AVN-BALM-002',
+      name: 'Herbal Balm', variant: 'Pack of 2',
+      img: '/herbal-balm/gallery/g1.webp',
+      cod: 549, prepaid: 549, mrp: 698, url: '/herbal-balm/'
+    },
+    balm3: {
+      id: 'balm3', sku: 'AVN-BALM-003',
+      name: 'Herbal Balm', variant: 'Pack of 3',
+      img: '/herbal-balm/gallery/g1.webp',
+      cod: 799, prepaid: 799, mrp: 1047, url: '/herbal-balm/'
     }
   };
   var KEY = 'avn_cart_v1', FREE_ABOVE = 499, SHIP_FEE = 49;
@@ -126,7 +162,7 @@
       list.innerHTML =
         '<div class="cart-empty">' +
         '<div class="e-ico">🛍️</div><b>Cart khaali hai</b>' +
-        '<p>Shilajit ya Pain Relief Oil add karein — COD available, free shipping ₹499+</p>' +
+        '<p>Shilajit, Pain Oil, Hair Oil ya Balm add karein — COD available, free shipping ₹499+</p>' +
         '<a class="cart-btn2" href="/#products">Shop Bestsellers</a>' +
         '</div>';
     } else {
@@ -202,8 +238,18 @@
      that state must match the cart item, otherwise the payment step shows and
      charges Pack of 1. Cart ids are exactly the pack ids: shilajit|shilajit2|
      shilajit3 and oil|oil2|oil3, matching the PDP pack arrays. ---------- */
+  /* cart id -> PDP family. Must match the `page` each PDP writes/reads in
+     localStorage avn_pack (see apPackIdx/coPackIdx on every product page). */
+  function pageOf(id) {
+    if (id.indexOf('shilajit') === 0) return 'shilajit';
+    if (id.indexOf('hair') === 0) return 'hair';
+    if (id.indexOf('balm') === 0) return 'balm';
+    if (id.indexOf('oil') === 0) return 'oil';
+    return null;
+  }
+
   function syncPack(id) {
-    var page = id.indexOf('shilajit') === 0 ? 'shilajit' : (id.indexOf('oil') === 0 ? 'oil' : null);
+    var page = pageOf(id);
     if (!page) return;
     var tail = id.slice(page.length); // '' | '2' | '3'
     var i = tail ? (parseInt(tail, 10) - 1) : 0;
@@ -211,11 +257,7 @@
     try { localStorage.setItem('avn_pack', JSON.stringify({ page: page, i: i })); } catch (e) {}
   }
 
-  function familyOf(id) {
-    if (id.indexOf('shilajit') === 0) return 'shilajit';
-    if (id.indexOf('oil') === 0) return 'oil';
-    return null;
-  }
+  function familyOf(id) { return pageOf(id); }
 
   function checkout() {
     try {
@@ -362,6 +404,18 @@
       document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeM(); });
     } catch (e) {}
   }
+
+  /* ---------- public API ----------
+     assets/site-sync.js adds admin-created products from the home page. It must
+     go through this cart (not localStorage directly) so the in-memory cart, the
+     drawer, the badge and the AddToCart pixel all stay in sync — a raw
+     localStorage write gets overwritten the next time this cart persists. ---------- */
+  window.AVN_CART = {
+    add: function (id, q) { add(id, q || 1); },
+    count: function () { return itemCount(); },
+    items: function () { return ids().slice(); },
+    renderBadges: function () { renderBadge(); }
+  };
 
   /* ---------- init ---------- */
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', renderBadge);

@@ -75,8 +75,9 @@
 @media(max-width:520px){.vcar-arrow{width:34px;height:34px;font-size:19px}.vcar-prev{left:-4px}.vcar-next{right:-4px}}
 @media(prefers-reduced-motion:reduce){.vcar-track{transition:none}}
 </style>
-<link rel="stylesheet" href="/assets/renee-theme.css?v=rx25">
-<script src="/assets/cart.js?v=rx24" defer></script>
+<link rel="stylesheet" href="/assets/renee-theme.css?v=rx27">
+<script src="/assets/cart.js?v=rx26" defer></script>
+<script src="/assets/auth.js?v=1" defer></script>
 <script>window.addEventListener('load',function(){function l(){if(window.fbq)return;!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','1715387275770711');fbq('track','PageView');}if('requestIdleCallback' in window){requestIdleCallback(l,{timeout:4000});}else{setTimeout(l,2500);}});</script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-HTH3FR9SF6"></script>
 <script>
@@ -115,6 +116,8 @@ gtag('config', 'G-HTH3FR9SF6');
 <a href="/" class="on">Home</a>
 <a href="/shilajit/">Shilajit</a>
 <a href="/pain-oil/">Pain Oil</a>
+<a href="/hair-oil/">Hair Oil</a>
+<a href="/herbal-balm/">Herbal Balm</a>
 <a href="#products">Bestsellers</a>
 <a href="#reviews">Reviews</a>
 <a href="/contact-us">Contact</a>
@@ -131,7 +134,7 @@ gtag('config', 'G-HTH3FR9SF6');
 </div>
 </div>
 <div class="rx-catbar"><div class="rx-catbar-in">
-<a href="/" class="on">Home</a><a href="/shilajit/">Shilajit</a><a href="/pain-oil/">Pain Oil</a><a href="#products">Bestsellers</a><a href="#reviews">Reviews</a><a href="#faq">FAQ</a><a href="/contact-us">Contact</a>
+<a href="/" class="on">Home</a><a href="/shilajit/">Shilajit</a><a href="/pain-oil/">Pain Oil</a><a href="/hair-oil/">Hair Oil</a><a href="/herbal-balm/">Herbal Balm</a><a href="#products">Bestsellers</a><a href="#reviews">Reviews</a><a href="#faq">FAQ</a><a href="/contact-us">Contact</a>
 </div></div>
 </header>
 
@@ -203,6 +206,36 @@ gtag('config', 'G-HTH3FR9SF6');
 <span class="rx-variant">Knee • Back • Joints • Nirgundi + Gandhapura</span>
 <div class="rx-priceline"><span class="mrp">M.R.P</span><s>₹499</s><span class="now">₹249</span><span class="off">50% Off</span></div>
 <a class="rx-add" href="/pain-oil/" data-cart-add="oil">Add to Cart</a>
+</div>
+</div>
+
+<div class="rx-pcard">
+<span class="rx-pcard-badge">New</span>
+<a class="rx-pcard-media" href="/hair-oil/" aria-label="Herbal Hair Oil 100ml">
+<img src="/hair-oil/gallery/g1.webp" alt="Herbal Hair Oil 100ml" loading="lazy" data-pimg="hair">
+<img class="img-b" src="/hair-oil/gallery/g2.webp" alt="Herbal Hair Oil with Bhringraj and Amla" loading="lazy">
+</a>
+<div class="rx-pcard-body">
+<span class="rx-rate">AYUSH • Lab tested • COD</span>
+<a class="rx-pcard-title" href="/hair-oil/">Herbal Hair Oil 100ml</a>
+<span class="rx-variant">100ml • Bhringraj • Amla • Brahmi • Neem</span>
+<div class="rx-priceline"><span class="mrp">M.R.P</span><s>₹499</s><span class="now">₹465</span><span class="off">7% Off</span></div>
+<a class="rx-add" href="/hair-oil/" data-cart-add="hair">Add to Cart</a>
+</div>
+</div>
+
+<div class="rx-pcard">
+<span class="rx-pcard-badge rose">New</span>
+<a class="rx-pcard-media" href="/herbal-balm/" aria-label="Herbal Balm 10g Pack of 5">
+<img src="/herbal-balm/gallery/g1.webp" alt="Herbal Balm 10g Pack of 5" loading="lazy" data-pimg="balm">
+<img class="img-b" src="/herbal-balm/gallery/g2.webp" alt="Herbal Balm with Pudina and Camphor" loading="lazy">
+</a>
+<div class="rx-pcard-body">
+<span class="rx-rate">AYUSH • Lab tested • COD</span>
+<a class="rx-pcard-title" href="/herbal-balm/">Herbal Balm 10g (Pack of 5)</a>
+<span class="rx-variant">Head &amp; body • Pudina • Camphor • Nilgiri</span>
+<div class="rx-priceline"><span class="mrp">M.R.P</span><s>₹349</s><span class="now">₹299</span><span class="off">15% Off</span></div>
+<a class="rx-add" href="/herbal-balm/" data-cart-add="balm">Add to Cart</a>
 </div>
 </div>
 
@@ -573,6 +606,8 @@ start();
 <ul>
 <li><a href="/shilajit/">6Pro Shilajit Capsules</a></li>
 <li><a href="/pain-oil/">Pain Relief Oil 60ml</a></li>
+<li><a href="/hair-oil/">Herbal Hair Oil 100ml</a></li>
+<li><a href="/herbal-balm/">Herbal Balm 10g</a></li>
 <li><a href="/#products">Bestsellers</a></li>
 </ul>
 </nav>
@@ -1092,7 +1127,7 @@ document.addEventListener('click',function(e){
   b.replaceWith(f);
 });
 </script>
-<script src="/assets/site-sync.js?v=1" defer></script>
+<script src="/assets/site-sync.js?v=2" defer></script>
 <script src="/app.v3.js?v=20261016pack1" defer></script>
 </body>
 </html>
