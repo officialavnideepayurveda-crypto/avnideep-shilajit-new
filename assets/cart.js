@@ -297,6 +297,28 @@
     try { window.AVN_CART_STATE = cartState(); } catch (e) {}
   }
 
+  /* Paint the popup's per-item summary lines and title.
+     Driven from HERE rather than from each PDP's openOrderPopup: cart.js is
+     loaded on every page and is guaranteed global, whereas the per-page helpers
+     are module-scoped and window.updatePay is whichever copy ran last (the app
+     bundle's, which knows nothing about the cart). Retries briefly so a summary
+     that is re-rendered a moment later cannot leave the lines out. */
+  function paintPopup() {
+    [0, 150, 400, 900].forEach(function (delay) {
+      setTimeout(function () {
+        try {
+          var st = window.AVN_CART_STATE;
+          if (!st || !st.mixed || !st.items || !st.items.length) return;
+          if (typeof window.renderCartLines === 'function') window.renderCartLines();
+          var sum = document.querySelector('.summary');
+          if (!sum) return;
+          var first = sum.querySelector('.s-row span');
+          if (first) first.textContent = 'Your Cart \u2014 ' + st.count + ' items';
+        } catch (e) {}
+      }, delay);
+    });
+  }
+
   function checkout() {
     try {
       // Drop stale ids (old app versions) that would crash P().url below.
@@ -321,6 +343,7 @@
       var there = p.url.replace(/\/$/, '');
       syncPack(last); // popup must price the pack that is actually in the cart
       publishState(); // ...or the whole cart when it holds several products
+      paintPopup();   // list the cart lines once the popup is up
       if (here === there && typeof openOrderPopup === 'function') { try { openOrderPopup(); } catch (e) {} }
       else { location.href = p.url + '?open=1'; }
     } catch (e) {}

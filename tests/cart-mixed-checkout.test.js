@@ -150,6 +150,20 @@ describe('mixed cart checks out through the order popup (not WhatsApp)', () => {
     expect(wa.filter((u) => /wa\.me/.test(u))).toEqual([]);
   });
 
+  it('renders the cart lines as soon as the popup opens, before any radio change', async () => {
+    // window.updatePay is whichever copy ran last, and the app bundle's version
+    // (which does not know about the cart) can overwrite the inline one. The
+    // per-item lines must therefore be painted by openOrderPopup itself.
+    const { w, wa } = bootPage(SHILAJIT, SHILAJIT_APP, {
+      cart: MIXED, url: 'https://shop.avnideep.in/shilajit/',
+    });
+    await openFromCart(w);
+
+    expect(wa.filter((u) => /wa\.me/.test(u))).toEqual([]);
+    expect(w.document.querySelectorAll('.summary .s-row[data-cart-line]').length).toBe(2);
+    expect(w.document.querySelector('.summary .s-row span').textContent).toContain('Your Cart');
+  });
+
   it('the explicit Order-on-WhatsApp button still opens WhatsApp', async () => {
     const { w, wa } = bootPage(SHILAJIT, SHILAJIT_APP, {
       cart: MIXED, url: 'https://shop.avnideep.in/shilajit/',

@@ -1150,6 +1150,8 @@ function renderCartLines(){
     });
   }catch(e){}
 }
+window.cartTitle = cartTitle;
+window.renderCartLines = renderCartLines;
 function updatePay(){
   var m = getPay();
   var PK = coPack();
@@ -1827,6 +1829,10 @@ function openOrderPopup(){
      otherwise Pack of 2/3 shows Pack-of-1 prices. */
   if(typeof window.updatePay === 'function'){ try{ window.updatePay(); }catch(e){} }
   else if(typeof updatePay === 'function'){ try{ updatePay(); }catch(e){} }
+  /* window.updatePay may be the app bundle's copy, which does not know about
+     the cart, so repaint the per-item cart lines here as well (a no-op for a
+     single-product cart). */
+  if(typeof window.renderCartLines === 'function'){ try{ window.renderCartLines(); }catch(e){} }
   setTimeout(function(){
     var n = document.getElementById('cName');
     if(n) n.focus({preventScroll:true});
