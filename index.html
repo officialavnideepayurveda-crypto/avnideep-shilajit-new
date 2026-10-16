@@ -75,7 +75,7 @@
 @media(max-width:520px){.vcar-arrow{width:34px;height:34px;font-size:19px}.vcar-prev{left:-4px}.vcar-next{right:-4px}}
 @media(prefers-reduced-motion:reduce){.vcar-track{transition:none}}
 </style>
-<link rel="stylesheet" href="/assets/renee-theme.css?v=rx21">
+<link rel="stylesheet" href="/assets/renee-theme.css?v=rx22">
 <script src="/assets/cart.js?v=rx21" defer></script>
 <script>window.addEventListener('load',function(){function l(){if(window.fbq)return;!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','1715387275770711');fbq('track','PageView');}if('requestIdleCallback' in window){requestIdleCallback(l,{timeout:4000});}else{setTimeout(l,2500);}});</script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-HTH3FR9SF6"></script>
@@ -145,6 +145,7 @@ gtag('config', 'G-HTH3FR9SF6');
 <button class="rx-hero-nav rx-hero-prev" aria-label="Previous slide" onclick="go(cur-1)">‹</button>
 <button class="rx-hero-nav rx-hero-next" aria-label="Next slide" onclick="go(cur+1)">›</button>
 <div class="rx-hero-dots" id="dots"><button class="on" aria-label="slide 1"></button><button aria-label="slide 2"></button></div>
+<div class="rx-frame play" aria-hidden="true"><i class="tl"><svg viewBox="0 0 88 88"><path d="M72 8 H8 V72" pathLength="1"/></svg></i><i class="tr"><svg viewBox="0 0 88 88"><path d="M16 8 H80 V72" pathLength="1"/></svg></i><i class="br"><svg viewBox="0 0 88 88"><path d="M80 16 V80 H16" pathLength="1"/></svg></i><i class="bl"><svg viewBox="0 0 88 88"><path d="M72 80 H8 V16" pathLength="1"/></svg></i></div>
 </div></div>
 
 <div class="rx-trust"><div class="rx-trust-in">
@@ -626,6 +627,9 @@ var slides=document.querySelectorAll('.slide'),dots=document.querySelectorAll('#
 function go(n){if(!slides.length)return;cur=(n+slides.length)%slides.length;for(var i=0;i<slides.length;i++){slides[i].classList.toggle('on',i===cur);if(dots[i])dots[i].classList.toggle('on',i===cur);}restart();}
 function restart(){if(tm)clearTimeout(tm);tm=setTimeout(function(){go(cur+1);},5000);}
 for(var d=0;d<dots.length;d++)(function(k){dots[k].addEventListener('click',function(){go(k);});})(d);
+/* premium corner frame: redraw on manual nav only (never on auto-advance) */
+function replayHeroFrame(){try{var f=document.querySelector('.rx-frame');if(!f)return;f.classList.remove('play');void f.offsetWidth;f.classList.add('play');}catch(e){}}
+document.querySelectorAll('.rx-hero-nav,#dots button').forEach(function(b){b.addEventListener('click',replayHeroFrame);});
 /* hand swipe for hero banner */
 (function(){var fr=document.querySelector('.rx-frames');if(!fr)return;var sx=0,dx=0,drag=false;
 fr.addEventListener('touchstart',function(e){sx=e.changedTouches[0].screenX;dx=0;if(tm)clearTimeout(tm);},{passive:true});
