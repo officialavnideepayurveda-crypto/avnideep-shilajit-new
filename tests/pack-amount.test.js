@@ -399,19 +399,38 @@ describe('no pack-of-1 hard-coding left in the checkout code', () => {
   });
 
   it('JS URLs are cache-busted so customers with a stale 1-year-immutable copy re-download', () => {
-    expect(shilajit).toContain('app-shilajit.v3.js?v=packfix20261016');
-    expect(shilajit).not.toContain('app-shilajit.v3.js?v=shiljit1');
-    expect(oil).toContain('app-oil.v3.js?v=packfix20261016');
-    expect(oil).not.toContain('app-oil.v3.js?v=oil2');
+    expect(shilajit).toContain('app-shilajit.v3.js?v=20261017cart');
+    expect(shilajit).not.toContain('app-shilajit.v3.js?v=packfix20261016');
+    expect(oil).toContain('app-oil.v3.js?v=20261017cart');
+    expect(oil).not.toContain('app-oil.v3.js?v=packfix20261016');
     // hair-oil/balm app bundles were edited too
-    expect(read('hair-oil/index.html')).toContain('app-hairoil.v3.js?v=hairbalmfix20261016');
-    expect(read('herbal-balm/index.html')).toContain('app-balm.v3.js?v=hairbalmfix20261016');
+    expect(read('hair-oil/index.html')).toContain('app-hairoil.v3.js?v=20261017cart');
+    expect(read('herbal-balm/index.html')).toContain('app-balm.v3.js?v=20261017cart');
     // cart.js changed too -> every page that loads it must use the new URL
     for (const page of ['index.html', 'shilajit/index.html', 'pain-oil/index.html', 'hair-oil/index.html', 'herbal-balm/index.html']) {
-      expect(read(page), page).toContain('/assets/cart.js?v=rx26');
-      expect(read(page), page).not.toContain('/assets/cart.js?v=rx25');
+      expect(read(page), page).toContain('/assets/cart.js?v=rx28');
+      expect(read(page), page).not.toContain('/assets/cart.js?v=rx26');
       expect(read(page), page).toContain('/assets/site-sync.js?v=2');
       expect(read(page), page).not.toContain('/assets/site-sync.js?v=1"');
+    }
+  });
+
+  it('EVERY first-party script/style reference carries a version query', () => {
+    // A plain `cart.js` (no ?v=) keeps its URL across deploys, so the CDN and
+    // returning browsers pin one copy — which is exactly how a fixed cart.js
+    // stayed invisible while its ?v= token was not bumped.
+    const pages = [
+      'index.html', 'shilajit/index.html', 'pain-oil/index.html',
+      'hair-oil/index.html', 'herbal-balm/index.html', 'about-us.html',
+      'contact-us.html', 'privacy-policy.html', 'refund-policy.html',
+      'shipping-policy.html', 'terms-and-conditions.html', 'disclaimer.html',
+    ];
+    for (const page of pages) {
+      const src = read(page);
+      const refs = [...src.matchAll(/(?:src|href)="([^"]*\.(?:js|css)(?:\?[^"]*)?)"/g)].map((m) => m[1]);
+      const firstParty = refs.filter((r) => !/^https?:|^\/\//.test(r) && !/sw\.js/.test(r));
+      const unversioned = firstParty.filter((r) => !r.includes('?v='));
+      expect(unversioned, `${page}: unversioned local assets`).toEqual([]);
     }
   });
 });
