@@ -440,9 +440,17 @@
 
 
 
-    // Apply default amount
-
-    if (amount === null || isNaN(amount)) amount = isRazorpaySuccess ? 999 : 1250;
+    // Apply default amount (pack-aware safety net: never fall back to Pack-of-1
+    // 999/1250 when the URL + storage both miss but the product name carries
+    // the pack, e.g. old cached redirects).
+    if (amount === null || isNaN(amount)) {
+      var _nm = (name || '').toLowerCase();
+      var _isPack3 = _nm.indexOf('pack of 3') >= 0 || _nm.indexOf('pack 3') >= 0;
+      var _isPack2 = _nm.indexOf('pack of 2') >= 0 || _nm.indexOf('pack 2') >= 0;
+      if (_isPack3) amount = (method === 'cod' || method === 'cod_whatsapp') ? 3350 : (isRazorpaySuccess || method === 'prepaid' ? 2699 : 3350);
+      else if (_isPack2) amount = (method === 'cod' || method === 'cod_whatsapp') ? 2350 : (isRazorpaySuccess || method === 'prepaid' ? 1899 : 2350);
+      else amount = isRazorpaySuccess ? 999 : 1250;
+    }
 
 
 

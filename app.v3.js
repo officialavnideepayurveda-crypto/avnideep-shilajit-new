@@ -1688,7 +1688,7 @@ function initForm(){
       try {
         var rzpResult = await openRazorpayCheckout(payload);
         if (rzpResult.success) {
-          window.location.href = '/thank-you.html?order_id=' + encodeURIComponent(rzpResult.orderId) + '&razorpay_payment_id=' + encodeURIComponent(rzpResult.razorpay_payment_id);
+          window.location.href = '/thank-you.html?order_id=' + encodeURIComponent(rzpResult.orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.product || '') + '&method=prepaid&razorpay_payment_id=' + encodeURIComponent(rzpResult.razorpay_payment_id);
         } else {
           showErr(err, rzpResult.error || 'Payment failed. Please try again.');
           btn.innerHTML = origHTML;
@@ -1830,7 +1830,7 @@ function initForm(){
         try {
           var rzpResult = await openRazorpayCheckout(payload);
           if (rzpResult.success) {
-            window.location.href = '/thank-you.html?order_id=' + encodeURIComponent(rzpResult.orderId) + '&razorpay_payment_id=' + encodeURIComponent(rzpResult.razorpay_payment_id);
+            window.location.href = '/thank-you.html?order_id=' + encodeURIComponent(rzpResult.orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.product || '') + '&method=prepaid&razorpay_payment_id=' + encodeURIComponent(rzpResult.razorpay_payment_id);
           } else {
             showErr(err, rzpResult.error || 'Payment failed. Please try again.');
             btn.innerHTML = origHTML;

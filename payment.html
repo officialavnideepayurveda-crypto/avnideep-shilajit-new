@@ -974,21 +974,21 @@
             <div style="font-size: 13px; font-weight: 700; color: #856404;">⏰ <span id="timer-display-urgent" style="font-family: monospace; color: #d9534f;">15:00</span> बाकी है</div>
           </div>
           
-          <!-- PRICING BREAKDOWN -->
+          <!-- PRICING BREAKDOWN (painted from the real order: amount + mrp from URL) -->
           <div style="background: #fef3c7; border: 1px solid #fcd34d; border-radius: 12px; padding: 12px; margin-bottom: 14px;">
-            <div style="font-size: 11px; font-weight: 700; color: #92400e; margin-bottom: 8px;">🎁 20% Discount!</div>
+            <div style="font-size: 11px; font-weight: 700; color: #92400e; margin-bottom: 8px;" id="pb-off-label">🎁 20% Discount!</div>
             <div style="display: grid; gap: 6px; font-size: 11px; color: #78350f;">
               <div style="display: flex; justify-content: space-between;">
                 <span>MRP:</span>
-                <span style="text-decoration: line-through;">₹1250</span>
+                <span style="text-decoration: line-through;" id="pb-mrp">₹1250</span>
               </div>
               <div style="display: flex; justify-content: space-between; color: #dc2626; font-weight: 700;">
                 <span>Discount:</span>
-                <span>-₹251</span>
+                <span id="pb-disc">-₹251</span>
               </div>
               <div style="border-top: 1px solid #fcd34d; padding-top: 6px; display: flex; justify-content: space-between; font-weight: 700; color: #16a34a;">
                 <span>Pay:</span>
-                <span>₹999 ✓</span>
+                <span id="pb-pay">₹999 ✓</span>
               </div>
             </div>
           </div>
@@ -1095,6 +1095,35 @@
     const amount = Number(params.get('amount') || "999");
     const orderId = params.get('order_id') || "AVN-681164";
     const API_ENDPOINT = "./api/order";
+
+    // Paint the ACTUAL order (amount + product/pack + reference) from the URL.
+    // This page used to show hard-coded pack-of-1 values (₹999 / generic name)
+    // for every order, including Pack of 2 / Pack of 3 purchases.
+    const productName = params.get('name') || params.get('product') || 'Ayurvedic Herbal Supplement';
+    const inr = (n) => '₹' + Number(n).toLocaleString('en-IN');
+    document.querySelectorAll('.amount-value, .mobile-amount-value').forEach(el => { el.textContent = inr(amount); });
+    document.querySelectorAll('.product-name, .mobile-product').forEach(el => { el.textContent = productName; });
+    document.querySelectorAll('.merchant-id').forEach(el => { el.textContent = 'Ref: #' + orderId; });
+
+    // Pricing breakdown follows the SAME order (Pack of 1/2/3), never hard-coded
+    // Pack-of-1 values. mrp can come from the URL; otherwise infer from the
+    // known pack amounts so Pack of 2 (1899/2350) and Pack of 3 (2699/3350)
+    // show their real MRP/discount.
+    (function paintBreakdown(){
+      var mrp = Number(params.get('mrp') || '0');
+      if (!mrp) {
+        var KNOWN = { 999:2500, 1250:2500, 1899:5000, 2350:5000, 2699:7500, 3350:7500, 249:499, 449:998, 649:1497 };
+        mrp = KNOWN[amount] || amount;
+      }
+      if (mrp < amount) mrp = amount;
+      var disc = mrp - amount;
+      var pct = mrp > 0 ? Math.round(disc / mrp * 100) : 0;
+      var set = function(id, txt){ var el = document.getElementById(id); if (el) el.textContent = txt; };
+      set('pb-mrp', inr(mrp));
+      set('pb-disc', '-' + inr(disc));
+      set('pb-pay', inr(amount) + ' ✓');
+      set('pb-off-label', '🎁 ' + pct + '% Discount!');
+    })();
 
     // Safety net: if the Razorpay Redirect URL is ever pointed back to this
     // page by mistake (instead of thank-you.html), forward to thank-you.html

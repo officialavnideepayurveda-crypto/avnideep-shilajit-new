@@ -990,7 +990,7 @@ function updatePay(){
       subText = '🔒 No advance • Pay '+amtF+' on delivery';
     } else {
       mainText = '🔖 Book with ₹100 Advance';
-      subText = '🔐 Pay ₹100 via Razorpay • Pay '+restF+' cash on delivery';
+      subText = '🔐 Pay ₹100 via Razorpay • Pay '+restF+' cash on delivery (Total '+amtF+')';
     }
     btn.innerHTML = '<span>'+mainText+'</span><small>'+subText+'</small>';
   }
@@ -1726,7 +1726,7 @@ function initForm(){
       try {
         var rzpResult = await openRazorpayCheckout(payload);
         if (rzpResult.success) {
-          window.location.href = '/thank-you.html?order_id=' + encodeURIComponent(rzpResult.orderId) + '&razorpay_payment_id=' + encodeURIComponent(rzpResult.razorpay_payment_id);
+          window.location.href = '/thank-you.html?order_id=' + encodeURIComponent(rzpResult.orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.product || '') + '&method=prepaid&razorpay_payment_id=' + encodeURIComponent(rzpResult.razorpay_payment_id);
         } else {
           showErr(err, rzpResult.error || 'Payment failed. Please try again.');
           btn.innerHTML = origHTML;
@@ -1868,7 +1868,7 @@ function initForm(){
         try {
           var rzpResult = await openRazorpayCheckout(payload);
           if (rzpResult.success) {
-            window.location.href = '/thank-you.html?order_id=' + encodeURIComponent(rzpResult.orderId) + '&razorpay_payment_id=' + encodeURIComponent(rzpResult.razorpay_payment_id);
+            window.location.href = '/thank-you.html?order_id=' + encodeURIComponent(rzpResult.orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.product || '') + '&method=prepaid&razorpay_payment_id=' + encodeURIComponent(rzpResult.razorpay_payment_id);
           } else {
             showErr(err, rzpResult.error || 'Payment failed. Please try again.');
             btn.innerHTML = origHTML;
@@ -3852,7 +3852,7 @@ async function openRazorpayCheckout(payload, chargeAmount) {
       key: rzpOrder.key_id || config.key_id,
       amount: rzpOrder.amount, currency: rzpOrder.currency || 'INR',
       name: 'Avnideep Ayurveda',
-      description: 'Avnideep Pain Relief Oil 60ml',
+      description: (payload.product || 'Avnideep Pain Relief Oil 60ml'),
       order_id: rzpOrder.id,
       prefill: { name: payload.name, contact: payload.phone },
       theme: { color: '#7A0C0C' },

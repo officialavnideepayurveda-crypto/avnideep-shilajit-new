@@ -1142,28 +1142,49 @@ function initVideo(){
   });
 }
 var CHECKOUT_MODE = 'advance';
+/* PACK-AWARE CHECKOUT PRICING (payment step) — must show AND charge the pack the
+   customer actually picked (localStorage avn_pack, written by the size selector
+   and by assets/cart.js at checkout). No hard-coded pack-of-1 prices.
+   Mirrors app-oil.v3.js so the pre-app paint and the app paint agree. */
+var CO_PACKS = [
+  {pre:249, cod:249, mrp:499},
+  {pre:449, cod:449, mrp:998},
+  {pre:649, cod:649, mrp:1497}
+];
+function coPackIdx(){
+  try{
+    var p = JSON.parse(localStorage.getItem('avn_pack') || 'null');
+    if (p && p.page === 'oil' && p.i >= 0 && p.i < CO_PACKS.length) return p.i;
+  }catch(e){}
+  return 0;
+}
+function coPack(){ return CO_PACKS[coPackIdx()] || CO_PACKS[0]; }
+function coPackLabel(){ var i = coPackIdx(); return i > 0 ? ' (Pack of ' + (i + 1) + ')' : ''; }
 function getPay(){
   var c = $('input[name="paymentMethod"]:checked');
   return c ? c.value : 'cod';
 }
 function updatePay(){
   var m = getPay();
-  var amt = m === 'prepaid' ? 249 : 249;
-  $('#sAmt').textContent = '₹' + amt;
-  $('#sTot').textContent = '₹' + amt;
+  var PK = coPack();
+  var amt = m === 'prepaid' ? PK.pre : PK.cod;
+  var amtF = '₹' + Number(amt).toLocaleString('en-IN');
+  var restF = '₹' + Number(PK.cod - 100).toLocaleString('en-IN');
+  $('#sAmt').textContent = amtF;
+  $('#sTot').textContent = amtF;
   $('#sSave').hidden = m !== 'prepaid';
   var btn = $('#oBtn');
   if(btn){
     var mainText, subText;
     if(m === 'prepaid'){
-      mainText = 'Order now — ₹249';
+      mainText = 'Order now — ' + amtF;
       subText = 'Secure online payment';
     } else if(typeof CHECKOUT_MODE !== 'undefined' && CHECKOUT_MODE === 'full_cod'){
-      mainText = 'Order now (COD) — ₹249';
-      subText = 'No advance • Pay ₹249 on delivery';
+      mainText = 'Order now (COD) — ' + amtF;
+      subText = 'No advance • Pay ' + amtF + ' on delivery';
     } else {
       mainText = 'Book with ₹100 advance';
-      subText = 'Pay ₹100 via Razorpay • Pay ₹149 cash on delivery';
+      subText = 'Pay ₹100 via Razorpay • Pay ' + restF + ' cash on delivery (Total ' + amtF + ')';
     }
     btn.innerHTML = '<span>' + mainText + '</span><small>' + subText + '</small>';
   }
@@ -1174,19 +1195,24 @@ function updatePay(){
     } else if(typeof CHECKOUT_MODE !== 'undefined' && CHECKOUT_MODE === 'full_cod'){
       ct2.textContent = 'FULL COD • No advance payment';
     } else {
-      ct2.textContent = '₹100 advance • Pay ₹149 cash on delivery';
+      ct2.textContent = '₹100 advance • Pay ' + restF + ' cash on delivery';
     }
   }
   var sv = $('#sSaveAmt');
   if(sv){
-    var total = 250;
-    sv.textContent = '₹' + total;
+    sv.textContent = '₹' + (PK.mrp - PK.pre);
   }
+  var sumNm = $('.summary .s-row span');
+  if(sumNm) sumNm.textContent = 'Avnideep Pain Oil (60ml)' + coPackLabel();
   $$('.pay-card').forEach(function(c){
     var i = $('input[name="paymentMethod"]', c);
     c.classList.toggle('selected', !!(i && i.checked));
   });
 }
+/* Expose pack-aware updater globally: openOrderPopup + PDP pack selector
+   (apSelectPack) call window.updatePay. Without this the popup keeps showing
+   Pack-of-1 defaults even when Pack of 2/3 was selected. */
+try{ window.updatePay = updatePay; window.coPackIdx = coPackIdx; window.coPack = coPack; window.coPackLabel = coPackLabel; }catch(e){}
 function getPhoneValue(){
   var phone = $('#tcPhoneInput');
   if(!phone) return '';
@@ -1195,6 +1221,7 @@ function getPhoneValue(){
 
 function build(status){
   var m = getPay();
+  var PK = coPack();
   var utm = getUtmParams();
   var nameVal = $('#cName') ? $('#cName').value.trim() : '';
   var phoneVal = $('#tcPhoneInput') ? $('#tcPhoneInput').value.trim() : '';
@@ -1205,8 +1232,8 @@ function build(status){
     pincode: '',
     address: '',
     paymentMethod: m,
-    amount: m==='prepaid'?249:249,
-    product: 'Avnideep Pain Relief Oil 60ml',
+    amount: m==='prepaid'?PK.pre:PK.cod,
+    product: 'Avnideep Pain Relief Oil 60ml' + coPackLabel(),
     status: status,
     pageUrl: window.location.href,
     utm_source: utm.source,
@@ -1224,6 +1251,12 @@ function build(status){
   return '';
 }
 function initPay(){
+  if(window.__payInitInline) return; window.__payInitInline = true;
+  /* Delegated listener (parse-time safe): works even if this script runs
+     before the popup HTML is parsed, and for radios re-rendered later. */
+  if(!window.__payDelegated){ window.__payDelegated = true;
+    document.addEventListener('change', function(e){ var t = e && e.target; if(t && t.name === 'paymentMethod'){ try{ updatePay(); }catch(err){} } });
+  }
   $$('input[name="paymentMethod"]').forEach(function(i){i.addEventListener('change', updatePay)});
   $$('.pay-card').forEach(function(c){
     c.addEventListener('click', function(){
@@ -1802,7 +1835,11 @@ function openOrderPopup(){
   var form = document.getElementById('oForm');
   if(form) form.reset();
   if(window.__resetOrderSteps) window.__resetOrderSteps(1);
-  if(typeof updatePay === 'function') updatePay();
+  /* Always repaint the payment step from the selected pack (avn_pack).
+     form.reset() restores COD default radio, so updatePay must run AFTER reset,
+     otherwise Pack of 2/3 shows Pack-of-1 prices. */
+  if(typeof window.updatePay === 'function'){ try{ window.updatePay(); }catch(e){} }
+  else if(typeof updatePay === 'function'){ try{ updatePay(); }catch(e){} }
   setTimeout(function(){
     var n = document.getElementById('cName');
     if(n) n.focus({preventScroll:true});
@@ -1861,6 +1898,10 @@ function init(){
 
 if(document.readyState === 'loading'){
   document.addEventListener('DOMContentLoaded', init);
+  /* Wire payment radios NOW (parse time) so the payment step repaints even
+     on fast popup opens before DOMContentLoaded. Guarded — init() re-entry
+     is a no-op. */
+  try{ initPay(); }catch(e){}
 } else {
   init();
 }
@@ -1974,7 +2015,7 @@ function initSocialProof(){
 <script>
 (function(){try{var g=document.querySelector('.gallery'),img=document.getElementById('mainImg');if(!g||!img)return;if(window.matchMedia&&matchMedia('(hover: none)').matches)return;g.addEventListener('pointermove',function(e){try{var b=g.getBoundingClientRect(),x=(e.clientX-b.left)/b.width-.5,y=(e.clientY-b.top)/b.height-.5;img.style.transform='rotateY('+(x*10).toFixed(2)+'deg) rotateX('+(-y*10).toFixed(2)+'deg)';}catch(_){}});g.addEventListener('pointerleave',function(){img.style.transform='';});}catch(_){}})();
 </script>
-<script src="app-oil.v3.js?v=oil2"></script>
+<script src="app-oil.v3.js?v=packfix20261015"></script>
 <div class="sp-notif" id="spNotif" role="status" aria-live="polite">
 <button class="sp-notif-close" id="spClose" aria-label="Close">×</button>
 
@@ -2398,8 +2439,8 @@ footer.site-foot .wrap{padding:0 16px;font-size:13.5px}
   else boot();
 })();
 </script>
-<link rel="stylesheet" href="/assets/renee-theme.css?v=rx17">
-<script src="/assets/cart.js" defer></script>
+<link rel="stylesheet" href="/assets/renee-theme.css?v=rx20">
+<script src="/assets/cart.js?v=rx21" defer></script>
 <script src="/assets/site-sync.js?v=1" defer></script>
 <script>
 /* YouTube click-to-play facade — Error-153 safe, faster page load */
