@@ -268,9 +268,9 @@ describe('no pack-of-1 hard-coding left in the checkout code', () => {
   });
 
   it('JS URLs are cache-busted so customers with a stale 1-year-immutable copy re-download', () => {
-    expect(shilajit).toContain('app-shilajit.v3.js?v=packfix20261015');
+    expect(shilajit).toContain('app-shilajit.v3.js?v=packfix20261016');
     expect(shilajit).not.toContain('app-shilajit.v3.js?v=shiljit1');
-    expect(oil).toContain('app-oil.v3.js?v=packfix20261015');
+    expect(oil).toContain('app-oil.v3.js?v=packfix20261016');
     expect(oil).not.toContain('app-oil.v3.js?v=oil2');
     // cart.js changed too -> every page that loads it must use the new URL
     for (const page of ['index.html', 'shilajit/index.html', 'pain-oil/index.html']) {
