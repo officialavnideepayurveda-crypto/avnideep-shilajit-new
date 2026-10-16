@@ -116,6 +116,9 @@ body{background:var(--rx-bg)}
   .rx-logo-mark{width:32px;height:32px;font-size:17px}
   .rx-cta{padding:10px 14px;font-size:11px;letter-spacing:.03em}
   .rx-ico{width:38px;height:38px}
+  .rx-icons{gap:4px}
+  .rx-icons a[href^="tel:"]{display:none}
+  .rx-burger{width:38px;height:38px}
 }
 
 /* ==========================================================================
@@ -125,24 +128,23 @@ body{background:var(--rx-bg)}
 .rx-hero .rx-frames{position:relative;max-width:1240px;margin:auto;border-radius:22px;overflow:hidden;box-shadow:var(--rx-shadow-lg)}
 @media(max-width:1240px){.rx-hero .rx-frames{border-radius:0;box-shadow:none}}
 .rx-hero .slide{display:none}
-.rx-hero .slide.on{display:block;animation:rxFade .35s var(--rx-ease)}
+.rx-hero .slide.on{display:block;animation:rxHeroIn .55s var(--rx-ease)}
 /* hero gloss sweep — same shine family as the order buttons (rx-shine), tuned
    soft for photography. Restarts every time a slide becomes active; clipped
    to the banner by .rx-frames{overflow:hidden}. Fast sweep: turant start. */
 .rx-hero .slide{position:relative}
 .rx-hero .slide.on::after{content:"";position:absolute;top:0;bottom:0;left:-60%;width:45%;z-index:2;pointer-events:none;background:linear-gradient(100deg,transparent,rgba(255,255,255,.22),transparent);transform:skewX(-18deg);animation:rx-hero-shine 2.8s ease-in-out infinite}
 @keyframes rx-hero-shine{0%{left:-60%}100%{left:130%}}
-.rx-hero img{width:100%;display:block;height:auto}
+.rx-hero img{width:100%;height:auto;display:block}
 .rx-hero .slide picture{display:block}
 @media(min-width:701px){
 .rx-hero .rx-frames{background:#0d2b20}
-.rx-hero img{max-height:420px;object-fit:contain;object-position:center;background:#0d2b20}
 }
 @media(max-width:700px){
+.rx-hero{padding:10px 0 0}
 .rx-hero .rx-frames{max-width:520px;margin-left:auto;margin-right:auto;background:#0d2b20}
-.rx-hero img{max-height:500px;object-fit:contain;object-position:center top;background:#0d2b20}
 }
-@keyframes rxFade{from{opacity:.4}to{opacity:1}}
+@keyframes rxHeroIn{from{opacity:0;transform:translateX(56px)}to{opacity:1;transform:translateX(0)}}
 .rx-hero-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:3;width:42px;height:42px;border-radius:50%;border:0;background:rgba(255,255,255,.92);color:var(--rx-brand);font-size:22px;font-weight:700;cursor:pointer;box-shadow:0 8px 20px rgba(0,0,0,.18);display:grid;place-items:center;transition:background .2s;line-height:1}
 .rx-hero-nav:hover{background:#fff}
 .rx-hero-prev{left:14px}.rx-hero-next{right:14px}

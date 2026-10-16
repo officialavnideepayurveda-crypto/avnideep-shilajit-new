@@ -274,8 +274,8 @@ describe('no pack-of-1 hard-coding left in the checkout code', () => {
     expect(oil).not.toContain('app-oil.v3.js?v=oil2');
     // cart.js changed too -> every page that loads it must use the new URL
     for (const page of ['index.html', 'shilajit/index.html', 'pain-oil/index.html']) {
-      expect(read(page), page).toContain('/assets/cart.js?v=rx23');
-      expect(read(page), page).not.toContain('/assets/cart.js?v=rx22');
+      expect(read(page), page).toContain('/assets/cart.js?v=rx24');
+      expect(read(page), page).not.toContain('/assets/cart.js?v=rx23');
     }
   });
 });

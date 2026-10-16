@@ -311,13 +311,15 @@
             { h: '/pain-oil/', t: 'Pain Oil' }, { h: '/#products', t: 'Bestsellers' },
             { h: '/#reviews', t: 'Reviews' }, { h: '/contact-us', t: 'Contact' }
           ];
-      var burger = document.createElement('button');
-      burger.type = 'button'; burger.className = 'rx-burger'; burger.setAttribute('aria-label', 'Open menu');
-      burger.setAttribute('data-mnav-open', '');
-      burger.innerHTML = '<svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>';
-      var icons = nav.querySelector('.rx-icons');
-      if (icons) nav.insertBefore(burger, icons);
-      else nav.insertBefore(burger, nav.firstChild);
+      var burger = null;
+      if (!nav.querySelector('.rx-burger')) {
+        burger = document.createElement('button');
+        burger.type = 'button'; burger.className = 'rx-burger'; burger.setAttribute('aria-label', 'Open menu');
+        burger.setAttribute('aria-expanded', 'false');
+        burger.setAttribute('data-mnav-open', '');
+        burger.innerHTML = '<svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>';
+        nav.insertBefore(burger, nav.firstChild);
+      }
       var ov = document.createElement('div');
       ov.className = 'rx-mnav-ov'; ov.setAttribute('data-mnav-close', '');
       var dr = document.createElement('aside');
@@ -342,13 +344,20 @@
         var h = (a.getAttribute('href') || '').split('#')[0].replace(/\/$/, '') || '/';
         if (h === here) a.classList.add('on');
       });
-      function openM() { ov.classList.add('on'); dr.classList.add('on'); document.documentElement.classList.add('mnav-lock'); }
-      function closeM() { ov.classList.remove('on'); dr.classList.remove('on'); document.documentElement.classList.remove('mnav-lock'); }
+      function openM() { ov.classList.add('on'); dr.classList.add('on'); document.documentElement.classList.add('mnav-lock'); syncBurger(true); }
+      function closeM() { ov.classList.remove('on'); dr.classList.remove('on'); document.documentElement.classList.remove('mnav-lock'); syncBurger(false); }
+      function syncBurger(open) {
+        document.querySelectorAll('.rx-burger').forEach(function (b) { b.setAttribute('aria-expanded', open ? 'true' : 'false'); });
+      }
       document.addEventListener('click', function (e) {
         var t = e.target && e.target.closest ? e.target.closest('[data-mnav-open],[data-mnav-close]') : null;
-        if (!t) return;
-        if (t.hasAttribute('data-mnav-open')) openM();
-        else closeM();
+        if (t) {
+          if (t.hasAttribute('data-mnav-open')) openM();
+          else closeM();
+          return;
+        }
+        var link = e.target && e.target.closest ? e.target.closest('.rx-mnav-links a, .rx-mnav-cta a') : null;
+        if (link) closeM();
       });
       document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeM(); });
     } catch (e) {}
