@@ -125,21 +125,22 @@ body{background:var(--rx-bg)}
 .rx-hero .rx-frames{position:relative;max-width:1240px;margin:auto;border-radius:22px;overflow:hidden;box-shadow:var(--rx-shadow-lg)}
 @media(max-width:1240px){.rx-hero .rx-frames{border-radius:0;box-shadow:none}}
 .rx-hero .slide{display:none}
-.rx-hero .slide.on{display:block;animation:rxFade .5s var(--rx-ease)}
+.rx-hero .slide.on{display:block;animation:rxFade .35s var(--rx-ease)}
 /* hero gloss sweep — same shine family as the order buttons (rx-shine), tuned
    soft for photography. Restarts every time a slide becomes active; clipped
-   to the banner by .rx-frames{overflow:hidden}. */
+   to the banner by .rx-frames{overflow:hidden}. Fast sweep: turant start. */
 .rx-hero .slide{position:relative}
-.rx-hero .slide.on::after{content:"";position:absolute;top:0;bottom:0;left:-60%;width:45%;z-index:2;pointer-events:none;background:linear-gradient(100deg,transparent,rgba(255,255,255,.22),transparent);transform:skewX(-18deg);animation:rx-hero-shine 6.5s ease-in-out infinite}
-@keyframes rx-hero-shine{0%,62%{left:-60%}100%{left:130%}}
-.rx-hero img{width:100%;display:block}
+.rx-hero .slide.on::after{content:"";position:absolute;top:0;bottom:0;left:-60%;width:45%;z-index:2;pointer-events:none;background:linear-gradient(100deg,transparent,rgba(255,255,255,.22),transparent);transform:skewX(-18deg);animation:rx-hero-shine 2.8s ease-in-out infinite}
+@keyframes rx-hero-shine{0%{left:-60%}100%{left:130%}}
+.rx-hero img{width:100%;display:block;height:auto}
 .rx-hero .slide picture{display:block}
 @media(min-width:701px){
-.rx-hero img{height:clamp(240px,34vw,420px);object-fit:cover;object-position:center}
+.rx-hero .rx-frames{background:#0d2b20}
+.rx-hero img{max-height:420px;object-fit:contain;object-position:center;background:#0d2b20}
 }
 @media(max-width:700px){
-.rx-hero .rx-frames{max-width:520px;margin-left:auto;margin-right:auto}
-.rx-hero img{height:min(118vw,500px);object-fit:cover;object-position:top}
+.rx-hero .rx-frames{max-width:520px;margin-left:auto;margin-right:auto;background:#0d2b20}
+.rx-hero img{max-height:500px;object-fit:contain;object-position:center top;background:#0d2b20}
 }
 @keyframes rxFade{from{opacity:.4}to{opacity:1}}
 .rx-hero-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:3;width:42px;height:42px;border-radius:50%;border:0;background:rgba(255,255,255,.92);color:var(--rx-brand);font-size:22px;font-weight:700;cursor:pointer;box-shadow:0 8px 20px rgba(0,0,0,.18);display:grid;place-items:center;transition:background .2s;line-height:1}
@@ -1214,3 +1215,29 @@ button.oos,a.oos{pointer-events:none}
 .newgrid .price b{font-size:15px}
 .newgrid .price s{font-size:12px;color:#999;margin-left:5px}
 .newgrid .addbtn{border:1.5px solid var(--rx-brand);color:var(--rx-brand);background:#fff;border-radius:10px;font-weight:800;font-size:13px;padding:9px 18px;cursor:pointer}
+
+/* ==========================================================================
+   31) MOBILE SLIDE MENU (hamburger + left drawer, site-wide)
+   ========================================================================== */
+.rx-burger{display:none;width:40px;height:40px;border:1.5px solid var(--rx-line);border-radius:12px;background:#fff;color:var(--rx-brand);cursor:pointer;place-items:center;flex:0 0 auto;padding:0}
+.rx-burger svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round}
+.rx-burger:hover{background:var(--rx-soft)}
+@media(max-width:960px){.rx-burger{display:grid}}
+.rx-mnav-ov{position:fixed;inset:0;background:rgba(16,26,20,.5);backdrop-filter:blur(2px);z-index:100000001;opacity:0;pointer-events:none;transition:opacity .25s}
+.rx-mnav-ov.on{opacity:1;pointer-events:auto}
+.rx-mnav{position:fixed;top:0;left:0;bottom:0;width:min(320px,86vw);background:#FFFDFB;z-index:100000002;display:flex;flex-direction:column;transform:translateX(-103%);transition:transform .3s cubic-bezier(.22,.61,.36,1);box-shadow:18px 0 50px rgba(14,32,25,.2);border-right:1px solid var(--rx-line)}
+.rx-mnav.on{transform:translateX(0)}
+.rx-mnav-h{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;background:linear-gradient(140deg,var(--rx-brand2),var(--rx-brand));color:#fff}
+.rx-mnav-h img{height:34px;width:auto;background:#fff;border-radius:8px;padding:3px 8px}
+.rx-mnav-h b{font-family:var(--rx-font-d);font-weight:600;font-size:16px}
+.rx-mnav-x{width:34px;height:34px;border:1px solid rgba(255,255,255,.35);border-radius:50%;background:transparent;color:#fff;font-size:19px;cursor:pointer;display:grid;place-items:center;line-height:1}
+.rx-mnav-x:hover{background:rgba(255,255,255,.14)}
+.rx-mnav-links{display:flex;flex-direction:column;padding:10px;gap:2px;overflow-y:auto}
+.rx-mnav-links a{display:flex;align-items:center;justify-content:space-between;text-decoration:none;color:var(--rx-ink);font-weight:700;font-size:14px;letter-spacing:.04em;padding:13px 14px;border-radius:12px}
+.rx-mnav-links a small{color:var(--rx-mut);font-weight:600;font-size:11px}
+.rx-mnav-links a:hover,.rx-mnav-links a.on{background:var(--rx-soft);color:var(--rx-brand)}
+.rx-mnav-cta{margin-top:auto;padding:14px;border-top:1px solid var(--rx-line);display:grid;gap:8px}
+.rx-mnav-cta .rx-cta{text-align:center}
+.rx-mnav-call{text-align:center;text-decoration:none;font-weight:800;font-size:13px;color:var(--rx-brand);padding:11px;border:1.5px solid var(--rx-brand);border-radius:999px}
+html.mnav-lock,html.mnav-lock body{overflow:hidden}
+@media(prefers-reduced-motion:reduce){.rx-mnav,.rx-mnav-ov{transition:none}}

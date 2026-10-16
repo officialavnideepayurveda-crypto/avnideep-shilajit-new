@@ -22,7 +22,7 @@ describe('homepage hero gloss sweep (order-button shine family)', () => {
   it('active slide carries a light sweep overlay', () => {
     expect(css).toContain('.rx-hero .slide.on::after');
     expect(css).toContain('@keyframes rx-hero-shine');
-    expect(css).toContain('animation:rx-hero-shine 6.5s ease-in-out infinite');
+    expect(css).toContain('animation:rx-hero-shine 2.8s ease-in-out infinite');
     // same skewed-band language as the order buttons
     expect(css).toContain('skewX(-18deg)');
     expect(css).toContain('rgba(255,255,255,.22)');
@@ -50,6 +50,6 @@ describe('homepage hero gloss sweep (order-button shine family)', () => {
   });
 
   it('homepage loads sweep css (cache-busted)', () => {
-    expect(html).toContain('/assets/renee-theme.css?v=rx23');
+    expect(html).toContain('/assets/renee-theme.css?v=rx24');
   });
 });

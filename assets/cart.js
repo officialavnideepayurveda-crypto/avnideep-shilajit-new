@@ -296,7 +296,67 @@
     else setTimeout(openPopupNow, 700);
   }
 
+  /* ---------- mobile slide menu (auto-build from .rx-links, site-wide) ---------- */
+  function buildMnav() {
+    try {
+      var nav = document.querySelector('.rx-nav');
+      if (!nav || document.querySelector('.rx-mnav')) return;
+      var links = document.querySelector('.rx-links');
+      var items = links
+        ? Array.prototype.slice.call(links.querySelectorAll('a')).map(function (a) {
+            return { h: a.getAttribute('href'), t: a.textContent.trim(), on: a.classList.contains('on') };
+          })
+        : [
+            { h: '/', t: 'Home' }, { h: '/shilajit/', t: 'Shilajit' },
+            { h: '/pain-oil/', t: 'Pain Oil' }, { h: '/#products', t: 'Bestsellers' },
+            { h: '/#reviews', t: 'Reviews' }, { h: '/contact-us', t: 'Contact' }
+          ];
+      var burger = document.createElement('button');
+      burger.type = 'button'; burger.className = 'rx-burger'; burger.setAttribute('aria-label', 'Open menu');
+      burger.setAttribute('data-mnav-open', '');
+      burger.innerHTML = '<svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>';
+      var icons = nav.querySelector('.rx-icons');
+      if (icons) nav.insertBefore(burger, icons);
+      else nav.insertBefore(burger, nav.firstChild);
+      var ov = document.createElement('div');
+      ov.className = 'rx-mnav-ov'; ov.setAttribute('data-mnav-close', '');
+      var dr = document.createElement('aside');
+      dr.className = 'rx-mnav'; dr.setAttribute('role', 'dialog'); dr.setAttribute('aria-label', 'Site menu');
+      dr.innerHTML =
+        '<div class="rx-mnav-h"><span style="display:flex;align-items:center;gap:10px">' +
+          '<img src="https://cdn.avnideepayurveda.in/product-images/logoyes.png" alt="Avnideep">' +
+          '<b>Menu</b></span>' +
+          '<button type="button" class="rx-mnav-x" data-mnav-close aria-label="Close menu">&times;</button></div>' +
+        '<nav class="rx-mnav-links">' +
+          items.map(function (l) {
+            return '<a href="' + l.h + '"' + (l.on ? ' class="on"' : '') + '><span>' + l.t + '</span><small>→</small></a>';
+          }).join('') +
+          '<a href="/#faq"><span>FAQ</span><small>→</small></a>' +
+        '</nav>' +
+        '<div class="rx-mnav-cta"><a class="rx-cta" href="/#products">Shop Now</a>' +
+        '<a class="rx-mnav-call" href="tel:+917060101043">Call +91 70601 01043</a></div>';
+      document.body.appendChild(ov);
+      document.body.appendChild(dr);
+      var here = (location.pathname || '/').replace(/\/$/, '') || '/';
+      dr.querySelectorAll('.rx-mnav-links a').forEach(function (a) {
+        var h = (a.getAttribute('href') || '').split('#')[0].replace(/\/$/, '') || '/';
+        if (h === here) a.classList.add('on');
+      });
+      function openM() { ov.classList.add('on'); dr.classList.add('on'); document.documentElement.classList.add('mnav-lock'); }
+      function closeM() { ov.classList.remove('on'); dr.classList.remove('on'); document.documentElement.classList.remove('mnav-lock'); }
+      document.addEventListener('click', function (e) {
+        var t = e.target && e.target.closest ? e.target.closest('[data-mnav-open],[data-mnav-close]') : null;
+        if (!t) return;
+        if (t.hasAttribute('data-mnav-open')) openM();
+        else closeM();
+      });
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeM(); });
+    } catch (e) {}
+  }
+
   /* ---------- init ---------- */
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', renderBadge);
   else renderBadge();
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', buildMnav);
+  else buildMnav();
 })();
