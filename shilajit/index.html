@@ -656,7 +656,7 @@ function capiCookie(n){try{var m=document.cookie.match(new RegExp('(?:^|; )'+n+'
 function sendCAPIEvent(eventName,eventID,customData,userExtra){try{var payload={event_name:eventName,event_id:eventID,custom_data:customData||{},event_source_url:window.location.href,user_data:Object.assign({client_user_agent:navigator.userAgent||'',fbp:capiCookie('_fbp'),fbc:capiCookie('_fbc')},userExtra||{})};fetch('/api/events',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}).catch(function(){});}catch(e){}}
 try{var vcPageEventId='vc_page_'+Date.now()+'_'+Math.random().toString(36).substring(2,8);if(typeof fbq==='function')fbq('track','ViewContent',{value:999,currency:'INR',content_name:'AVN-6PRO-001',content_type:'product',content_ids:['AVN-6PRO-001'],eventID:vcPageEventId});sendCAPIEvent('ViewContent',vcPageEventId,{value:999,currency:'INR',content_name:'AVN-6PRO-001',content_type:'product',content_ids:['AVN-6PRO-001']});}catch(e){}
 </script>
-<link rel="stylesheet" href="/assets/renee-theme.css?v=rx20">
+<link rel="stylesheet" href="/assets/renee-theme.css?v=rx21">
 <script src="/assets/cart.js?v=rx21" defer></script>
 </head>
 <body>
@@ -856,13 +856,31 @@ render();
 
 <section class="card"><h2>Customer reviews — real results</h2>
 <p class="lead">2,481+ verified reviews — energy, stamina aur daily wellness me real experience.</p>
-<div class="rvgrid">
+<div class="revmq" role="region" aria-label="Customer reviews, auto-scrolling">
+<div class="revmq-row"><div class="revmq-track">
 <div class="rv"><span class="tav">R</span><span class="stars">★★★★★</span><br><b>Rahul Sharma, Delhi</b> <small>✓ Verified</small><br>“3 months se use kar raha hu, energy levels through the roof! Fatigue walo ke liye highly recommended.”</div>
 <div class="rv"><span class="tav">A</span><span class="stars">★★★★★</span><br><b>Ayush Bhatt</b> <small>✓ Verified · Google</small><br>“Best service from Avnideep Ayurveda and special thanks to Mr. Vivek Ji.”</div>
 <div class="rv"><span class="tav">S</span><span class="stars">★★★★★</span><br><b>Surendra Bharti</b> <small>✓ Verified · Google</small><br>“Best quality product and timely delivery.”</div>
+<div class="rv"><span class="tav">R</span><span class="stars">★★★★★</span><br><b>Rohit Verma, Indore</b> <small>✓ Verified</small><br>“Subah ki thakaan kam lagti hai. 1 mahine se roz 1 capsule — gym me stamina better hai.”</div>
+<div class="rv"><span class="tav">D</span><span class="stars">★★★★★</span><br><b>Deepak Yadav, Varanasi</b> <small>✓ Verified</small><br>“Lab report ka QR dekhkar bharosa hua. Pehle single liya tha, ab Pack of 2 mangwaya.”</div>
+<div class="rv" aria-hidden="true"><span class="tav">R</span><span class="stars">★★★★★</span><br><b>Rahul Sharma, Delhi</b> <small>✓ Verified</small><br>“3 months se use kar raha hu, energy levels through the roof! Fatigue walo ke liye highly recommended.”</div>
+<div class="rv" aria-hidden="true"><span class="tav">A</span><span class="stars">★★★★★</span><br><b>Ayush Bhatt</b> <small>✓ Verified · Google</small><br>“Best service from Avnideep Ayurveda and special thanks to Mr. Vivek Ji.”</div>
+<div class="rv" aria-hidden="true"><span class="tav">S</span><span class="stars">★★★★★</span><br><b>Surendra Bharti</b> <small>✓ Verified · Google</small><br>“Best quality product and timely delivery.”</div>
+<div class="rv" aria-hidden="true"><span class="tav">R</span><span class="stars">★★★★★</span><br><b>Rohit Verma, Indore</b> <small>✓ Verified</small><br>“Subah ki thakaan kam lagti hai. 1 mahine se roz 1 capsule — gym me stamina better hai.”</div>
+<div class="rv" aria-hidden="true"><span class="tav">D</span><span class="stars">★★★★★</span><br><b>Deepak Yadav, Varanasi</b> <small>✓ Verified</small><br>“Lab report ka QR dekhkar bharosa hua. Pehle single liya tha, ab Pack of 2 mangwaya.”</div>
+</div></div>
+<div class="revmq-row rev"><div class="revmq-track">
 <div class="rv"><span class="tav">V</span><span class="stars">★★★★★</span><br><b>Vikram Patel, Mumbai</b> <small>✓ Verified</small><br>“Dost ki salah par liya. 3 din me delivery mil gayi, packing premium thi.”</div>
 <div class="rv"><span class="tav">S</span><span class="stars">★★★★★</span><br><b>Suresh Kumar, Bangalore</b> <small>✓ Verified</small><br>“Prepaid offer me liya. Koi side effect nahi. 10/10 recommend.”</div>
 <div class="rv"><span class="tav">A</span><span class="stars">★★★★☆</span><br><b>Amit Singh, Lucknow</b> <small>✓ Verified</small><br>“Ab kaafi better aur active feel karta hu. Dinbhar energy bani rehti hai.”</div>
+<div class="rv"><span class="tav">N</span><span class="stars">★★★★★</span><br><b>Neha Gupta, Jaipur</b> <small>✓ Verified</small><br>“Papa (58) ke liye liya, kehte hain dinbhar active rehte hain. COD me 3 din me delivery.”</div>
+<div class="rv"><span class="tav">K</span><span class="stars">★★★★☆</span><br><b>Karan Mehta, Surat</b> <small>✓ Verified</small><br>“Dusre brand se switch kiya — ye wala bhari nahi lagta, neend bhi achhi aati hai.”</div>
+<div class="rv" aria-hidden="true"><span class="tav">V</span><span class="stars">★★★★★</span><br><b>Vikram Patel, Mumbai</b> <small>✓ Verified</small><br>“Dost ki salah par liya. 3 din me delivery mil gayi, packing premium thi.”</div>
+<div class="rv" aria-hidden="true"><span class="tav">S</span><span class="stars">★★★★★</span><br><b>Suresh Kumar, Bangalore</b> <small>✓ Verified</small><br>“Prepaid offer me liya. Koi side effect nahi. 10/10 recommend.”</div>
+<div class="rv" aria-hidden="true"><span class="tav">A</span><span class="stars">★★★★☆</span><br><b>Amit Singh, Lucknow</b> <small>✓ Verified</small><br>“Ab kaafi better aur active feel karta hu. Dinbhar energy bani rehti hai.”</div>
+<div class="rv" aria-hidden="true"><span class="tav">N</span><span class="stars">★★★★★</span><br><b>Neha Gupta, Jaipur</b> <small>✓ Verified</small><br>“Papa (58) ke liye liya, kehte hain dinbhar active rehte hain. COD me 3 din me delivery.”</div>
+<div class="rv" aria-hidden="true"><span class="tav">K</span><span class="stars">★★★★☆</span><br><b>Karan Mehta, Surat</b> <small>✓ Verified</small><br>“Dusre brand se switch kiya — ye wala bhari nahi lagta, neend bhi achhi aati hai.”</div>
+</div></div>
 </div>
 <h3 style="color:#0E3B2E;margin:14px 0 4px">Rating breakdown — 4.8/5 (2,481 reviews)</h3>
 <div class="bars">

@@ -261,6 +261,19 @@ body{background:var(--rx-bg)}
 .rx-rev .who{display:flex;align-items:center;gap:10px;margin-top:10px;font-size:13px}
 .rx-rev .ava{width:36px;height:36px;border-radius:50%;background:linear-gradient(140deg,var(--rx-brand),var(--rx-brand2));color:var(--rx-gold);display:grid;place-items:center;font-weight:800;font-size:15px}
 
+/* scrolling reviews marquee (auto-moving rows, pure CSS — no JS needed).
+   Each .revmq-track holds exactly 2 copies of the same card set; the -50%
+   loop is seamless. Row 2 (.rev) runs in the opposite direction. */
+.revmq{display:grid;gap:12px;margin-top:22px}
+.revmq-row{overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 5%,#000 95%,transparent);mask-image:linear-gradient(90deg,transparent,#000 5%,#000 95%,transparent)}
+.revmq-track{display:flex;width:max-content;animation:revmqL 55s linear infinite}
+.revmq-row.rev .revmq-track{animation-name:revmqR;animation-duration:68s}
+.revmq-track>.rx-rev,.revmq-track>.rv{flex:0 0 auto;width:min(330px,80vw);margin-right:12px}
+.revmq-row:hover .revmq-track,.revmq-row:active .revmq-track{animation-play-state:paused}
+@keyframes revmqL{to{transform:translateX(-50%)}}
+@keyframes revmqR{from{transform:translateX(-50%)}to{transform:translateX(0)}}
+@media(prefers-reduced-motion:reduce){.revmq-track{animation:none}}
+
 /* CTA band */
 .rx-cta-band{background:linear-gradient(140deg,var(--rx-brand2),var(--rx-brand) 60%,#1C5240);color:#fff;border-radius:26px;padding:clamp(30px,5vw,56px) clamp(20px,4vw,48px);text-align:center;box-shadow:var(--rx-shadow-lg)}
 .rx-cta-band .rx-h{color:#fff}
