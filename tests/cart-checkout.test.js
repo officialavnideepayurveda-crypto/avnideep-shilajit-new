@@ -35,7 +35,7 @@ function bootCart(pathname) {
 }
 const click = (w, sel) => w.document.querySelector(sel).dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
 
-describe('cart checkout button: same-family lines open the popup, not WhatsApp', () => {
+describe('cart checkout button: every cart opens the order popup (WhatsApp is only the explicit button)', () => {
   it('Pack 1 + Pack 2 (Pack 2 added last) -> popup with Pack of 2', () => {
     const w = bootCart('/shilajit/');
     click(w, '[data-cart-add="shilajit"]');
@@ -66,14 +66,53 @@ describe('cart checkout button: same-family lines open the popup, not WhatsApp',
     expect(JSON.parse(w.localStorage.getItem('avn_pack'))).toEqual({ page: 'oil', i: 2 });
   });
 
-  it('truly mixed cart (shilajit + oil) still goes to WhatsApp', () => {
+  it('mixed cart (shilajit + oil) goes to the checkout popup, not WhatsApp', () => {
     const w = bootCart('/shilajit/');
     click(w, '[data-cart-add="shilajit"]');
-    click(w, '[data-cart-add="oil2"]');
+    click(w, '[data-cart-add="oil2"]'); // oil added last -> its PDP hosts the popup
     click(w, '[data-cart-checkout]');
+    // Used to open wa.me here. It now routes to the other product's PDP with
+    // ?open=1 (jsdom cannot follow location.href, so only assert it is NOT
+    // WhatsApp); tests/cart-mixed-checkout.test.js covers what the popup then
+    // charges.
     expect(w.openedPopup).toBe(0);
+    expect(w.openedUrls.filter((u) => /wa\.me/.test(u)), 'must not route to WhatsApp').toEqual([]);
+    expect(w.AVN_CART_STATE.mixed).toBe(true);
+    expect(w.AVN_CART_STATE.families.sort()).toEqual(['oil', 'shilajit']);
+  });
+
+  it('mixed cart whose last line is on this page opens the popup here, with the whole cart priced', () => {
+    const w = bootCart('/shilajit/');
+    click(w, '[data-cart-add="oil"]');
+    click(w, '[data-cart-add="shilajit"]'); // shilajit last -> stays on /shilajit/
+    click(w, '[data-cart-checkout]');
+    expect(w.openedPopup).toBe(1);
+    expect(w.openedUrls.length).toBe(0);
+    expect(w.AVN_CART_STATE.mixed).toBe(true);
+    expect(w.AVN_CART_STATE.items.length).toBe(2);
+    expect(w.AVN_CART_STATE.codTotal).toBe(249 + 1250);
+    expect(w.AVN_CART_STATE.prepaidTotal).toBe(249 + 999);
+    expect(w.AVN_CART_STATE.count).toBe(2);
+  });
+
+  it('a single-product cart is not marked mixed', () => {
+    const w = bootCart('/shilajit/');
+    click(w, '[data-cart-add="shilajit"]');
+    click(w, '[data-cart-checkout]');
+    expect(w.AVN_CART_STATE.mixed).toBe(false);
+    expect(w.openedPopup).toBe(1);
+    expect(w.openedUrls.length).toBe(0);
+  });
+
+  it('the explicit Order-on-WhatsApp button still routes to WhatsApp', () => {
+    const w = bootCart('/shilajit/');
+    click(w, '[data-cart-add="shilajit"]');
+    click(w, '[data-cart-add="oil"]');
+    w.document.body.insertAdjacentHTML('beforeend', '<button type="button" data-cart-wa>WA</button>');
+    click(w, '[data-cart-wa]');
     expect(w.openedUrls.length).toBe(1);
     expect(w.openedUrls[0]).toContain('wa.me');
+    expect(w.openedPopup).toBe(0);
   });
 
   it('stale unknown ids do not crash checkout; valid line still opens popup', () => {

@@ -963,8 +963,8 @@ var AP_PACKS=[
 {pre:465,cod:465,mrp:499,sku:'AVN-HAIR-001'},
 {pre:899,cod:899,mrp:998,sku:'AVN-HAIR-002'},
 {pre:1299,cod:1299,mrp:1497,sku:'AVN-HAIR-003'}];
-function apPack(){try{var p=JSON.parse(localStorage.getItem('avn_pack')||'null');if(p&&p.page==='hair'&&p.i>=0&&p.i<AP_PACKS.length)return AP_PACKS[p.i];}catch(e){}return AP_PACKS[0];}
-function apPackN(){try{var p=JSON.parse(localStorage.getItem('avn_pack')||'null');if(p&&p.page==='hair'&&p.i>0)return ' (Pack of '+(p.i+1)+')';}catch(e){}return '';}
+function apPack(){var CS=window.AVN_CART_STATE;if(CS&&CS.mixed&&CS.items&&CS.items.length)return{pre:CS.prepaidTotal,cod:CS.codTotal,mrp:CS.mrpTotal,sku:'AVN-CART'};try{var p=JSON.parse(localStorage.getItem('avn_pack')||'null');if(p&&p.page==='hair'&&p.i>=0&&p.i<AP_PACKS.length)return AP_PACKS[p.i];}catch(e){}return AP_PACKS[0];}
+function apPackN(){var CS=window.AVN_CART_STATE;if(CS&&CS.mixed&&CS.items&&CS.items.length)return' ('+CS.count+' items)';try{var p=JSON.parse(localStorage.getItem('avn_pack')||'null');if(p&&p.page==='hair'&&p.i>0)return ' (Pack of '+(p.i+1)+')';}catch(e){}return '';}
 function getPay(){
   var c = $('input[name="paymentMethod"]:checked');
   return c ? c.value : 'advance';

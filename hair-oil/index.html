@@ -1115,11 +1115,40 @@ function coPackIdx(){
   }catch(e){}
   return 0;
 }
-function coPack(){ return CO_PACKS[coPackIdx()] || CO_PACKS[0]; }
+function coPack(){ var CS=window.AVN_CART_STATE; if(CS && CS.mixed && CS.items && CS.items.length) return {pre:CS.prepaidTotal, cod:CS.codTotal, mrp:CS.mrpTotal, sku:'AVN-CART'}; return CO_PACKS[coPackIdx()] || CO_PACKS[0]; }
 function coPackLabel(){ var i = coPackIdx(); return i > 0 ? ' (Pack of ' + (i + 1) + ')' : ''; }
 function getPay(){
   var c = $('input[name="paymentMethod"]:checked');
   return c ? c.value : 'cod';
+}
+/* ---- cart-aware checkout (a cart holding 2+ products) ----
+   window.AVN_CART_STATE is published by assets/cart.js on load and on every
+   cart mutation. When the cart spans more than one product family the popup
+   prices itself from that state (coPack/apPack) and lists the lines here.
+   A single-product cart leaves AVN_CART_STATE.mixed false, so that flow is
+   unchanged. */
+function cartTitle(base){ var CS=window.AVN_CART_STATE; return (CS && CS.mixed && CS.items && CS.items.length) ? ('Your Cart \u2014 '+CS.count+' items') : (base + coPackLabel()); }
+function renderCartLines(){
+  try{
+    var CS=window.AVN_CART_STATE;
+    var prev=document.querySelectorAll('.summary .s-row[data-cart-line]');
+    for(var i=prev.length-1;i>=0;i--){var n=prev[i];if(n.parentNode)n.parentNode.removeChild(n);}
+    if(!CS||!CS.mixed||!CS.items||!CS.items.length)return;
+    var sum=document.querySelector('.order-popup .summary')||document.querySelector('.summary'); if(!sum)return;
+    var anchor=sum.querySelector('.s-row'); if(!anchor)return;
+    var mc=document.querySelector('input[name="paymentMethod"]:checked');
+    var m=mc?mc.value:'cod';
+    CS.items.forEach(function(it){
+      var row=document.createElement('div');
+      row.className='s-row'; row.setAttribute('data-cart-line','');
+      var sp=document.createElement('span');
+      sp.textContent=it.name+' ('+it.variant+') \u00d7 '+it.qty;
+      var b=document.createElement('b');
+      b.textContent='\u20b9'+Number(m==='prepaid'?it.prepaid:it.cod).toLocaleString('en-IN');
+      row.appendChild(sp); row.appendChild(b);
+      anchor.parentNode.insertBefore(row, anchor.nextSibling);
+    });
+  }catch(e){}
 }
 function updatePay(){
   var m = getPay();
@@ -1160,7 +1189,8 @@ function updatePay(){
     sv.textContent = '₹' + (PK.mrp - PK.pre);
   }
   var sumNm = $('.summary .s-row span');
-  if(sumNm) sumNm.textContent = 'Avnideep Hair Oil (100ml)' + coPackLabel();
+  if(sumNm) sumNm.textContent = cartTitle('Avnideep Hair Oil (100ml)');
+  renderCartLines();
   $$('.pay-card').forEach(function(c){
     var i = $('input[name="paymentMethod"]', c);
     c.classList.toggle('selected', !!(i && i.checked));

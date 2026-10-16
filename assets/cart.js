@@ -103,7 +103,7 @@
 
   /* ---------- storage ---------- */
   function load() { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } }
-  function store() { try { localStorage.setItem(KEY, JSON.stringify(cart)); } catch (e) {} }
+  function store() { try { localStorage.setItem(KEY, JSON.stringify(cart)); } catch (e) {} publishState(); }
   var cart = load();
 
   /* ---------- helpers ---------- */
@@ -259,6 +259,44 @@
 
   function familyOf(id) { return pageOf(id); }
 
+  /* ---------- cart -> checkout pricing state ----------
+     The order popup prices itself from a SINGLE pack (localStorage avn_pack), so
+     it used to be unable to represent a cart holding two different products.
+     Mixed carts were therefore dumped on WhatsApp from the Checkout button.
+     Instead, publish the whole cart on window.AVN_CART_STATE and let the popup's
+     apPack() price itself from it (see the `apPack` override in each PDP bundle).
+     The object is re-published on every cart mutation and survives navigation
+     because it is rebuilt from localStorage on load. ---------- */
+  function cartState() {
+    var ks = ids().filter(function (k) { return !!P(k); });
+    var fams = {}, items = [], codTotal = 0, prepaidTotal = 0, mrpTotal = 0;
+    ks.forEach(function (k) {
+      var p = P(k), f = pageOf(k);
+      if (!p || !f) return;
+      fams[f] = true;
+      items.push({
+        id: k, name: p.name, variant: p.variant, family: f, url: p.url,
+        qty: cart[k], cod: p.cod * cart[k], prepaid: p.prepaid * cart[k], mrp: p.mrp * cart[k]
+      });
+      codTotal += p.cod * cart[k];
+      prepaidTotal += p.prepaid * cart[k];
+      mrpTotal += p.mrp * cart[k];
+    });
+    var families = Object.keys(fams);
+    return {
+      mixed: families.length > 1,
+      families: families,
+      items: items,
+      count: itemCount(),
+      codTotal: codTotal,
+      prepaidTotal: prepaidTotal,
+      mrpTotal: mrpTotal
+    };
+  }
+  function publishState() {
+    try { window.AVN_CART_STATE = cartState(); } catch (e) {}
+  }
+
   function checkout() {
     try {
       // Drop stale ids (old app versions) that would crash P().url below.
@@ -270,23 +308,21 @@
       if (dropped) { store(); render(); }
       track('InitiateCheckout', { value: sub(), currency: 'INR', num_items: itemCount() });
       closeDr();
-      // Same product family (e.g. Pack 1 + Pack 2 lines after the customer
-      // changed the pack selector) is NOT a mixed cart: check out with the
-      // most recently added pack instead of dumping to WhatsApp.
-      var fams = {};
-      ks.forEach(function (k) { var f = familyOf(k); if (f) fams[f] = true; });
-      var famKeys = Object.keys(fams);
-      if (famKeys.length === 1) {
-        var last = ks[ks.length - 1];
-        var p = P(last);
-        var here = location.pathname.replace(/\/$/, '');
-        var there = p.url.replace(/\/$/, '');
-        syncPack(last); // popup must price the pack that is actually in the cart
-        if (here === there && typeof openOrderPopup === 'function') { try { openOrderPopup(); } catch (e) {} }
-        else { location.href = p.url + '?open=1'; }
-      } else {
-        waOrder();
-      }
+      // EVERY cart goes through the order popup, including a MIXED cart (two or
+      // more product families). Mixed carts used to be dumped on WhatsApp from
+      // this button because the popup could only price a single pack; window
+      // .AVN_CART_STATE now carries the whole cart and apPack() prices from it.
+      // A single-product cart leaves apPack() untouched, so that flow — the main
+      // revenue path — is unchanged. The explicit "Order on WhatsApp" button
+      // below still calls waOrder().
+      var last = ks[ks.length - 1];
+      var p = P(last);
+      var here = location.pathname.replace(/\/$/, '');
+      var there = p.url.replace(/\/$/, '');
+      syncPack(last); // popup must price the pack that is actually in the cart
+      publishState(); // ...or the whole cart when it holds several products
+      if (here === there && typeof openOrderPopup === 'function') { try { openOrderPopup(); } catch (e) {} }
+      else { location.href = p.url + '?open=1'; }
     } catch (e) {}
   }
 
@@ -418,6 +454,9 @@
   };
 
   /* ---------- init ---------- */
+  // Publish the cart on load too, so a checkout that navigated to another
+  // product page (?open=1) still finds AVN_CART_STATE there.
+  publishState();
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', renderBadge);
   else renderBadge();
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', buildMnav);
