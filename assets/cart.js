@@ -196,20 +196,56 @@
     openDr();
   }
 
+  /* ---------- cart item -> checkout pack state ----------
+     The product page's checkout popup prices itself from localStorage `avn_pack`
+     (page + pack index). If checkout starts from the cart with Pack of 2/3,
+     that state must match the cart item, otherwise the payment step shows and
+     charges Pack of 1. Cart ids are exactly the pack ids: shilajit|shilajit2|
+     shilajit3 and oil|oil2|oil3, matching the PDP pack arrays. ---------- */
+  function syncPack(id) {
+    var page = id.indexOf('shilajit') === 0 ? 'shilajit' : (id.indexOf('oil') === 0 ? 'oil' : null);
+    if (!page) return;
+    var tail = id.slice(page.length); // '' | '2' | '3'
+    var i = tail ? (parseInt(tail, 10) - 1) : 0;
+    if (!(i >= 0 && i <= 2)) i = 0;
+    try { localStorage.setItem('avn_pack', JSON.stringify({ page: page, i: i })); } catch (e) {}
+  }
+
+  function familyOf(id) {
+    if (id.indexOf('shilajit') === 0) return 'shilajit';
+    if (id.indexOf('oil') === 0) return 'oil';
+    return null;
+  }
+
   function checkout() {
-    var ks = ids();
-    if (!ks.length) return;
-    track('InitiateCheckout', { value: sub(), currency: 'INR', num_items: itemCount() });
-    closeDr();
-    if (ks.length === 1) {
-      var p = P(ks[0]);
-      var here = location.pathname.replace(/\/$/, '');
-      var there = p.url.replace(/\/$/, '');
-      if (here === there && typeof openOrderPopup === 'function') { try { openOrderPopup(); } catch (e) {} }
-      else { location.href = p.url + '?open=1'; }
-    } else {
-      waOrder();
-    }
+    try {
+      // Drop stale ids (old app versions) that would crash P().url below.
+      var ks = ids().filter(function (k) { return !!P(k); });
+      if (!ks.length) return;
+      // Purge the stale lines so the drawer stops showing them.
+      var dropped = false;
+      Object.keys(cart).forEach(function (k) { if (!P(k)) { delete cart[k]; dropped = true; } });
+      if (dropped) { store(); render(); }
+      track('InitiateCheckout', { value: sub(), currency: 'INR', num_items: itemCount() });
+      closeDr();
+      // Same product family (e.g. Pack 1 + Pack 2 lines after the customer
+      // changed the pack selector) is NOT a mixed cart: check out with the
+      // most recently added pack instead of dumping to WhatsApp.
+      var fams = {};
+      ks.forEach(function (k) { var f = familyOf(k); if (f) fams[f] = true; });
+      var famKeys = Object.keys(fams);
+      if (famKeys.length === 1) {
+        var last = ks[ks.length - 1];
+        var p = P(last);
+        var here = location.pathname.replace(/\/$/, '');
+        var there = p.url.replace(/\/$/, '');
+        syncPack(last); // popup must price the pack that is actually in the cart
+        if (here === there && typeof openOrderPopup === 'function') { try { openOrderPopup(); } catch (e) {} }
+        else { location.href = p.url + '?open=1'; }
+      } else {
+        waOrder();
+      }
+    } catch (e) {}
   }
 
   function waOrder() {

@@ -123,27 +123,15 @@ body{background:var(--rx-bg)}
    ========================================================================== */
 .rx-hero{padding:14px 0 0}
 .rx-hero .rx-frames{position:relative;max-width:1240px;margin:auto;border-radius:22px;overflow:hidden;box-shadow:var(--rx-shadow-lg)}
-/* premium corner-line frame: thin gold L-shapes that draw once on load.
-   Pure SVG stroke + CSS (no libraries). Sits above slides (z:2) but below
-   nav/dots (z:3); pointer-events:none so clicks pass through. */
-.rx-frame{position:absolute;inset:0;z-index:2;pointer-events:none}
-.rx-frame i{position:absolute;width:88px;height:88px}
-.rx-frame i.tl{top:14px;left:14px}
-.rx-frame i.tr{top:14px;right:14px}
-.rx-frame i.br{bottom:14px;right:14px}
-.rx-frame i.bl{bottom:14px;left:14px}
-.rx-frame svg{display:block;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 0 5px rgba(201,162,75,.45))}
-.rx-frame path{fill:none;stroke:var(--rx-gold);stroke-width:1.5;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1}
-.rx-frame.play path{animation:rxDraw 1.15s cubic-bezier(.22,.61,.36,1) forwards}
-.rx-frame.play i.tr path{animation-delay:.18s}
-.rx-frame.play i.br path{animation-delay:.36s}
-.rx-frame.play i.bl path{animation-delay:.54s}
-@keyframes rxDraw{to{stroke-dashoffset:0}}
-@media(max-width:700px){.rx-frame i{width:60px;height:60px}.rx-frame i.tl{top:10px;left:10px}.rx-frame i.tr{top:10px;right:10px}.rx-frame i.br{bottom:10px;right:10px}.rx-frame i.bl{bottom:10px;left:10px}}
-@media(prefers-reduced-motion:reduce){.rx-frame.play path{animation:none;stroke-dashoffset:0}}
 @media(max-width:1240px){.rx-hero .rx-frames{border-radius:0;box-shadow:none}}
 .rx-hero .slide{display:none}
 .rx-hero .slide.on{display:block;animation:rxFade .5s var(--rx-ease)}
+/* hero gloss sweep — same shine family as the order buttons (rx-shine), tuned
+   soft for photography. Restarts every time a slide becomes active; clipped
+   to the banner by .rx-frames{overflow:hidden}. */
+.rx-hero .slide{position:relative}
+.rx-hero .slide.on::after{content:"";position:absolute;top:0;bottom:0;left:-60%;width:45%;z-index:2;pointer-events:none;background:linear-gradient(100deg,transparent,rgba(255,255,255,.22),transparent);transform:skewX(-18deg);animation:rx-hero-shine 6.5s ease-in-out infinite}
+@keyframes rx-hero-shine{0%,62%{left:-60%}100%{left:130%}}
 .rx-hero img{width:100%;display:block}
 .rx-hero .slide picture{display:block}
 @media(min-width:701px){
@@ -706,7 +694,7 @@ header{position:static}
 .stats b{color:var(--rx-brand);font-family:var(--rx-font-d);font-weight:600}
 .stats .wrap>div+div{border-left-color:var(--rx-line)}
 .trust{background:var(--rx-brand)}
-@media(prefers-reduced-motion:reduce){.rx-hero .slide.on{animation:none}}
+@media(prefers-reduced-motion:reduce){.rx-hero .slide.on{animation:none}.rx-hero .slide.on::after{animation:none;display:none}}
 
 /* ==========================================================================
    12) SHOP BY PRICE (Renee "UNDER ₹299 ONLY" tiles)
