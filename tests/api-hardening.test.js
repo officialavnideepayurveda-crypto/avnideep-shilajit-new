@@ -67,7 +67,7 @@ function makeKV() {
 }
 
 function makeEnv(db) {
-  return { DB: makeD1(db), RATE_LIMIT_KV: makeKV(), ALLOWED_ORIGIN: 'https://shop.avnideep.in' };
+  return { DB: makeD1(db), RATE_LIMIT_KV: makeKV(), ALLOWED_ORIGIN: 'https://avnideepayurveda.in' };
 }
 
 function jsonReq(body, headers = {}) {
@@ -103,7 +103,7 @@ const orderBody = (over = {}) => ({
 });
 
 async function postOrder(env, body) {
-  const res = await orderPost({ request: jsonReq(body, { Origin: 'https://shop.avnideep.in' }), env, waitUntil: noop });
+  const res = await orderPost({ request: jsonReq(body, { Origin: 'https://avnideepayurveda.in' }), env, waitUntil: noop });
   return { status: res.status, data: await res.json() };
 }
 

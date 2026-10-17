@@ -22,7 +22,7 @@ function load(file) {
   return new JSDOM(html, {
     runScripts: 'dangerously',
     pretendToBeVisual: true,
-    url: `https://shop.avnideep.in/${file.replace('/index.html', '/')}`,
+    url: `https://avnideepayurveda.in/${file.replace('/index.html', '/')}`,
     virtualConsole: new VirtualConsole(),
   });
 }

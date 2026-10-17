@@ -57,7 +57,7 @@
       utm_source: u.get('utm_source') || '', utm_medium: u.get('utm_medium') || '',
       utm_campaign: u.get('utm_campaign') || ''
     };
-    var beaconUrl = 'https://partners.avnideep.in/api/referral/click';
+    var beaconUrl = 'https://partners.avnideepayurveda.in/api/referral/click';
     var body = JSON.stringify(payload);
     // CORS FIX: text/plain = CORS "simple request" → NO preflight. sendBeacon
     // always sends with credentials:include, and an application/json blob forced
@@ -2262,7 +2262,7 @@ function initSocialProof(){
   var closeBtn = document.getElementById('spClose');
 
 
-  if(!notif || !nameEl) return;
+  if(!notif || !nameEl || !img || !cityEl || !timeEl) return;
 
 
 
@@ -2617,6 +2617,11 @@ function markStepComplete(step) {
 
 function goToStep(step) {
 
+  // Drive the order-popup step wizard when it is present on the page.
+  if (typeof window.__goPopupStep === 'function' && document.querySelector('#oForm .form-step')) {
+    window.__goPopupStep(step);
+    return;
+  }
 
   if (step > currentStep) {
 

@@ -44,10 +44,10 @@ function bootPage(htmlRel, url, { appRel, seed = {} } = {}) {
 const settle = (ms = 300) => new Promise((r) => setTimeout(r, ms));
 
 const PAGES = [
-  ['shilajit/index.html', 'https://shop.avnideep.in/shilajit/', 'shilajit/app-shilajit.v3.js'],
-  ['pain-oil/index.html', 'https://shop.avnideep.in/pain-oil/', 'pain-oil/app-oil.v3.js'],
-  ['hair-oil/index.html', 'https://shop.avnideep.in/hair-oil/', 'hair-oil/app-hairoil.v3.js'],
-  ['herbal-balm/index.html', 'https://shop.avnideep.in/herbal-balm/', 'herbal-balm/app-balm.v3.js'],
+  ['shilajit/index.html', 'https://avnideepayurveda.in/shilajit/', 'shilajit/app-shilajit.v3.js'],
+  ['pain-oil/index.html', 'https://avnideepayurveda.in/pain-oil/', 'pain-oil/app-oil.v3.js'],
+  ['hair-oil/index.html', 'https://avnideepayurveda.in/hair-oil/', 'hair-oil/app-hairoil.v3.js'],
+  ['herbal-balm/index.html', 'https://avnideepayurveda.in/herbal-balm/', 'herbal-balm/app-balm.v3.js'],
 ];
 
 describe('a customer who already ordered still gets the checkout form', () => {
@@ -65,7 +65,7 @@ describe('a customer who already ordered still gets the checkout form', () => {
   });
 
   it('shilajit: repeat buyer can open the popup and see the form fields', async () => {
-    const w = bootPage('shilajit/index.html', 'https://shop.avnideep.in/shilajit/', {
+    const w = bootPage('shilajit/index.html', 'https://avnideepayurveda.in/shilajit/', {
       appRel: 'shilajit/app-shilajit.v3.js',
       seed: { avn_order_placed: String(Date.now()) },
     });

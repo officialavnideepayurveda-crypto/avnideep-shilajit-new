@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
   <title>Secure UPI Checkout | Avnideep Ayurveda</title>
+  <meta name="description" content="Secure UPI checkout - Avnideep order ke liye ₹100 advance UPI se pay karein. 100% secure payment.">
   <!-- Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-HTH3FR9SF6"></script>
   <script>
@@ -1195,7 +1196,36 @@
         updateTimer();
       }, 1000);
     }
-    
+
+    // UPI/UTR verification modal handlers (were referenced by inline onclick but
+    // never defined -> clicking Cancel/Verify threw a ReferenceError).
+    function closePaymentModal(){
+      var m = document.getElementById('payment-modal');
+      if(m) m.classList.remove('active');
+    }
+    function submitPayment(){
+      var utr = document.getElementById('utr-input');
+      var cust = document.getElementById('cust-input');
+      var errBox = document.getElementById('error-msg');
+      var val = utr ? String(utr.value).replace(/\D/g, '') : '';
+      if(val.length < 12){
+        if(errBox){ errBox.textContent = 'Please enter a valid 12-digit UTR number.'; errBox.classList.add('show'); }
+        if(utr) utr.focus();
+        return;
+      }
+      if(!cust || !cust.value.trim()){
+        if(errBox){ errBox.textContent = 'Please enter your name or phone.'; errBox.classList.add('show'); }
+        if(cust) cust.focus();
+        return;
+      }
+      if(errBox){ errBox.textContent = ''; errBox.classList.remove('show'); }
+      closePaymentModal();
+      var ver = document.getElementById('payment-verifying');
+      var utrOut = document.getElementById('verify-utr');
+      if(utrOut) utrOut.textContent = 'UTR: ' + val;
+      if(ver) ver.style.display = 'block';
+    }
+
   </script>
 </body>
 </html>

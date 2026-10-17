@@ -18,7 +18,7 @@
     }
   ],
   "vars": {
-    "ALLOWED_ORIGIN": "https://shop.avnideep.in",
+    "ALLOWED_ORIGIN": "https://avnideepayurveda.in",
     "NOTIFY_EMAIL": "support@avnideepayurveda.in"
   }
 }

@@ -111,7 +111,7 @@ describe('mixed cart checks out through the order popup (not WhatsApp)', () => {
   it('opens the popup and charges the whole cart, COD', async () => {
     // shilajit is last so checkout stays on this page instead of navigating
     const { w, calls, wa } = bootPage(SHILAJIT, SHILAJIT_APP, {
-      cart: MIXED, url: 'https://shop.avnideep.in/shilajit/',
+      cart: MIXED, url: 'https://avnideepayurveda.in/shilajit/',
     });
 
     await openFromCart(w);
@@ -136,7 +136,7 @@ describe('mixed cart checks out through the order popup (not WhatsApp)', () => {
 
   it('charges the prepaid total when prepaid is selected', async () => {
     const { w, calls, wa } = bootPage(SHILAJIT, SHILAJIT_APP, {
-      cart: MIXED, url: 'https://shop.avnideep.in/shilajit/',
+      cart: MIXED, url: 'https://avnideepayurveda.in/shilajit/',
     });
     await openFromCart(w);
     await selectPay(w, 'prepaid');
@@ -155,7 +155,7 @@ describe('mixed cart checks out through the order popup (not WhatsApp)', () => {
     // (which does not know about the cart) can overwrite the inline one. The
     // per-item lines must therefore be painted by openOrderPopup itself.
     const { w, wa } = bootPage(SHILAJIT, SHILAJIT_APP, {
-      cart: MIXED, url: 'https://shop.avnideep.in/shilajit/',
+      cart: MIXED, url: 'https://avnideepayurveda.in/shilajit/',
     });
     await openFromCart(w);
 
@@ -166,7 +166,7 @@ describe('mixed cart checks out through the order popup (not WhatsApp)', () => {
 
   it('the explicit Order-on-WhatsApp button still opens WhatsApp', async () => {
     const { w, wa } = bootPage(SHILAJIT, SHILAJIT_APP, {
-      cart: MIXED, url: 'https://shop.avnideep.in/shilajit/',
+      cart: MIXED, url: 'https://avnideepayurveda.in/shilajit/',
     });
     const open = w.document.querySelector('[data-cart-open]');
     open.click();
@@ -178,7 +178,7 @@ describe('mixed cart checks out through the order popup (not WhatsApp)', () => {
 
   it('a single-product cart is unchanged: one pack price, no WhatsApp', async () => {
     const { w, calls, wa } = bootPage(SHILAJIT, SHILAJIT_APP, {
-      cart: SINGLE, url: 'https://shop.avnideep.in/shilajit/',
+      cart: SINGLE, url: 'https://avnideepayurveda.in/shilajit/',
     });
     await openFromCart(w);
     await selectPay(w, 'cod');
@@ -200,7 +200,7 @@ describe('mixed cart checks out through the order popup (not WhatsApp)', () => {
     // must price the whole cart too.
     const { w, wa } = bootPage(SHILAJIT, SHILAJIT_APP, {
       cart: { shilajit: 1, hair: 1 }, // shilajit last -> lands on this page
-      url: 'https://shop.avnideep.in/shilajit/?open=1',
+      url: 'https://avnideepayurveda.in/shilajit/?open=1',
     });
     await settle(1200);
     expect(wa.filter((u) => /wa\.me/.test(u))).toEqual([]);

@@ -44,7 +44,7 @@ const COOKIE_NAME = "avn_cust";
 const SESSION_DAYS = 30;
 const MAX_FAILS = 5;
 const LOCK_MS = 10 * 60 * 1000;
-const ALLOWED_HOSTS = ["shop.avnideep.in", "avnideep-shilajit-new.pages.dev", "localhost", "127.0.0.1"];
+const ALLOWED_HOSTS = ["avnideepayurveda.in", "avnideep-shilajit-new.pages.dev", "localhost", "127.0.0.1"];
 
 function json(data, status = 200, extraHeaders) {
   const headers = {

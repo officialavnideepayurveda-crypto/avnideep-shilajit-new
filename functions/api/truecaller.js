@@ -6,7 +6,7 @@
 // with verification data.
 //
 // Configure this URL in Truecaller Developer Dashboard:
-// https://shop.avnideep.in/api/truecaller
+// https://avnideepayurveda.in/api/truecaller
 // ============================================================
 
 // CORS headers
@@ -71,9 +71,12 @@ export async function onRequestPost(context) {
 
     console.log("Truecaller callback received:", { status, phone, name });
 
-    // If we got phone and name directly, save the lead
-    if (status === "verified" || (phone && phone.length >= 10)) {
-      const cleanPhone = phone.replace(/\D/g, "").slice(-10);
+    // If we got a usable phone, save the lead. Guard against a numeric/absent
+    // `phone` (previously `phone.replace` threw a TypeError on verified callbacks
+    // that carried no phone, turning a valid callback into a 500).
+    const rawPhone = typeof phone === "string" ? phone : (phone == null ? "" : String(phone));
+    const cleanPhone = rawPhone.replace(/\D/g, "").slice(-10);
+    if (cleanPhone.length >= 10) {
       const userName = name || "";
 
       // Save to D1 database if available

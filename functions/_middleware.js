@@ -15,8 +15,22 @@
 //  - TTL: 10 minutes (s-maxage=600) — deploys propagate quickly
 //  - Adds X-Cache: HIT/MISS for verification
 
+const CANONICAL_HOST = "avnideepayurveda.in";
+const LEGACY_HOSTS = ["shop.avnideep.in", "www.avnideepayurveda.in"];
+
 export async function onRequest(context) {
   const { request, next, waitUntil, env } = context;
+
+  // ---- Domain migration: old hosts -> avnideepayurveda.in (permanent 301) ----
+  if (request.method === "GET" || request.method === "HEAD") {
+    const host = new URL(request.url).hostname;
+    if (LEGACY_HOSTS.includes(host)) {
+      const dest = new URL(request.url);
+      dest.protocol = "https:";
+      dest.hostname = CANONICAL_HOST;
+      return Response.redirect(dest.toString(), 301);
+    }
+  }
 
   if (request.method !== "GET") return next();
 

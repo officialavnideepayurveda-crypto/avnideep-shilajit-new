@@ -21,7 +21,7 @@ export async function onRequestPost({ request, env }) {
     const body = await request.json();
 
     const phone = String(body.phone || "").replace(/[^0-9]/g, "").slice(-10);
-    if (!phone || phone.length < 10) {
+    if (!/^[6-9]\d{9}$/.test(phone)) {
       return new Response(
         JSON.stringify({ ok: false, error: "Valid phone number required" }),
         { status: 400, headers: corsHeaders(env) }
@@ -70,6 +70,19 @@ export async function onRequestPost({ request, env }) {
       } catch (e) {
         d1Result = { ok: false, error: String(e.message || e).slice(0, 100) };
       }
+    }
+
+    // Report the ACTUAL persistence outcome - previously this always returned
+    // ok:true even when D1 was missing or the write threw.
+    if (d1Result.ok !== true) {
+      return new Response(
+        JSON.stringify({
+          ok: false,
+          error: d1Result.skipped ? "Lead storage unavailable" : "Could not save lead",
+          detail: d1Result.error
+        }),
+        { status: 503, headers: corsHeaders(env) }
+      );
     }
 
     return new Response(

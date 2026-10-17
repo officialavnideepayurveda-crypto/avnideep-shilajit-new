@@ -177,7 +177,7 @@ describe('auth styles + wiring (site must not break)', () => {
       '<!doctype html><html><body><div class="rx-nav"><a class="rx-logo" href="/">L</a>' +
         '<nav class="rx-links"></nav><div class="rx-icons"></div></div>' +
         '<script>' + authJs + '</script></body></html>',
-      { url: 'https://shop.avnideep.in/', runScripts: 'dangerously', pretendToBeVisual: true,
+      { url: 'https://avnideepayurveda.in/', runScripts: 'dangerously', pretendToBeVisual: true,
         beforeParse(w) { w.fetch = () => Promise.resolve({ json: () => Promise.resolve({ ok: true, loggedIn: false }) }); } }
     );
     const w = dom.window;

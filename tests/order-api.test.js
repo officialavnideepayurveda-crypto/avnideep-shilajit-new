@@ -179,7 +179,7 @@ describe('COD order — success path', () => {
       product: 'Avnideep 6Pro Vitality Shilajit Capsules',
     };
 
-    const request = new Request('https://shop.avnideep.in/api/order', {
+    const request = new Request('https://avnideepayurveda.in/api/order', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': '203.0.113.42' },
       body: JSON.stringify(body),
@@ -228,7 +228,7 @@ describe('COD order — duplicate path', () => {
       amount: 1250,
     };
 
-    const req1 = new Request('https://shop.avnideep.in/api/order', {
+    const req1 = new Request('https://avnideepayurveda.in/api/order', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': '203.0.113.42' },
       body: JSON.stringify(body1),
@@ -247,7 +247,7 @@ describe('COD order — duplicate path', () => {
       amount: 1250,
     };
 
-    const req2 = new Request('https://shop.avnideep.in/api/order', {
+    const req2 = new Request('https://avnideepayurveda.in/api/order', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': '203.0.113.42' },
       body: JSON.stringify(body2),
@@ -278,7 +278,7 @@ describe('COD order — duplicate path', () => {
       amount: 1250,
     };
 
-    const req1 = new Request('https://shop.avnideep.in/api/order', {
+    const req1 = new Request('https://avnideepayurveda.in/api/order', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': '203.0.113.42' },
       body: JSON.stringify(body1),
@@ -298,7 +298,7 @@ describe('COD order — duplicate path', () => {
       amount: 1250,
     };
 
-    const req2 = new Request('https://shop.avnideep.in/api/order', {
+    const req2 = new Request('https://avnideepayurveda.in/api/order', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': '203.0.113.42' },
       body: JSON.stringify(body2),
@@ -336,7 +336,7 @@ describe('COD order — failure path', () => {
       amount: 1250,
     };
 
-    const request = new Request('https://shop.avnideep.in/api/order', {
+    const request = new Request('https://avnideepayurveda.in/api/order', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': '203.0.113.42' },
       body: JSON.stringify(body),
@@ -367,7 +367,7 @@ describe('Prepaid order — InitiateCheckout path', () => {
       status: 'payment_pending',
     };
 
-    const request = new Request('https://shop.avnideep.in/api/order', {
+    const request = new Request('https://avnideepayurveda.in/api/order', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': '203.0.113.42' },
       body: JSON.stringify(body),
@@ -402,7 +402,7 @@ describe('PATCH /api/order — confirm prepaid payment', () => {
       amount: 999,
     };
 
-    const postReq = new Request('https://shop.avnideep.in/api/order', {
+    const postReq = new Request('https://avnideepayurveda.in/api/order', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': '203.0.113.42' },
       body: JSON.stringify(postBody),
@@ -423,7 +423,7 @@ describe('PATCH /api/order — confirm prepaid payment', () => {
       autoConfirm: true,
     };
 
-    const patchReq = new Request('https://shop.avnideep.in/api/order', {
+    const patchReq = new Request('https://avnideepayurveda.in/api/order', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': '203.0.113.42' },
       body: JSON.stringify(patchBody),
@@ -457,7 +457,7 @@ describe('PATCH /api/order — confirm prepaid payment', () => {
       amount: 999,
     };
 
-    const postReq = new Request('https://shop.avnideep.in/api/order', {
+    const postReq = new Request('https://avnideepayurveda.in/api/order', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(postBody),
@@ -476,7 +476,7 @@ describe('PATCH /api/order — confirm prepaid payment', () => {
       autoConfirm: true,
     };
 
-    const patchReq1 = new Request('https://shop.avnideep.in/api/order', {
+    const patchReq1 = new Request('https://avnideepayurveda.in/api/order', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(patchBody1),
@@ -498,7 +498,7 @@ describe('PATCH /api/order — confirm prepaid payment', () => {
       autoConfirm: true,
     };
 
-    const patchReq2 = new Request('https://shop.avnideep.in/api/order', {
+    const patchReq2 = new Request('https://avnideepayurveda.in/api/order', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(patchBody2),
@@ -517,7 +517,7 @@ describe('PATCH /api/order — confirm prepaid payment', () => {
 
     const patchBody = { amount: 999, autoConfirm: true };
 
-    const patchReq = new Request('https://shop.avnideep.in/api/order', {
+    const patchReq = new Request('https://avnideepayurveda.in/api/order', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(patchBody),
@@ -538,7 +538,7 @@ describe('Order API — validation', () => {
 
     const body = { orderId: 'AVN-test' }; // Missing name, phone, paymentMethod, amount
 
-    const request = new Request('https://shop.avnideep.in/api/order', {
+    const request = new Request('https://avnideepayurveda.in/api/order', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
@@ -560,7 +560,7 @@ describe('Order API — validation', () => {
       amount: 1250,
     };
 
-    const request = new Request('https://shop.avnideep.in/api/order', {
+    const request = new Request('https://avnideepayurveda.in/api/order', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
@@ -576,7 +576,7 @@ describe('Order API — validation', () => {
 
     const restrictedEnv = {
       ...mockEnv,
-      ALLOWED_ORIGIN: 'https://shop.avnideep.in',
+      ALLOWED_ORIGIN: 'https://avnideepayurveda.in',
     };
 
     const body = {
@@ -587,7 +587,7 @@ describe('Order API — validation', () => {
       amount: 1250,
     };
 
-    const request = new Request('https://shop.avnideep.in/api/order', {
+    const request = new Request('https://avnideepayurveda.in/api/order', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -603,7 +603,7 @@ describe('Order API — validation', () => {
   });
 });
 
-describe("Phone normalization � +91 / 0 prefix paste", () => {
+describe("Phone normalization � +91 / 0 prefix paste", () => {
   it("should save +91-prefixed paste as the correct 10-digit number", async () => {
     const { onRequestPost } = await import("../functions/api/order.js");
     const body = {
@@ -613,7 +613,7 @@ describe("Phone normalization � +91 / 0 prefix paste", () => {
       paymentMethod: "cod",
       amount: 1250,
     };
-    const request = new Request("https://shop.avnideep.in/api/order", {
+    const request = new Request("https://avnideepayurveda.in/api/order", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
@@ -635,7 +635,7 @@ describe("Phone normalization � +91 / 0 prefix paste", () => {
       paymentMethod: "cod",
       amount: 249,
     };
-    const request = new Request("https://shop.avnideep.in/api/order", {
+    const request = new Request("https://avnideepayurveda.in/api/order", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),

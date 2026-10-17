@@ -57,7 +57,7 @@
       utm_source: u.get('utm_source') || '', utm_medium: u.get('utm_medium') || '',
       utm_campaign: u.get('utm_campaign') || ''
     };
-    var beaconUrl = 'https://partners.avnideep.in/api/referral/click';
+    var beaconUrl = 'https://partners.avnideepayurveda.in/api/referral/click';
     var body = JSON.stringify(payload);
     // CORS FIX: text/plain = CORS "simple request" → NO preflight. sendBeacon
     // always sends with credentials:include, and an application/json blob forced
@@ -126,7 +126,8 @@ function openOrderPopup(){
   document.body.style.overflow = 'hidden';
   var form = document.getElementById('oForm');
   if(form) form.reset();
-  if(typeof updatePay === 'function') updatePay();
+  if(typeof window.__resetOrderSteps === 'function'){ try{ window.__resetOrderSteps(1); }catch(e){} }
+  if(typeof window.updatePay === 'function'){ try{ window.updatePay(); }catch(e){} }
   setTimeout(function(){
     var n = document.getElementById('cName');
     if(n) n.focus({preventScroll:true});
@@ -659,7 +660,7 @@ function updatePay(){
   // Savings line
   var sv = $('#sSaveAmt');
   if(sv){
-    var total = 1250;
+    var total = 1250 - 999;
     sv.textContent = '₹' + total;
   }
   $$('.pay-card').forEach(function(c){
@@ -667,6 +668,7 @@ function updatePay(){
     c.classList.toggle('selected', !!(i && i.checked));
   });
 }
+try{ window.updatePay = updatePay; }catch(e){}
 
 
 function initPay(){
@@ -1070,7 +1072,7 @@ function initForm(){
   var form = $('#oForm'), err = $('#fErr'), btn = $('#oBtn');
 
 
-  var phone = $('#cPhone'), pin = $('#cPin');
+  var phone = $('#tcPhoneInput'), pin = $('#cPincode');
 
 
   if(!form) return;
@@ -1113,7 +1115,7 @@ function initForm(){
     phone.addEventListener('input', function(){
 
 
-      if(phone.value.length === 10 && pin) pin.focus();
+      if(!window.__resetOrderSteps && phone.value.length === 10 && pin) pin.focus();
 
 
     });
@@ -1150,6 +1152,8 @@ function initForm(){
 
 
   // Prevent Enter key from submitting form in single-line inputs (avoids accidental submit)
+  // (skipped when the popup step wizard is present - it owns Enter-to-advance)
+  if(!window.__resetOrderSteps){
 
 
   $$('#oForm input').forEach(function(input){
@@ -1183,6 +1187,9 @@ function initForm(){
 
 
   });
+
+
+  }
 
 
 
@@ -1662,7 +1669,7 @@ function initFieldCheck(){
     {id:'cName', test:function(v){return v.length >= 2}},
 
 
-    {id:'cPhone', test:function(v){return /^[6-9]\d{9}$/.test(v)}}
+    {id:'tcPhoneInput', test:function(v){return /^[6-9]\d{9}$/.test(v)}}
 
 
   ];
@@ -2224,7 +2231,7 @@ function initSocialProof(){
   var closeBtn = document.getElementById('spClose');
 
 
-  if(!notif || !nameEl) return;
+  if(!notif || !nameEl || !img || !cityEl || !timeEl) return;
 
 
 
@@ -2579,6 +2586,12 @@ function markStepComplete(step) {
 
 function goToStep(step) {
 
+  // When the order-popup step wizard is present (homepage), drive it instead of
+  // the .checkout-step layout this function was written for.
+  if (typeof window.__goPopupStep === 'function' && document.querySelector('#oForm .form-step')) {
+    window.__goPopupStep(step);
+    return;
+  }
 
   if (step > currentStep) {
 

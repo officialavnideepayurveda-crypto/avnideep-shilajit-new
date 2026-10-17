@@ -62,7 +62,13 @@ function normalizeOrder(body, ip) {
     payment_method: String(body.paymentMethod || "cod").trim().toLowerCase(),
     amount: Number(body.amount || 0),
     product: String(body.product || "Avnideep 6Pro Vitality Shilajit Capsules").slice(0, 100),
-    status: String(body.status || "cod_order").slice(0, 50),
+    // Workflow status is whitelisted to the states the checkout legitimately
+    // creates. Anything else (e.g. "delivered"/"paid") is coerced to cod_order so
+    // a caller can't set an order to a fulfilled/paid state.
+    status: (function(){
+      var s = String(body.status || "").trim().toLowerCase();
+      return (s === "payment_pending" || s === "advance_paid" || s === "cod_order") ? s : "cod_order";
+    })(),
     page_url: String(body.pageUrl || "").slice(0, 300),
     utr: String(body.utr || "").trim().slice(0, 50),
     payment_note: String(body.paymentNote || "").trim().slice(0, 200),
@@ -78,11 +84,15 @@ function normalizeOrder(body, ip) {
     razorpay_order_id: String(body.razorpay_order_id || body.razorpayOrderId || "").slice(0, 100),
     razorpay_payment_id: String(body.razorpay_payment_id || body.razorpayPaymentId || "").slice(0, 100),
     razorpay_signature: String(body.razorpay_signature || body.razorpaySignature || "").slice(0, 300),
-    payment_status: String(body.payment_status || body.paymentStatus || (body.razorpay_payment_id ? 'paid' : '')).slice(0, 20),
-    payment_captured: body.razorpay_payment_id ? 1 : Number(body.payment_captured || body.paymentCaptured || 0),
+    // Payment truth is server-derived ONLY. The client must never be able to
+    // declare an order paid / webhook-verified / refunded by POSTing these fields
+    // (payment-forgery vector). The Razorpay webhook and the admin PATCH endpoint
+    // are the only writers of these columns.
+    payment_status: "",
+    payment_captured: 0,
     updated_at: body.updatedAt || new Date().toISOString(),
-    webhook_verified: Number(body.webhook_verified || 0),
-    refund_status: String(body.refund_status || body.refundStatus || "").slice(0, 20),
+    webhook_verified: 0,
+    refund_status: "",
   };
 }
 
@@ -680,7 +690,7 @@ async function sendFacebookCAPI(order, env, eventName = 'Purchase', requestUa = 
       eventId: String(order.order_id || ''),
       userData,
       customData,
-      eventSourceUrl: order.page_url || 'https://shop.avnideep.in/',
+      eventSourceUrl: order.page_url || 'https://avnideepayurveda.in/',
       actionSource: 'website',
       timeout: 4000,
       retries: 1
@@ -775,7 +785,7 @@ export async function onRequestPost({ request, env, waitUntil }) {
   // ============================================================
   try {
     const origin = request.headers.get("Origin") || request.headers.get("Referer") || "";
-    const allowedHosts = ["shop.avnideep.in", "avnideep-shilajit-new.pages.dev", "localhost", "127.0.0.1"];
+    const allowedHosts = ["avnideepayurveda.in", "avnideep-shilajit-new.pages.dev", "localhost", "127.0.0.1"];
     if (origin) {
       const originHost = new URL(origin).hostname.toLowerCase();
       const allowed = allowedHosts.some(h => originHost === h || originHost.endsWith("." + h));
@@ -1212,6 +1222,11 @@ export async function onRequestPatch({ request, env, waitUntil }) {
     try {
       body = await request.json();
     } catch (e) {
+      return new Response(JSON.stringify({ ok: false, error: "Invalid request body" }), { status: 400, headers: jsonH });
+    }
+    // request.json() returns null for a literal "null" body (and non-objects for
+    // scalars/arrays); reading properties then threw a TypeError -> 500.
+    if (!body || typeof body !== "object") {
       return new Response(JSON.stringify({ ok: false, error: "Invalid request body" }), { status: 400, headers: jsonH });
     }
     

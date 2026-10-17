@@ -28,7 +28,7 @@
 
   <meta name="twitter:title" content="Order Confirmed - Avnideep Ayurveda">
 
-  <link rel="canonical" href="https://shop.avnideep.in/thank-you">
+  <link rel="canonical" href="https://avnideepayurveda.in/thank-you">
 
   <link rel="preconnect" href="https://connect.facebook.net">
 
@@ -360,7 +360,7 @@
           var refCode = decodeURIComponent(refMatch[1]).toUpperCase();
           if (/^AVN[A-HJ-KM-NP-Z2-9]{6}$/.test(refCode)) {
             if (navigator.sendBeacon) {
-              navigator.sendBeacon('https://partners.avnideep.in/api/referral/track',
+              navigator.sendBeacon('https://partners.avnideepayurveda.in/api/referral/track',
                 new Blob([JSON.stringify({ order_id: orderId, ref: refCode })], { type: 'text/plain' }));
             }
           }

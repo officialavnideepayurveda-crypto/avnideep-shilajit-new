@@ -7,8 +7,9 @@
 import { sendCAPIEvent, buildUserData, buildCustomData } from './_capi';
 
 const corsHeaders = {
+  // No credentials are used here; "*" + Allow-Credentials is an invalid combo
+  // that browsers reject for credentialed requests.
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Credentials': 'true',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type',
   'Access-Control-Max-Age': '86400'
@@ -24,19 +25,55 @@ function jsonResponse(data, status = 200) {
 export async function onRequestPost(context) {
   const { request, env, waitUntil } = context;
 
-  // Origin validation (same as order.js)
+  // Origin validation - compare HOSTNAMES exactly. A prefix check let
+  // "https://avnideepayurveda.in.evil.com" through.
   const origin = request.headers.get('Origin') || request.headers.get('Referer') || '';
-  if (env.ALLOWED_ORIGIN && !origin.startsWith(env.ALLOWED_ORIGIN)) {
-    return new Response(JSON.stringify({ error: 'Invalid origin' }), {
-      status: 403,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    });
+  if (origin) {
+    let originHost = '';
+    try {
+      originHost = new URL(origin).hostname.toLowerCase();
+    } catch (e) {
+      return new Response(JSON.stringify({ error: 'Invalid origin' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+    let allowedHost = 'avnideepayurveda.in';
+    try {
+      if (env.ALLOWED_ORIGIN) allowedHost = new URL(env.ALLOWED_ORIGIN).hostname.toLowerCase();
+    } catch (e) {}
+    const allowedHosts = [allowedHost, 'avnideepayurveda.in', 'avnideep-shilajit-new.pages.dev', 'localhost', '127.0.0.1'];
+    const okOrigin = allowedHosts.some((h) => h && (originHost === h || originHost.endsWith('.' + h)));
+    if (!okOrigin) {
+      return new Response(JSON.stringify({ error: 'Invalid origin' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+  }
+
+  // Per-IP throttle so the CAPI relay cannot be flooded from one client.
+  const throttleIp = request.headers.get('CF-Connecting-IP') || request.headers.get('X-Forwarded-For') || 'unknown';
+  if (env.RATE_LIMIT_KV) {
+    try {
+      const bucket = Math.floor(Date.now() / 60000);
+      const rlKey = 'capi_rl_' + throttleIp + '_' + bucket;
+      const seen = parseInt((await env.RATE_LIMIT_KV.get(rlKey)) || '0', 10);
+      if (seen >= 120) {
+        return new Response(JSON.stringify({ error: 'Too many events' }), {
+          status: 429,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+      await env.RATE_LIMIT_KV.put(rlKey, String(seen + 1), { expirationTtl: 120 }).catch(() => {});
+    } catch (e) {}
   }
 
   try {
     const body = await request.json();
     const { event_name, event_id, user_data, custom_data, event_source_url } = body;
-    console.log(`[CAPILOG] BROWSER CAPI RECEIVED: event_name=${event_name} event_id=${event_id} custom_data=${JSON.stringify(custom_data)} user_data=${JSON.stringify(user_data)}`);
+    // Do NOT log raw user_data - it carries plaintext customer name/phone.
+    console.log(`[CAPILOG] BROWSER CAPI RECEIVED: event_name=${event_name} event_id=${event_id} custom_data=${JSON.stringify(custom_data)} has_user_data=${!!user_data}`);
 
     // Validate required fields
     if (!event_name) {
@@ -88,7 +125,9 @@ export async function onRequestPost(context) {
     // confirm for the same order cannot double-fire Purchase CAPI.
     const dedupPromise = capiPromise.then((res) => {
       if (event_name === 'Purchase' && res && res.ok && custom_data && custom_data.order_id && env && env.DB) {
-        return env.DB.prepare('UPDATE orders SET purchase_capi_sent = 1 WHERE order_id = ?')
+        // Only flip the flag if it isn't already set, so a replayed event cannot
+        // rewrite state for an order that already fired Purchase.
+        return env.DB.prepare('UPDATE orders SET purchase_capi_sent = 1 WHERE order_id = ? AND (purchase_capi_sent IS NULL OR purchase_capi_sent = 0)')
           .bind(String(custom_data.order_id)).run().then(() => res).catch(() => res);
       }
       return res;

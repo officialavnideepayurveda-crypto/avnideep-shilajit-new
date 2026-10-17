@@ -34,7 +34,7 @@ function loadPage({ initialTime = 1_000_000, advanceMs = 8600 } = {}) {
 
   dom = new JSDOM(html, {
     runScripts: 'dangerously',
-    url: 'https://shop.avnideep.in/',
+    url: 'https://avnideepayurveda.in/',
     pretendToBeVisual: true,
     beforeParse(window) {
       window.Date.now = () => currentFakeTime;

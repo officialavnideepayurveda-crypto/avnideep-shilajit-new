@@ -19,7 +19,7 @@ function bootCart(pathname) {
     '<script>' + read('assets/cart.js') + '</script>' +
     '</body></html>';
   const dom = new JSDOM(html, {
-    url: 'https://shop.avnideep.in' + pathname,
+    url: 'https://avnideepayurveda.in' + pathname,
     runScripts: 'dangerously',
     pretendToBeVisual: true,
     beforeParse(w) {

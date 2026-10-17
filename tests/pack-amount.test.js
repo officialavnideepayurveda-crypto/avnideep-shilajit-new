@@ -82,7 +82,7 @@ const settle = (ms = 400) => new Promise((r) => setTimeout(r, ms));
 
 describe('payment step shows AND charges the pack the customer selected', () => {
   it('shilajit: opening checkout shows pack 1 / 2 / 3 amounts, prepaid and COD', () => {
-    const { w } = bootPage('shilajit/index.html', 'https://shop.avnideep.in/shilajit/');
+    const { w } = bootPage('shilajit/index.html', 'https://avnideepayurveda.in/shilajit/');
 
     setPack(w, 'shilajit', 0); openCheckout(w, { prepaid: true });
     expect(txt(w, 'sAmt')).toBe('₹999');
@@ -107,7 +107,7 @@ describe('payment step shows AND charges the pack the customer selected', () => 
   });
 
   it('pain oil: opening checkout shows pack 2 / 3 amounts', () => {
-    const { w } = bootPage('pain-oil/index.html', 'https://shop.avnideep.in/pain-oil/');
+    const { w } = bootPage('pain-oil/index.html', 'https://avnideepayurveda.in/pain-oil/');
 
     setPack(w, 'oil', 0); openCheckout(w, { prepaid: true });
     expect(txt(w, 'sAmt')).toBe('₹249');
@@ -123,7 +123,7 @@ describe('payment step shows AND charges the pack the customer selected', () => 
   });
 
   it('hair oil: opening checkout shows pack 1 / 2 / 3 amounts, prepaid and COD', () => {
-    const { w } = bootPage('hair-oil/index.html', 'https://shop.avnideep.in/hair-oil/');
+    const { w } = bootPage('hair-oil/index.html', 'https://avnideepayurveda.in/hair-oil/');
 
     setPack(w, 'hair', 0); openCheckout(w, { prepaid: true });
     expect(txt(w, 'sAmt')).toBe('₹465');
@@ -142,7 +142,7 @@ describe('payment step shows AND charges the pack the customer selected', () => 
   });
 
   it('herbal balm: opening checkout shows pack 1 / 2 / 3 amounts, prepaid and COD', () => {
-    const { w } = bootPage('herbal-balm/index.html', 'https://shop.avnideep.in/herbal-balm/');
+    const { w } = bootPage('herbal-balm/index.html', 'https://avnideepayurveda.in/herbal-balm/');
 
     setPack(w, 'balm', 0); openCheckout(w, { prepaid: true });
     expect(txt(w, 'sAmt')).toBe('₹299');
@@ -160,7 +160,7 @@ describe('payment step shows AND charges the pack the customer selected', () => 
   });
 
   it('hair oil prepaid Pack of 2: the money sent to /api/order AND Razorpay is 899', async () => {
-    const { w, calls } = bootPage('hair-oil/index.html', 'https://shop.avnideep.in/hair-oil/', {
+    const { w, calls } = bootPage('hair-oil/index.html', 'https://avnideepayurveda.in/hair-oil/', {
       app: true, appRel: 'hair-oil/app-hairoil.v3.js',
     });
     setPack(w, 'hair', 1);
@@ -185,7 +185,7 @@ describe('payment step shows AND charges the pack the customer selected', () => 
   });
 
   it('herbal balm prepaid Pack of 3: order + Razorpay carry 799', async () => {
-    const { w, calls } = bootPage('herbal-balm/index.html', 'https://shop.avnideep.in/herbal-balm/', {
+    const { w, calls } = bootPage('herbal-balm/index.html', 'https://avnideepayurveda.in/herbal-balm/', {
       app: true, appRel: 'herbal-balm/app-balm.v3.js',
     });
     setPack(w, 'balm', 2);
@@ -210,7 +210,7 @@ describe('payment step shows AND charges the pack the customer selected', () => 
   });
 
   it('shilajit prepaid Pack of 3: the money sent to /api/order AND Razorpay is 2699', async () => {
-    const { w, calls } = bootPage('shilajit/index.html', 'https://shop.avnideep.in/shilajit/', {
+    const { w, calls } = bootPage('shilajit/index.html', 'https://avnideepayurveda.in/shilajit/', {
       app: true, appRel: 'shilajit/app-shilajit.v3.js',
     });
     setPack(w, 'shilajit', 2);
@@ -236,7 +236,7 @@ describe('payment step shows AND charges the pack the customer selected', () => 
   });
 
   it('shilajit prepaid Pack of 1 still charges 999 (no global overwrite)', async () => {
-    const { w, calls } = bootPage('shilajit/index.html', 'https://shop.avnideep.in/shilajit/', {
+    const { w, calls } = bootPage('shilajit/index.html', 'https://avnideepayurveda.in/shilajit/', {
       app: true, appRel: 'shilajit/app-shilajit.v3.js',
     });
     setPack(w, 'shilajit', 0);
@@ -257,7 +257,7 @@ describe('payment step shows AND charges the pack the customer selected', () => 
   });
 
   it('pain oil prepaid Pack of 2: order + Razorpay carry 449', async () => {
-    const { w, calls } = bootPage('pain-oil/index.html', 'https://shop.avnideep.in/pain-oil/', {
+    const { w, calls } = bootPage('pain-oil/index.html', 'https://avnideepayurveda.in/pain-oil/', {
       app: true, appRel: 'pain-oil/app-oil.v3.js',
     });
     setPack(w, 'oil', 1);
@@ -292,7 +292,7 @@ describe('cart checkout hands the cart item pack to the payment step', () => {
       '<script>' + read('assets/cart.js') + '</script>' +
       '</body></html>';
     const dom = new JSDOM(html, {
-      url: 'https://shop.avnideep.in' + pathname,
+      url: 'https://avnideepayurveda.in' + pathname,
       runScripts: 'dangerously',
       pretendToBeVisual: true,
       beforeParse(w) {
@@ -447,7 +447,7 @@ describe('payment.html paints the real order, not a fixed pack of 1', () => {
 
   it('renders amount and pack name on load', () => {
     const dom = new JSDOM(html, {
-      url: 'https://shop.avnideep.in/payment.html?amount=2699&order_id=AVN-123&name=6Pro%20Shilajit%20Capsules%20(Pack%20of%203)',
+      url: 'https://avnideepayurveda.in/payment.html?amount=2699&order_id=AVN-123&name=6Pro%20Shilajit%20Capsules%20(Pack%20of%203)',
       runScripts: 'dangerously',
       pretendToBeVisual: true,
       beforeParse(w) {

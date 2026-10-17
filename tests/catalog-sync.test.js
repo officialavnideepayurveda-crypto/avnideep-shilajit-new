@@ -19,7 +19,7 @@ function bootCatalogPage() {
     '<script>' + read('assets/site-sync.js') + '</script>' +
     '</body></html>';
   const dom = new JSDOM(html, {
-    url: 'https://shop.avnideep.in/',
+    url: 'https://avnideepayurveda.in/',
     runScripts: 'dangerously',
     pretendToBeVisual: true,
     beforeParse(w) {
@@ -74,13 +74,13 @@ describe('every product page is discoverable', () => {
   it('sitemap.xml lists all four product pages', () => {
     const sitemap = read('sitemap.xml');
     for (const p of PRODUCTS) {
-      expect(sitemap, p + ' missing from sitemap').toContain('<loc>https://shop.avnideep.in/' + p + '/</loc>');
+      expect(sitemap, p + ' missing from sitemap').toContain('<loc>https://avnideepayurveda.in/' + p + '/</loc>');
     }
   });
 
   it('each product page canonical matches its sitemap entry', () => {
     for (const p of PRODUCTS) {
-      expect(read(p + '/index.html'), p).toContain('rel="canonical" href="https://shop.avnideep.in/' + p + '/"');
+      expect(read(p + '/index.html'), p).toContain('rel="canonical" href="https://avnideepayurveda.in/' + p + '/"');
     }
   });
 

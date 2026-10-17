@@ -91,7 +91,7 @@ async function sendTelegramNotification(event, env) {
 // ============================================================
 // WEBHOOK HANDLER
 // ============================================================
-export async function onRequestPost({ request, env, context }) {
+export async function onRequestPost({ request, env, waitUntil }) {
   try {
     // Read raw body text
     const rawBody = await request.text();
@@ -99,19 +99,23 @@ export async function onRequestPost({ request, env, context }) {
     
     // Get webhook secret from env
     const webhookSecret = env.RAZORPAY_WEBHOOK_SECRET;
-    
-    if (webhookSecret) {
-      // Verify webhook signature
-      const isValid = await verifyWebhookSignature(rawBody, signature, webhookSecret);
-      if (!isValid) {
-        console.error("WEBHOOK_INVALID_SIGNATURE");
-        return new Response(
-          JSON.stringify({ ok: false, error: "Invalid signature" }),
-          { status: 401, headers: jsonHeaders }
-        );
-      }
-    } else {
-      console.warn("WEBHOOK_SECRET_NOT_CONFIGURED - skipping signature verification");
+
+    // Fail CLOSED: never accept an unverified webhook. Without this, an unset
+    // secret let anyone POST forged payment.captured / refund.processed events.
+    if (!webhookSecret) {
+      console.error("WEBHOOK_SECRET_NOT_CONFIGURED");
+      return new Response(
+        JSON.stringify({ ok: false, error: "Webhook secret not configured" }),
+        { status: 500, headers: jsonHeaders }
+      );
+    }
+    const isValid = await verifyWebhookSignature(rawBody, signature, webhookSecret);
+    if (!isValid) {
+      console.error("WEBHOOK_INVALID_SIGNATURE");
+      return new Response(
+        JSON.stringify({ ok: false, error: "Invalid signature" }),
+        { status: 401, headers: jsonHeaders }
+      );
     }
     
     // Parse event
@@ -132,8 +136,10 @@ export async function onRequestPost({ request, env, context }) {
     
     console.log("WEBHOOK_RECEIVED", { event: eventName, order_id: payment.order_id, payment_id: payment.id });
     
-    // Fire-and-forget Telegram notification
-    sendTelegramNotification(event, env).catch(() => {});
+    // Telegram notification - kept alive via waitUntil so it isn't cancelled
+    // when the response returns.
+    const telegramPromise = sendTelegramNotification(event, env).catch(() => {});
+    if (typeof waitUntil === "function") waitUntil(telegramPromise);
     
     switch (eventName) {
       case "payment.captured":
