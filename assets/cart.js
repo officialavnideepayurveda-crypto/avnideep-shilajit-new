@@ -7,80 +7,118 @@
 (function () {
   'use strict';
 
+  // Two-step discount system:
+  // Step 1: Selling Price (COD) = MRP - 10% of MRP, rounded
+  // Step 2: Prepaid Price = Selling Price - 10% of Selling Price, rounded
+  // Total discount against MRP for prepaid = 19% (not 20%)
+
+  function computePrices(mrp) {
+    // Step 1: Standard selling price (COD) = MRP - 10% of MRP
+    const cod = Math.round(mrp * 0.9);
+    // Step 2: Additional prepaid discount = 10% of selling price
+    const prepaid = Math.round(cod * 0.9);
+    return { cod, prepaid, mrp };
+  }
+
   var PRODUCTS = {
     shilajit: {
       id: 'shilajit', sku: 'AVN-6PRO-001',
       name: '6Pro Shilajit Capsules', variant: '30 Capsules',
       img: 'https://cdn.avnideepayurveda.in/home/assets/shilajit-1.png',
-      cod: 1250, prepaid: 999, mrp: 2500, url: '/shilajit/'
+      // MRP 2500: cod = 2250, prepaid = 2025
+      ...computePrices(1250),
+      url: '/shilajit/'
     },
     oil: {
       id: 'oil', sku: 'AVN-OIL-001',
       name: 'Pain Relief Oil', variant: '60ml',
       img: 'https://cdn.avnideepayurveda.in/pain-oil/oil-1.png',
-      cod: 249, prepaid: 249, mrp: 499, url: '/pain-oil/'
+      // MRP 499: cod = 449, prepaid = 404
+      ...computePrices(349),
+      url: '/pain-oil/'
     },
     shilajit2: {
       id: 'shilajit2', sku: 'AVN-6PRO-002',
       name: '6Pro Shilajit Capsules', variant: 'Pack of 2',
       img: 'https://cdn.avnideepayurveda.in/home/assets/packs/shilajit-2.png',
-      cod: 2350, prepaid: 1899, mrp: 5000, url: '/shilajit/'
+      // MRP 5000: cod = 4500, prepaid = 4050
+      ...computePrices(5000),
+      url: '/shilajit/'
     },
     shilajit3: {
       id: 'shilajit3', sku: 'AVN-6PRO-003',
       name: '6Pro Shilajit Capsules', variant: 'Pack of 3',
       img: 'https://cdn.avnideepayurveda.in/home/assets/packs/shilajit-3.png',
-      cod: 3350, prepaid: 2699, mrp: 7500, url: '/shilajit/'
+      // MRP 7500: cod = 6750, prepaid = 6075
+      ...computePrices(7500),
+      url: '/shilajit/'
     },
     oil2: {
       id: 'oil2', sku: 'AVN-OIL-002',
       name: 'Pain Relief Oil', variant: 'Pack of 2',
       img: 'https://cdn.avnideepayurveda.in/home/assets/packs/oil-2.png',
-      cod: 449, prepaid: 449, mrp: 998, url: '/pain-oil/'
+      // MRP 998: cod = 898, prepaid = 809
+      ...computePrices(998),
+      url: '/pain-oil/'
     },
     oil3: {
       id: 'oil3', sku: 'AVN-OIL-003',
       name: 'Pain Relief Oil', variant: 'Pack of 3',
       img: 'https://cdn.avnideepayurveda.in/home/assets/packs/oil-3.png',
-      cod: 649, prepaid: 649, mrp: 1497, url: '/pain-oil/'
+      // MRP 1497: cod = 1348, prepaid = 1214
+      ...computePrices(1497),
+      url: '/pain-oil/'
     },
     hair: {
       id: 'hair', sku: 'AVN-HAIR-001',
       name: 'Herbal Hair Oil', variant: '100ml',
       img: 'https://cdn.avnideepayurveda.in/hair-oil/gallery/g1.webp',
-      cod: 465, prepaid: 465, mrp: 499, url: '/hair-oil/'
+      // MRP 499: cod = 449, prepaid = 404
+      ...computePrices(465),
+      url: '/hair-oil/'
     },
     hair2: {
       id: 'hair2', sku: 'AVN-HAIR-002',
       name: 'Herbal Hair Oil', variant: 'Pack of 2',
       img: 'https://cdn.avnideepayurveda.in/hair-oil/gallery/g1.webp',
-      cod: 899, prepaid: 899, mrp: 998, url: '/hair-oil/'
+      // MRP 998: cod = 898, prepaid = 809
+      ...computePrices(998),
+      url: '/hair-oil/'
     },
     hair3: {
       id: 'hair3', sku: 'AVN-HAIR-003',
       name: 'Herbal Hair Oil', variant: 'Pack of 3',
       img: 'https://cdn.avnideepayurveda.in/hair-oil/gallery/g1.webp',
-      cod: 1299, prepaid: 1299, mrp: 1497, url: '/hair-oil/'
+      // MRP 1497: cod = 1348, prepaid = 1214
+      ...computePrices(1497),
+      url: '/hair-oil/'
     },
     balm: {
       id: 'balm', sku: 'AVN-BALM-001',
       name: 'Herbal Balm', variant: '10g Pack of 5',
       img: 'https://cdn.avnideepayurveda.in/herbal-balm/gallery/g1.webp',
-      cod: 299, prepaid: 299, mrp: 349, url: '/herbal-balm/'
+      // MRP 349: cod = 314, prepaid = 283
+      ...computePrices(349),
+      url: '/herbal-balm/'
     },
     balm2: {
       id: 'balm2', sku: 'AVN-BALM-002',
       name: 'Herbal Balm', variant: 'Pack of 2',
       img: 'https://cdn.avnideepayurveda.in/herbal-balm/gallery/g1.webp',
-      cod: 549, prepaid: 549, mrp: 698, url: '/herbal-balm/'
+      // MRP 698: cod = 628, prepaid = 566
+      ...computePrices(698),
+      url: '/herbal-balm/'
     },
     balm3: {
       id: 'balm3', sku: 'AVN-BALM-003',
       name: 'Herbal Balm', variant: 'Pack of 3',
       img: 'https://cdn.avnideepayurveda.in/herbal-balm/gallery/g1.webp',
-      cod: 799, prepaid: 799, mrp: 1047, url: '/herbal-balm/'
+      // MRP 1047: cod = 943, prepaid = 849
+      ...computePrices(1047),
+      url: '/herbal-balm/'
     }
   };
+
   var KEY = 'avn_cart_v1', FREE_ABOVE = 499, SHIP_FEE = 49;
 
   /* ---------- admin catalog overrides (set by site-sync.js from /api/products) ---------- */
@@ -169,19 +207,22 @@
       list.innerHTML = ids().map(function (k) {
         var p = P(k), q = cart[k];
         if (!p) return '';
-        var save = (p.mrp - p.cod) * q;
+        var save = p.mrp - p.cod;
+        var preSave = p.cod - p.prepaid;
         return '' +
         '<div class="cart-it" data-key="' + k + '">' +
           '<img src="' + p.img + '" alt="' + p.name + '">' +
           '<div class="it-b">' +
             '<b>' + p.name + '</b><span class="it-v">' + p.variant + '</span>' +
-            '<div class="it-p"><s>' + inr(p.mrp) + '</s> ' + inr(p.cod) +
-              (save > 0 ? ' <em>save ' + inr(save) + '</em>' : '') + '</div>' +
+            '<div class="it-p">' + inr(p.mrp) + 'unia ' + inr(p.cod) +
+              (save > 0 ? ' <em>save ' + inr(save) + '</em>' : '') +
+              (preSave > 0 ? ' <em>prepaid save ' + inr(preSave) + '</em>' : '') + '</div>' +
             '<div class="it-q">' +
               '<button type="button" data-cart-dec aria-label="Decrease">−</button>' +
               '<span>' + q + '</span>' +
               '<button type="button" data-cart-inc aria-label="Increase">+</button>' +
               '<button type="button" class="it-rm" data-cart-rm>Remove</button>' +
+              '</div>' +
             '</div>' +
           '</div>' +
           '<b class="it-lt">' + inr(p.cod * q) + '</b>' +
@@ -232,14 +273,7 @@
     openDr();
   }
 
-  /* ---------- cart item -> checkout pack state ----------
-     The product page's checkout popup prices itself from localStorage `avn_pack`
-     (page + pack index). If checkout starts from the cart with Pack of 2/3,
-     that state must match the cart item, otherwise the payment step shows and
-     charges Pack of 1. Cart ids are exactly the pack ids: shilajit|shilajit2|
-     shilajit3 and oil|oil2|oil3, matching the PDP pack arrays. ---------- */
-  /* cart id -> PDP family. Must match the `page` each PDP writes/reads in
-     localStorage avn_pack (see apPackIdx/coPackIdx on every product page). */
+  /* ---------- cart item -> PDP family ---------- */
   function pageOf(id) {
     if (id.indexOf('shilajit') === 0) return 'shilajit';
     if (id.indexOf('hair') === 0) return 'hair';
@@ -259,14 +293,7 @@
 
   function familyOf(id) { return pageOf(id); }
 
-  /* ---------- cart -> checkout pricing state ----------
-     The order popup prices itself from a SINGLE pack (localStorage avn_pack), so
-     it used to be unable to represent a cart holding two different products.
-     Mixed carts were therefore dumped on WhatsApp from the Checkout button.
-     Instead, publish the whole cart on window.AVN_CART_STATE and let the popup's
-     apPack() price itself from it (see the `apPack` override in each PDP bundle).
-     The object is re-published on every cart mutation and survives navigation
-     because it is rebuilt from localStorage on load. ---------- */
+  /* ---------- cart -> checkout pricing state ---------- */
   function cartState() {
     var ks = ids().filter(function (k) { return !!P(k); });
     var fams = {}, items = [], codTotal = 0, prepaidTotal = 0, mrpTotal = 0;
@@ -297,12 +324,7 @@
     try { window.AVN_CART_STATE = cartState(); } catch (e) {}
   }
 
-  /* Paint the popup's per-item summary lines and title.
-     Driven from HERE rather than from each PDP's openOrderPopup: cart.js is
-     loaded on every page and is guaranteed global, whereas the per-page helpers
-     are module-scoped and window.updatePay is whichever copy ran last (the app
-     bundle's, which knows nothing about the cart). Retries briefly so a summary
-     that is re-rendered a moment later cannot leave the lines out. */
+  /* Paint the popup's per-item summary lines and title. */
   function paintPopup() {
     [0, 150, 400, 900].forEach(function (delay) {
       setTimeout(function () {
@@ -325,7 +347,6 @@
       var ks = ids().filter(function (k) { return !!P(k); });
       if (!ks.length) return;
       // Purge the stale lines so the drawer stops showing them.
-      var dropped = false;
       Object.keys(cart).forEach(function (k) { if (!P(k)) { delete cart[k]; dropped = true; } });
       if (dropped) { store(); render(); }
       track('InitiateCheckout', { value: sub(), currency: 'INR', num_items: itemCount() });
@@ -339,8 +360,8 @@
       // below still calls waOrder().
       var last = ks[ks.length - 1];
       var p = P(last);
-      var here = location.pathname.replace(/\/$/, '');
-      var there = p.url.replace(/\/$/, '');
+      var here = location.pathname.replace(/\\/$/, '');
+      var there = p.url.replace(/\\/$/, '');
       syncPack(last); // popup must price the pack that is actually in the cart
       publishState(); // ...or the whole cart when it holds several products
       paintPopup();   // list the cart lines once the popup is up
@@ -406,8 +427,7 @@
       var items = links
         ? Array.prototype.slice.call(links.querySelectorAll('a')).map(function (a) {
             return { h: a.getAttribute('href'), t: a.textContent.trim(), on: a.classList.contains('on') };
-          })
-        : [
+          })\n        : [
             { h: '/', t: 'Home' }, { h: '/shilajit/', t: 'Shilajit' },
             { h: '/pain-oil/', t: 'Pain Oil' }, { h: '/#products', t: 'Bestsellers' },
             { h: '/#reviews', t: 'Reviews' }, { h: '/contact-us', t: 'Contact' }
@@ -440,9 +460,9 @@
         '<a class="rx-mnav-call" href="tel:+917060101043">Call +91 70601 01043</a></div>';
       document.body.appendChild(ov);
       document.body.appendChild(dr);
-      var here = (location.pathname || '/').replace(/\/$/, '') || '/';
+      var here = (location.pathname || '/').replace(/\\/$/, '') || '/';
       dr.querySelectorAll('.rx-mnav-links a').forEach(function (a) {
-        var h = (a.getAttribute('href') || '').split('#')[0].replace(/\/$/, '') || '/';
+        var h = (a.getAttribute('href') || '').split('#')[0].replace(/\\/$/, '') || '/';
         if (h === here) a.classList.add('on');
       });
       function openM() { ov.classList.add('on'); dr.classList.add('on'); document.documentElement.classList.add('mnav-lock'); syncBurger(true); }
@@ -464,11 +484,7 @@
     } catch (e) {}
   }
 
-  /* ---------- public API ----------
-     assets/site-sync.js adds admin-created products from the home page. It must
-     go through this cart (not localStorage directly) so the in-memory cart, the
-     drawer, the badge and the AddToCart pixel all stay in sync — a raw
-     localStorage write gets overwritten the next time this cart persists. ---------- */
+  /* ---------- public API ---------- */
   window.AVN_CART = {
     add: function (id, q) { add(id, q || 1); },
     count: function () { return itemCount(); },

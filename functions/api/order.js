@@ -24,7 +24,7 @@ async function withTimeout(promise, ms = 5000, name = "request") {
   ]);
 }
 
-const REQUIRED = ["name", "phone", "paymentMethod", "amount"];
+const REQUIRED = ["name", "phone", "paymentMethod"];
 
 // Order-total sanity range in ₹ (see "Step 4b" below before changing these).
 // Cheapest catalogue price today is ₹249 (oil) and the biggest coupon is ₹100
@@ -60,7 +60,11 @@ function normalizeOrder(body, ip) {
     pincode: String(body.pincode || "").trim().slice(0, 6),
     address: String(body.address || "").trim().slice(0, 500),
     payment_method: String(body.paymentMethod || "cod").trim().toLowerCase(),
-    amount: Number(body.amount || 0),
+    // Calculate authoritative price server-side (never trust client-submitted prices)
+    const productPrice = getProductPrice(body.product || "");
+    const calculatedAmount = productPrice.cod;
+    // Use calculated amount
+    const amount = Number(calculatedAmount);
     product: String(body.product || "Avnideep 6Pro Vitality Shilajit Capsules").slice(0, 100),
     // Workflow status is whitelisted to the states the checkout legitimately
     // creates. Anything else (e.g. "delivered"/"paid") is coerced to cod_order so
