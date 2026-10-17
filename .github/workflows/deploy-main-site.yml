@@ -1,4 +1,4 @@
-name: Deploy Main Site to shop.avnideep.in
+name: Deploy Main Site to avnideepayurveda.in
 
 on:
   push:
@@ -42,7 +42,7 @@ jobs:
         if: success()
         run: |
           echo "✅ Main site deployed successfully!"
-          echo "URL: https://shop.avnideep.in"
+          echo "URL: https://avnideepayurveda.in"
 
       - name: Deployment Failed
         if: failure()
