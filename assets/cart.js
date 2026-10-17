@@ -11,73 +11,73 @@
     shilajit: {
       id: 'shilajit', sku: 'AVN-6PRO-001',
       name: '6Pro Shilajit Capsules', variant: '30 Capsules',
-      img: '/home/assets/shilajit-1.png',
+      img: 'https://cdn.avnideepayurveda.in/home/assets/shilajit-1.png',
       cod: 1250, prepaid: 999, mrp: 2500, url: '/shilajit/'
     },
     oil: {
       id: 'oil', sku: 'AVN-OIL-001',
       name: 'Pain Relief Oil', variant: '60ml',
-      img: '/pain-oil/oil-1.png',
+      img: 'https://cdn.avnideepayurveda.in/pain-oil/oil-1.png',
       cod: 249, prepaid: 249, mrp: 499, url: '/pain-oil/'
     },
     shilajit2: {
       id: 'shilajit2', sku: 'AVN-6PRO-002',
       name: '6Pro Shilajit Capsules', variant: 'Pack of 2',
-      img: '/home/assets/packs/shilajit-2.png',
+      img: 'https://cdn.avnideepayurveda.in/home/assets/packs/shilajit-2.png',
       cod: 2350, prepaid: 1899, mrp: 5000, url: '/shilajit/'
     },
     shilajit3: {
       id: 'shilajit3', sku: 'AVN-6PRO-003',
       name: '6Pro Shilajit Capsules', variant: 'Pack of 3',
-      img: '/home/assets/packs/shilajit-3.png',
+      img: 'https://cdn.avnideepayurveda.in/home/assets/packs/shilajit-3.png',
       cod: 3350, prepaid: 2699, mrp: 7500, url: '/shilajit/'
     },
     oil2: {
       id: 'oil2', sku: 'AVN-OIL-002',
       name: 'Pain Relief Oil', variant: 'Pack of 2',
-      img: '/home/assets/packs/oil-2.png',
+      img: 'https://cdn.avnideepayurveda.in/home/assets/packs/oil-2.png',
       cod: 449, prepaid: 449, mrp: 998, url: '/pain-oil/'
     },
     oil3: {
       id: 'oil3', sku: 'AVN-OIL-003',
       name: 'Pain Relief Oil', variant: 'Pack of 3',
-      img: '/home/assets/packs/oil-3.png',
+      img: 'https://cdn.avnideepayurveda.in/home/assets/packs/oil-3.png',
       cod: 649, prepaid: 649, mrp: 1497, url: '/pain-oil/'
     },
     hair: {
       id: 'hair', sku: 'AVN-HAIR-001',
       name: 'Herbal Hair Oil', variant: '100ml',
-      img: '/hair-oil/gallery/g1.webp',
+      img: 'https://cdn.avnideepayurveda.in/hair-oil/gallery/g1.webp',
       cod: 465, prepaid: 465, mrp: 499, url: '/hair-oil/'
     },
     hair2: {
       id: 'hair2', sku: 'AVN-HAIR-002',
       name: 'Herbal Hair Oil', variant: 'Pack of 2',
-      img: '/hair-oil/gallery/g1.webp',
+      img: 'https://cdn.avnideepayurveda.in/hair-oil/gallery/g1.webp',
       cod: 899, prepaid: 899, mrp: 998, url: '/hair-oil/'
     },
     hair3: {
       id: 'hair3', sku: 'AVN-HAIR-003',
       name: 'Herbal Hair Oil', variant: 'Pack of 3',
-      img: '/hair-oil/gallery/g1.webp',
+      img: 'https://cdn.avnideepayurveda.in/hair-oil/gallery/g1.webp',
       cod: 1299, prepaid: 1299, mrp: 1497, url: '/hair-oil/'
     },
     balm: {
       id: 'balm', sku: 'AVN-BALM-001',
       name: 'Herbal Balm', variant: '10g Pack of 5',
-      img: '/herbal-balm/gallery/g1.webp',
+      img: 'https://cdn.avnideepayurveda.in/herbal-balm/gallery/g1.webp',
       cod: 299, prepaid: 299, mrp: 349, url: '/herbal-balm/'
     },
     balm2: {
       id: 'balm2', sku: 'AVN-BALM-002',
       name: 'Herbal Balm', variant: 'Pack of 2',
-      img: '/herbal-balm/gallery/g1.webp',
+      img: 'https://cdn.avnideepayurveda.in/herbal-balm/gallery/g1.webp',
       cod: 549, prepaid: 549, mrp: 698, url: '/herbal-balm/'
     },
     balm3: {
       id: 'balm3', sku: 'AVN-BALM-003',
       name: 'Herbal Balm', variant: 'Pack of 3',
-      img: '/herbal-balm/gallery/g1.webp',
+      img: 'https://cdn.avnideepayurveda.in/herbal-balm/gallery/g1.webp',
       cod: 799, prepaid: 799, mrp: 1047, url: '/herbal-balm/'
     }
   };

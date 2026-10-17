@@ -2301,13 +2301,13 @@ function initSocialProof(){
   var bottleImages = [
 
 
-    '/home/assets/shilajit-1.png',
+    'https://cdn.avnideepayurveda.in/home/assets/shilajit-1.png',
 
 
-    '/home/assets/shilajit-1.png',
+    'https://cdn.avnideepayurveda.in/home/assets/shilajit-1.png',
 
 
-    '/home/assets/shilajit-1.png'
+    'https://cdn.avnideepayurveda.in/home/assets/shilajit-1.png'
 
 
   ];
