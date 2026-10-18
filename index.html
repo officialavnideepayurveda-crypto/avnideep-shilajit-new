@@ -395,8 +395,15 @@ if(d)d.textContent=(s.cards[k]?s.cards[k][1]:'');
 }
 pill.href=s.href; nm.textContent=s.name; pr.textContent=s.price;
 paintSlots();
+if(inst){
+/* First paint: the HTML already has this content, so there is nothing to
+   reflow. Restarting the animation only needs the class to land on a later
+   frame — no forced synchronous layout while the parser is still running. */
+requestAnimationFrame(function(){stage.classList.add('apw-swap');});
+}else{
 void stage.offsetWidth;
 stage.classList.add('apw-swap');
+}
 }
 function goNext(){render(cur+1);}
 function goPrev(){render(cur-1);}
