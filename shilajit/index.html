@@ -656,8 +656,8 @@ function capiCookie(n){try{var m=document.cookie.match(new RegExp('(?:^|; )'+n+'
 function sendCAPIEvent(eventName,eventID,customData,userExtra){try{var payload={event_name:eventName,event_id:eventID,custom_data:customData||{},event_source_url:window.location.href,user_data:Object.assign({client_user_agent:navigator.userAgent||'',fbp:capiCookie('_fbp'),fbc:capiCookie('_fbc')},userExtra||{})};fetch('/api/events',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}).catch(function(){});}catch(e){}}
 try{var vcPageEventId='vc_page_'+Date.now()+'_'+Math.random().toString(36).substring(2,8);if(typeof fbq==='function')fbq('track','ViewContent',{value:999,currency:'INR',content_name:'AVN-6PRO-001',content_type:'product',content_ids:['AVN-6PRO-001'],eventID:vcPageEventId});sendCAPIEvent('ViewContent',vcPageEventId,{value:999,currency:'INR',content_name:'AVN-6PRO-001',content_type:'product',content_ids:['AVN-6PRO-001']});}catch(e){}
 </script>
-<link rel="stylesheet" href="/assets/renee-theme.css?v=rx27">
-<script src="/assets/cart.js?v=rx28" defer></script>
+<link rel="stylesheet" href="/assets/renee-theme.css?v=rx28">
+<script src="/assets/cart.js?v=rx29" defer></script>
 <script src="/assets/auth.js?v=1" defer></script>
 </head>
 <body>
@@ -2177,7 +2177,7 @@ if('serviceWorker' in navigator){
 (function(){try{var g=document.querySelector('.gallery'),img=document.getElementById('mainImg');if(!g||!img)return;if(window.matchMedia&&matchMedia('(hover: none)').matches)return;g.addEventListener('pointermove',function(e){try{var b=g.getBoundingClientRect(),x=(e.clientX-b.left)/b.width-.5,y=(e.clientY-b.top)/b.height-.5;img.style.transform='rotateY('+(x*10).toFixed(2)+'deg) rotateX('+(-y*10).toFixed(2)+'deg)';}catch(_){}});g.addEventListener('pointerleave',function(){img.style.transform='';});}catch(_){}})();
 </script>
 <script src="/assets/site-sync.js?v=2" defer></script>
-<script src="app-shilajit.v3.js?v=20261017lockfix"></script>
+<script src="app-shilajit.v3.js?v=20261018submitfix"></script>
 <style>
 .sp-notif{position:fixed;top:55px;left:24px;z-index:99990;max-width:240px;background:#1a1a1a;border:1px solid rgba(255,213,79,.2);border-radius:14px;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 12px 40px rgba(0,0,0,.35);transform:translateY(-10px);opacity:0;pointer-events:none;transition:all .5s cubic-bezier(.22,.61,.36,1)}
 .sp-notif.show{transform:translateY(0);opacity:1;pointer-events:auto}

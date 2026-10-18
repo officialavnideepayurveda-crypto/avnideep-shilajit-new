@@ -50,6 +50,6 @@ describe('homepage hero gloss sweep (order-button shine family)', () => {
   });
 
   it('homepage loads sweep css (cache-busted)', () => {
-    expect(html).toContain('/assets/renee-theme.css?v=rx27');
+    expect(html).toContain('/assets/renee-theme.css?v=rx28');
   });
 });
