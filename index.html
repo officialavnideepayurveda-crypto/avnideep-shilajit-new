@@ -357,7 +357,7 @@ var pill=document.getElementById('apwPill'),nm=document.getElementById('apwName'
 var dots=[].slice.call(document.getElementById('apwDots').children);
 var cards=[].slice.call(document.querySelectorAll('#why .apwhy-card'));
 var prev=document.getElementById('apwPrev'),next=document.getElementById('apwNext');
-var cur=0,timer=null;
+var cur=0,timer=null,vis=true;
 var NNODES=items.length;
 function paintSlots(){
 items.forEach(function(it){
@@ -401,7 +401,7 @@ stage.classList.add('apw-swap');
 function goNext(){render(cur+1);}
 function goPrev(){render(cur-1);}
 function restart(){start();}
-function start(){stop();timer=setInterval(goNext,3000);}
+function start(){stop();if(vis)timer=setInterval(goNext,3000);}
 function stop(){if(timer){clearInterval(timer);timer=null;}}
 dots.forEach(function(d,k){d.addEventListener('click',function(){render(k);restart();});});
 if(prev)prev.addEventListener('click',function(e){e.stopPropagation();goPrev();restart();});
@@ -430,7 +430,10 @@ if(x<0.32)goPrev();else if(x>0.68)goNext();
 });
 document.addEventListener('visibilitychange',function(){document.hidden?stop():start();});
 render(0,true);
-start();
+if('IntersectionObserver' in window){
+vis=false;
+new IntersectionObserver(function(es){es.forEach(function(e){vis=e.isIntersecting;if(vis)start();else stop();});},{threshold:0.15}).observe(why);
+}else{start();}
 }catch(e){}
 })();
 </script>
