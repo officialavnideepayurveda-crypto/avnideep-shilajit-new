@@ -62,15 +62,61 @@
     } catch (e) { return false; }
   }
 
+  // Admin image URLs that we also ship as leaner same-origin WebP copies.
+  // Same picture, a fraction of the bytes: keep the swap, lose the weight.
+  var OPT_IMG = {
+    'https://cdn.avnideepayurveda.in/home/assets/shilajit-1.png': {
+      set: '/home/assets/shilajit-1-400.webp 400w, /home/assets/shilajit-1-900.webp 900w',
+      sizes: '(max-width:760px) 92vw, 460px',
+      src: '/home/assets/shilajit-1-900.webp'
+    },
+    'https://cdn.avnideepayurveda.in/pain-oil/oil-1.png': {
+      set: '/pain-oil/oil-1-400.webp 400w, /pain-oil/oil-1-900.webp 900w',
+      sizes: '(max-width:760px) 92vw, 460px',
+      src: '/pain-oil/oil-1-900.webp'
+    }
+  };
+
+  function pictureFor(img) {
+    var pic = img.closest ? img.closest('picture') : null;
+    if (pic) return pic;
+    if (!img.parentNode) return null;
+    pic = document.createElement('picture');
+    img.parentNode.insertBefore(pic, img);
+    pic.appendChild(img);
+    return pic;
+  }
+
   function applyImages(admin) {
     try {
       document.querySelectorAll('img[data-pimg]').forEach(function (img) {
         var o = admin[img.getAttribute('data-pimg')];
-        if (!o || !o.img || img.getAttribute('src') === o.img) return;
+        if (!o || !o.img) return;
+        var opt = OPT_IMG[o.img];
+        if (opt) {
+          var pic = pictureFor(img);
+          if (!pic) return;
+          var src = pic.querySelector('source');
+          if (!src) {
+            src = document.createElement('source');
+            src.type = 'image/webp';
+            pic.insertBefore(src, img);
+          }
+          src.setAttribute('srcset', opt.set);
+          // Match the slot the image actually renders in (a 64px thumb should not
+          // pull the 900w file). Fall back to the card size when layout is not
+          // ready yet, e.g. a hidden sticky element.
+          var w = 0;
+          try { w = Math.round(img.getBoundingClientRect().width); } catch (e) {}
+          src.setAttribute('sizes', w > 0 ? w + 'px' : opt.sizes);
+          if (img.getAttribute('src') !== opt.src) img.setAttribute('src', opt.src);
+          return;
+        }
+        if (img.getAttribute('src') === o.img) return;
         // A <picture> <source> outranks the src attribute, so the responsive
         // sources have to go before the admin-chosen image can show.
-        var pic = img.closest ? img.closest('picture') : null;
-        if (pic) Array.prototype.slice.call(pic.querySelectorAll('source')).forEach(function (s) { s.remove(); });
+        var old = img.closest ? img.closest('picture') : null;
+        if (old) Array.prototype.slice.call(old.querySelectorAll('source')).forEach(function (s) { s.remove(); });
         img.setAttribute('src', o.img);
       });
     } catch (e) {}
