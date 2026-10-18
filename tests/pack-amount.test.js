@@ -110,11 +110,11 @@ describe('payment step shows AND charges the pack the customer selected', () => 
     const { w } = bootPage('pain-oil/index.html', 'https://avnideepayurveda.in/pain-oil/');
 
     setPack(w, 'oil', 0); openCheckout(w, { prepaid: true });
-    expect(txt(w, 'sAmt')).toBe('₹249');
+    expect(txt(w, 'sAmt')).toBe('₹199');
 
     setPack(w, 'oil', 1); openCheckout(w, { prepaid: true });
-    expect(txt(w, 'sAmt')).toBe('₹449');
-    expect(txt(w, 'oBtn')).toContain('₹449');
+    expect(txt(w, 'sAmt')).toBe('₹359');
+    expect(txt(w, 'oBtn')).toContain('₹359');
     expect(summary(w)).toContain('(Pack of 2)');
 
     setPack(w, 'oil', 2); openCheckout(w);
@@ -256,7 +256,7 @@ describe('payment step shows AND charges the pack the customer selected', () => 
     expect(String(order.body.product)).not.toContain('(Pack of');
   });
 
-  it('pain oil prepaid Pack of 2: order + Razorpay carry 449', async () => {
+  it('pain oil prepaid Pack of 2: order + Razorpay carry 359', async () => {
     const { w, calls } = bootPage('pain-oil/index.html', 'https://avnideepayurveda.in/pain-oil/', {
       app: true, appRel: 'pain-oil/app-oil.v3.js',
     });
@@ -272,11 +272,11 @@ describe('payment step shows AND charges the pack the customer selected', () => 
 
     const order = calls.find((c) => c.url.includes('/api/order') && c.method === 'POST');
     expect(order, 'order must be saved').toBeTruthy();
-    expect(order.body.amount).toBe(449);
+    expect(order.body.amount).toBe(359);
     expect(String(order.body.product)).toContain('(Pack of 2)');
     const rzp = calls.find((c) => c.url.includes('/razorpay/create-order'));
     expect(rzp, 'razorpay order must be created').toBeTruthy();
-    expect(rzp.body.amount).toBe(449);
+    expect(rzp.body.amount).toBe(359);
   });
 });
 

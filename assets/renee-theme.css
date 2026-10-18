@@ -133,8 +133,10 @@ body{background:var(--rx-bg)}
    soft for photography. Restarts every time a slide becomes active; clipped
    to the banner by .rx-frames{overflow:hidden}. Fast sweep: turant start. */
 .rx-hero .slide{position:relative}
-.rx-hero .slide.on::after{content:"";position:absolute;top:0;bottom:0;left:-60%;width:45%;z-index:2;pointer-events:none;background:linear-gradient(100deg,transparent,rgba(255,255,255,.22),transparent);transform:skewX(-18deg);animation:rx-hero-shine 2.8s ease-in-out infinite}
-@keyframes rx-hero-shine{0%{left:-60%}100%{left:130%}}
+/* Perf: sweep animates transform (compositor-only, no per-frame reflow).
+   Same -60% → 130% sweep as before — width 45% => translateX(-160% → 290%).  */
+.rx-hero .slide.on::after{content:"";position:absolute;top:0;bottom:0;left:0;width:45%;z-index:2;pointer-events:none;background:linear-gradient(100deg,transparent,rgba(255,255,255,.22),transparent);transform:translateX(-160%) skewX(-18deg);will-change:transform;animation:rx-hero-shine 2.8s ease-in-out infinite}
+@keyframes rx-hero-shine{0%{transform:translateX(-160%) skewX(-18deg)}100%{transform:translateX(290%) skewX(-18deg)}}
 .rx-hero img{width:100%;height:auto;display:block}
 .rx-hero .slide picture{display:block}
 @media(min-width:701px){
@@ -537,8 +539,9 @@ ol.steps{margin:14px 0 0 20px;display:grid;gap:10px;font-size:14.5px}
 .phone-input-wrap:focus-within{border-color:#C9A227!important;box-shadow:0 0 0 3px rgba(201,162,39,.16)!important}
 .nav-next{background:linear-gradient(135deg,#1A5C44 0%,#0E3B2C 60%,#0B2E23 100%)!important;position:relative;overflow:hidden;box-shadow:0 14px 28px -10px rgba(14,59,46,.6)!important;transition:transform .15s,box-shadow .2s!important}
 .nav-next:hover{transform:translateY(-1px);box-shadow:0 18px 34px -10px rgba(14,59,46,.65)!important}
-.nav-next::after{content:"";position:absolute;top:0;bottom:0;left:-60%;width:45%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.35),transparent);transform:skewX(-18deg);animation:rx-shine 3.2s ease-in-out infinite}
-@keyframes rx-shine{0%,55%{left:-60%}100%{left:130%}}
+/* Perf: compositor-only shine — same sweep, transform instead of left */
+.nav-next::after{content:"";position:absolute;top:0;bottom:0;left:0;width:45%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.35),transparent);transform:translateX(-160%) skewX(-18deg);will-change:transform;animation:rx-shine 3.2s ease-in-out infinite}
+@keyframes rx-shine{0%,55%{transform:translateX(-160%) skewX(-18deg)}100%{transform:translateX(290%) skewX(-18deg)}}
 .pay-card.selected,.pay-card:has(input:checked){border-color:#C9A227!important;background:linear-gradient(180deg,#FFFDF4,#FBF6E8)!important;box-shadow:0 0 0 3px rgba(201,162,39,.16),0 10px 24px -12px rgba(120,90,10,.4)!important}
 .pay-card.selected::after{content:"✓";position:absolute;top:-10px;right:-6px;width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#1A5C44,#0E3B2C);color:#fff;font-size:14px;font-weight:900;display:grid;place-items:center;box-shadow:0 4px 10px rgba(0,0,0,.3);border:2px solid #fff}
 .summary{background:linear-gradient(180deg,#fff,#FDF9EF)!important;border-color:rgba(201,162,39,.4)!important}
@@ -547,7 +550,7 @@ ol.steps{margin:14px 0 0 20px;display:grid;gap:10px;font-size:14.5px}
 .trust-strip{margin-top:2px}
 .trust-item.compact{background:#F4F1E8;border:1px solid var(--rx-line);border-radius:999px;padding:6px 12px}
 #oBtn{position:relative;overflow:hidden}
-#oBtn::after{content:"";position:absolute;top:0;bottom:0;left:-60%;width:45%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.35),transparent);transform:skewX(-18deg);animation:rx-shine 3.2s ease-in-out infinite}
+#oBtn::after{content:"";position:absolute;top:0;bottom:0;left:0;width:45%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.35),transparent);transform:translateX(-160%) skewX(-18deg);will-change:transform;animation:rx-shine 3.2s ease-in-out infinite}
 
 /* ---- Premium payment-step polish ---- */
 .pay-label{display:flex;align-items:center;gap:10px;font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:#8a8478!important}
@@ -1010,6 +1013,9 @@ html.cart-lock,html.cart-lock body{overflow:hidden}
 .ap-pack b{display:block;font-size:13px;color:var(--ap-ink)}
 .ap-pack .p1{font-size:15px;font-weight:800;color:var(--ap-ink);margin-top:2px}
 .ap-pack .p1 s{font-size:11.5px;color:#9ca3af;font-weight:600;margin-left:4px}
+.ap-pack[data-pay="P"] .p1 s{margin-left:0;margin-right:5px}
+.ap-pack .p1 i{font-style:normal;color:#0a8a4d}
+.ap-pack .savechip{display:inline-block;margin-top:3px;background:#dff6e6;color:#0a7d4f;font-size:9.5px;font-weight:800;padding:2px 6px;border-radius:5px;line-height:1.35}
 .ap-pack.wa{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:4px;text-decoration:none}
 .ap-pack.wa b{color:#0b6d4e}
 

@@ -91,7 +91,7 @@ describe('cart checkout button: every cart opens the order popup (WhatsApp is on
     expect(w.AVN_CART_STATE.mixed).toBe(true);
     expect(w.AVN_CART_STATE.items.length).toBe(2);
     expect(w.AVN_CART_STATE.codTotal).toBe(249 + 1250);
-    expect(w.AVN_CART_STATE.prepaidTotal).toBe(249 + 999);
+    expect(w.AVN_CART_STATE.prepaidTotal).toBe(199 + 999);
     expect(w.AVN_CART_STATE.count).toBe(2);
   });
 

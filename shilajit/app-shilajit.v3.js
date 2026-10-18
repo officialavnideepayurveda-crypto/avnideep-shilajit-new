@@ -186,6 +186,36 @@ window.closeOrderPopup = closeOrderPopup;
 
   var UTM_DEFAULTS = {source:'facebook', medium:'cpc', campaign:'avnideep_shilajit'};
 
+  /* Checkout helpers. The page's inline script is an IIFE, so these are NOT
+     global - they must live here or build()/_sendCapiEvent() throw
+     "getUtmParams is not defined" and the order is never posted. */
+  function getUtmParams(){
+    var params = new URLSearchParams(window.location.search);
+    return {
+      source: params.get('utm_source') || UTM_DEFAULTS.source,
+      medium: params.get('utm_medium') || UTM_DEFAULTS.medium,
+      campaign: params.get('utm_campaign') || UTM_DEFAULTS.campaign
+    };
+  }
+  function getCookie(name){
+    var match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return match ? decodeURIComponent(match[2]) : '';
+  }
+  function appendUtm(url){
+    try{
+      var u = new URL(url, window.location.origin);
+      var utm = getUtmParams();
+      if(!u.searchParams.has('utm_source')) u.searchParams.set('utm_source', utm.source);
+      if(!u.searchParams.has('utm_medium')) u.searchParams.set('utm_medium', utm.medium);
+      if(!u.searchParams.has('utm_campaign')) u.searchParams.set('utm_campaign', utm.campaign);
+      return u.toString();
+    }catch(e){ return url; }
+  }
+  function buildUtmLabel(){
+    var utm = getUtmParams();
+    return 'UTM: ' + utm.source + ' / ' + utm.medium + ' / ' + utm.campaign;
+  }
+
 
 
   // Google Sheets handled by backend (/api/order)
@@ -193,20 +223,14 @@ window.closeOrderPopup = closeOrderPopup;
 
 
   var CHECKOUT_MODE = 'advance';
-  /* PACK SIZE pricing (synced with PDP #apSize selector + cart.js bundles) */
-  // Two-step discount system:
-  // Step 1: Selling Price (COD) = MRP - 10% of MRP, rounded
-  // Step 2: Prepaid Price = Selling Price - 10% of Selling Price, rounded
-  // Total discount against MRP for prepaid = 19% (not 20%)
-  function computeShilajitPrices(mrp) {
-    const cod = Math.round(mrp * 0.9);
-    const prepaid = Math.round(cod * 0.9);
-    return { pre: prepaid, cod: cod, mrp: mrp };
-  }
-  var AP_PACKS=[];
-  AP_PACKS.push(computeShilajitPrices(1250));  // Pack of 1: MRP 2500, COD 2250, Prepaid 2025
-  AP_PACKS.push(computeShilajitPrices(5000));  // Pack of 2: MRP 5000, COD 4500, Prepaid 4050
-  AP_PACKS.push(computeShilajitPrices(7500));  // Pack of 3: MRP 7500, COD 6750, Prepaid 6075
+  /* PACK SIZE pricing (synced with PDP #apSize selector + cart.js bundles).
+     These are FINAL prices, not MRPs: computeShilajitPrices() used to run the
+     already-discounted COD price through a second 10% cut (1250 -> cod 1125,
+     prepaid 1013) and the popup charged 1125 instead of the PDP's 1250. */
+  var AP_PACKS=[
+  {pre:999,cod:1250,mrp:2500,sku:'AVN-6PRO-001'},
+  {pre:1899,cod:2350,mrp:5000,sku:'AVN-6PRO-002'},
+  {pre:2699,cod:3350,mrp:7500,sku:'AVN-6PRO-003'}];
 
   function apPack(){
     var CS=window.AVN_CART_STATE;
@@ -860,6 +884,115 @@ window.closeOrderPopup = closeOrderPopup;
       if(e.key === 'ArrowLeft') prevImg();
 
     });
+  }
+
+  /* ============================================================
+     RAZORPAY CHECKOUT
+     This page calls openRazorpayCheckout() from the checkout handler but
+     the function (and its helpers) were never defined here — the page does
+     not load /app.v3.js. Result: `openRazorpayCheckout is not defined` ->
+     prepaid AND advance-COD orders could never be paid or saved.
+     Mirrors the working implementation in app.v3.js / herbal-balm.
+     ============================================================ */
+  function loadRazorpaySDK() {
+    return new Promise(function(resolve, reject) {
+      if (window.Razorpay) { resolve(window.Razorpay); return; }
+      var s = document.createElement('script');
+      s.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      s.async = true;
+      s.onload = function() { resolve(window.Razorpay); };
+      s.onerror = function() { reject(new Error('Failed to load Razorpay SDK')); };
+      document.body.appendChild(s);
+    });
+  }
+  var RZR_API = 'https://avnideep-admin-api.officialavnideepayurveda.workers.dev/api/admin';
+  async function getPayConfig() {
+    try {
+      var r = await fetch(RZR_API + '/payment-config');
+      var d = await r.json();
+      var cfg = d.ok ? d.data : null;
+      if (cfg && cfg.checkout_mode) {
+        CHECKOUT_MODE = cfg.checkout_mode === 'full_cod' ? 'full_cod' : 'advance';
+      }
+      return cfg || { razorpay_enabled: false, cod_enabled: true, key_id: '', checkout_mode: CHECKOUT_MODE };
+    } catch(e) { return { razorpay_enabled: false, cod_enabled: true, key_id: '', checkout_mode: CHECKOUT_MODE }; }
+  }
+  async function createRzrOrder(amt, curr, receipt, cust) {
+    var r = await fetch(RZR_API + '/razorpay/create-order', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount: amt, currency: curr || 'INR', receipt: receipt, customer: cust })
+    });
+    var d = await r.json();
+    if (!d.ok) throw new Error(d.error || 'Failed');
+    return d.data;
+  }
+  async function verifyRzrPay(oid, pid, sig) {
+    var r = await fetch(RZR_API + '/razorpay/verify', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ razorpay_order_id: oid, razorpay_payment_id: pid, razorpay_signature: sig })
+    });
+    var d = await r.json();
+    if (!d.ok) throw new Error(d.error || 'Verify failed');
+    return d.data;
+  }
+  async function saveRzrOrder(od) {
+    var r = await fetch(RZR_API + '/razorpay/save-order', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(od)
+    });
+    var d = await r.json();
+    if (!d.ok) throw new Error(d.error || 'Save failed');
+    return d.data;
+  }
+  async function openRazorpayCheckout(payload, chargeAmount) {
+    var config = await getPayConfig();
+    if (!config.razorpay_enabled) throw new Error('Online payment disabled');
+    if (!config.key_id) throw new Error('Gateway not configured');
+    await loadRazorpaySDK();
+    var cust = { name: payload.name, phone: payload.phone };
+    var rzpOrder = await createRzrOrder(chargeAmount || payload.amount, 'INR', payload.orderId, cust);
+    return new Promise(function(resolve, reject) {
+      var opts = {
+        key: rzpOrder.key_id || config.key_id,
+        amount: rzpOrder.amount, currency: rzpOrder.currency || 'INR',
+        name: 'Avnideep Ayurveda',
+        description: (payload.product || 'Avnideep 6Pro Vitality Shilajit Capsules'),
+        order_id: rzpOrder.id,
+        prefill: { name: payload.name, contact: payload.phone },
+        theme: { color: '#7A0C0C' },
+        handler: async function(response) {
+          try {
+            var v = await verifyRzrPay(response.razorpay_order_id, response.razorpay_payment_id, response.razorpay_signature);
+            if (v.verified) {
+              payload.razorpay_order_id = response.razorpay_order_id;
+              payload.razorpay_payment_id = response.razorpay_payment_id;
+              payload.razorpay_signature = response.razorpay_signature;
+              if(!payload.advanceAmount){ await saveRzrOrder(payload); }
+              resolve({ success: true, orderId: payload.orderId, razorpay_payment_id: payload.razorpay_payment_id || '' });
+            } else reject(new Error('Verification failed'));
+          } catch(e) { reject(e); }
+        },
+        modal: { ondismiss: function() { reject(new Error('Cancelled')); } }
+      };
+      var rzp = new Razorpay(opts);
+      rzp.on('payment.failed', function(r) { reject(new Error((r.error && r.error.description) || 'Payment failed')); });
+      rzp.open();
+    });
+  }
+  window.openRazorpayCheckout = openRazorpayCheckout;
+
+  /* Bootstrap the popup checkout. index.html's inline submit handler bails out
+     early ("Checkout handled by app.js"), so unless initForm() runs here the
+     form has no live submit handler and no order is ever saved. Deferred to
+     DOMContentLoaded because this bundle is parsed before <form id="oForm">. */
+  function init(){
+    try{ initPay(); }catch(e){}
+    try{ updatePay(); }catch(e){}
+    try{ initForm(); }catch(e){}
+  }
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
   }
 
 })();

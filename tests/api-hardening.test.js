@@ -186,6 +186,37 @@ describe('BUG #3: /api/order validates the amount', () => {
 });
 
 // ============================================================
+// Server-side fallback pricing: what gets SAVED when the caller
+// omits `amount` (the old CODE_PRICES/PRICE_MAP pair saved oil 314
+// and the wrong prepaid price entirely).
+// ============================================================
+describe('/api/order prices the pack server-side when amount is omitted', () => {
+  let db, env;
+  beforeEach(() => { db = provisionedDb(); env = makeEnv(db); });
+
+  const savedAmount = (phone) =>
+    db.prepare('SELECT amount FROM orders WHERE phone = ?').get(phone).amount;
+
+  it.each([
+    ['Avnideep Pain Relief Oil 60ml', 'cod', 249],
+    ['Avnideep Pain Relief Oil 60ml', 'prepaid', 199],
+    ['Avnideep Pain Relief Oil 60ml (Pack of 3)', 'cod', 649],
+    ['Avnideep Pain Relief Oil 60ml (Pack of 2)', 'prepaid', 359],
+    ['Avnideep 6Pro Shilajit Capsules (Pack of 3)', 'prepaid', 2699],
+    ['Avnideep 6Pro Shilajit Capsules (Pack of 2)', 'prepaid', 1899],
+    ['Avnideep Herbal Balm 10g (Pack of 2)', 'cod', 549],
+    ['Avnideep Herbal Hair Oil 100ml (Pack of 3)', 'cod', 1299],
+  ])('%s / %s -> Rs.%i', async (product, paymentMethod, expected) => {
+    const phone = '9876500001';
+    const body = orderBody({ product, paymentMethod, phone });
+    delete body.amount;
+    const r = await postOrder(env, body);
+    expect(r.status, JSON.stringify(r.data)).toBe(200);
+    expect(savedAmount(phone)).toBe(expected);
+  });
+});
+
+// ============================================================
 // BUG #5 — rate limit: one phone number could place unlimited orders
 // ============================================================
 describe('BUG #5: /api/order rate limiting', () => {

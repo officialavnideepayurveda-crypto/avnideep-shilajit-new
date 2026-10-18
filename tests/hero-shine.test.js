@@ -34,7 +34,7 @@ describe('homepage hero gloss sweep (order-button shine family)', () => {
     expect(frames, '.rx-frames').toBeTruthy();
     expect(d.querySelectorAll('.rx-hero .slide').length).toBe(2);
     expect(d.querySelector('.rx-hero-nav'), 'nav').toBeTruthy();
-    expect(d.querySelector('.rx-hero img').getAttribute('src')).toContain('banner-shilajit-desktop.png');
+    expect(d.querySelector('.rx-hero img').getAttribute('src')).toContain('banner-shilajit-desktop');
     expect(css).toMatch(/\.rx-hero \.slide\.on::after\{[^}]*pointer-events:none/);
     expect(css).toMatch(/\.rx-hero \.slide\.on::after\{[^}]*z-index:2/);
   });

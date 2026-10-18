@@ -52,6 +52,36 @@ function normalizePhone(raw) {
   return d.slice(0, 15);
 }
 
+// Server-side fallback pricing. A valid client amount (Step 4a) always wins;
+// this only covers a caller that omits `amount`. It must mirror assets/cart.js
+// PRODUCTS and the PDP pack tables exactly, in ₹, indexed by pack number - 1.
+// (The old CODE_PRICES/PRICE_MAP pair drifted: oil was 314 instead of 249 and
+// prepaid was derived as cod * 0.9, so an amount-less oil order saved 283.)
+const CATALOGUE = {
+  shilajit: [{ cod: 1250, prepaid: 999 },  { cod: 2350, prepaid: 1899 }, { cod: 3350, prepaid: 2699 }],
+  oil:      [{ cod: 249,  prepaid: 199 },  { cod: 449,  prepaid: 359 },  { cod: 649,  prepaid: 519 }],
+  hair:     [{ cod: 465,  prepaid: 465 },  { cod: 899,  prepaid: 899 },  { cod: 1299, prepaid: 1299 }],
+  balm:     [{ cod: 299,  prepaid: 299 },  { cod: 549,  prepaid: 549 },  { cod: 799,  prepaid: 799 }],
+};
+
+function getProductPrice(ref, body) {
+  const m = String((body && body.paymentMethod) || "").trim().toLowerCase();
+  const kind = m.includes("prepaid") ? "prepaid" : "cod";
+  const text = " " + String(ref || "").toLowerCase() + " ";
+  const prodMatch =
+    /shilajit/.test(text) ? "shilajit" :
+    /hair/.test(text) ? "hair" :
+    /balm/.test(text) ? "balm" :
+    /oil|pain/.test(text) ? "oil" : null;
+  const packs = CATALOGUE[prodMatch] || CATALOGUE.shilajit;
+  // The client labels multi-packs "(Pack of 2|3)"; pack 1 and mixed-cart
+  // " (N items)" labels fall back to pack 1 (the client sends its own total for
+  // those and Step 4a prefers it anyway).
+  const pm = String(ref || "").match(/pack\s*of\s*(\d)/i);
+  const idx = pm ? Math.min(Math.max(parseInt(pm[1], 10), 1), packs.length) - 1 : 0;
+  return packs[idx][kind];
+}
+
 function normalizeOrder(body, ip) {
   return {
     order_id: body.orderId || `AVN-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
@@ -60,11 +90,10 @@ function normalizeOrder(body, ip) {
     pincode: String(body.pincode || "").trim().slice(0, 6),
     address: String(body.address || "").trim().slice(0, 500),
     payment_method: String(body.paymentMethod || "cod").trim().toLowerCase(),
-    // Calculate authoritative price server-side (never trust client-submitted prices)
-    const productPrice = getProductPrice(body.product || "");
-    const calculatedAmount = productPrice.cod;
-    // Use calculated amount
-    const amount = Number(calculatedAmount);
+    // Server-side sanity price. A valid client amount (if sent) overrides this
+    // AFTER Step 4a's range validation; an absent/invalid amount falls back to
+    // this catalogue price so the order can never save as 0/negative.
+    amount: getProductPrice(body.product || "", body),
     product: String(body.product || "Avnideep 6Pro Vitality Shilajit Capsules").slice(0, 100),
     // Workflow status is whitelisted to the states the checkout legitimately
     // creates. Anything else (e.g. "delivered"/"paid") is coerced to cod_order so
@@ -933,6 +962,23 @@ console.log('[KV-VERIFY] order write', { key: rateKey, type: 'rate_limit' });
 
     const order = normalizeOrder(body, ip);
 
+    // Step 4a: Reject a tampered client-submitted total BEFORE pricing.
+    // The client may omit `amount` (server prices authoritatively), but when it
+    // does send one it must be a plausible finite number — not 0/-500/"abc".
+    if (body.amount !== undefined && body.amount !== null && body.amount !== "") {
+      const clientAmount = Number(body.amount);
+      if (!Number.isFinite(clientAmount) || clientAmount < MIN_ORDER_AMOUNT || clientAmount > MAX_ORDER_AMOUNT) {
+        return new Response(
+          JSON.stringify({
+            ok: false,
+            error: `Order amount must be between Rs.${MIN_ORDER_AMOUNT} and Rs.${MAX_ORDER_AMOUNT}.`
+          }),
+          { status: 400, headers: jsonHeaders(env) }
+        );
+      }
+      order.amount = clientAmount;
+    }
+
     // Step 4: Validate phone
     if (!/^[6-9]\d{9}$/.test(order.phone)) {
       return new Response(
@@ -944,6 +990,8 @@ console.log('[KV-VERIFY] order write', { key: rateKey, type: 'rate_limit' });
     // Step 4b: Validate the order total.
     // BUG FIX — amount was taken verbatim from the client, so 1, 0, -500,
     // "abc"/NaN and 999999999 were all accepted and saved as real orders.
+    // The amount is now computed server-side from the catalogue (see
+    // getProductPrice); only its plausibility is checked here.
     const amount = Number(order.amount);
     if (!Number.isFinite(amount)) {
       return new Response(

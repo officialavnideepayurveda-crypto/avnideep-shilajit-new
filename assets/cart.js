@@ -25,96 +25,96 @@
       id: 'shilajit', sku: 'AVN-6PRO-001',
       name: '6Pro Shilajit Capsules', variant: '30 Capsules',
       img: 'https://cdn.avnideepayurveda.in/home/assets/shilajit-1.png',
-      // MRP 2500: cod = 2250, prepaid = 2025
-      ...computePrices(1250),
+      // Live-catalog prices (must match the PDP CO_PACKS + D1 /api/products);
+      // site-sync.js overrides these from /api/products when available.
+      // MRP 2500: cod = 1250, prepaid = 999
+      cod: 1250, prepaid: 999, mrp: 2500,
       url: '/shilajit/'
     },
     oil: {
       id: 'oil', sku: 'AVN-OIL-001',
       name: 'Pain Relief Oil', variant: '60ml',
       img: 'https://cdn.avnideepayurveda.in/pain-oil/oil-1.png',
-      // MRP 499: cod = 449, prepaid = 404
-      ...computePrices(349),
+    // MRP 349: cod = 249, prepaid = 199 (20% prepaid discount)
+    cod: 249, prepaid: 199, mrp: 349,
       url: '/pain-oil/'
     },
     shilajit2: {
       id: 'shilajit2', sku: 'AVN-6PRO-002',
       name: '6Pro Shilajit Capsules', variant: 'Pack of 2',
       img: 'https://cdn.avnideepayurveda.in/home/assets/packs/shilajit-2.png',
-      // MRP 5000: cod = 4500, prepaid = 4050
-      ...computePrices(5000),
+      // MRP 5000: cod = 2350, prepaid = 1899
+      cod: 2350, prepaid: 1899, mrp: 5000,
       url: '/shilajit/'
     },
     shilajit3: {
       id: 'shilajit3', sku: 'AVN-6PRO-003',
       name: '6Pro Shilajit Capsules', variant: 'Pack of 3',
       img: 'https://cdn.avnideepayurveda.in/home/assets/packs/shilajit-3.png',
-      // MRP 7500: cod = 6750, prepaid = 6075
-      ...computePrices(7500),
+      // MRP 7500: cod = 3350, prepaid = 2699
+      cod: 3350, prepaid: 2699, mrp: 7500,
       url: '/shilajit/'
     },
     oil2: {
       id: 'oil2', sku: 'AVN-OIL-002',
       name: 'Pain Relief Oil', variant: 'Pack of 2',
       img: 'https://cdn.avnideepayurveda.in/home/assets/packs/oil-2.png',
-      // MRP 998: cod = 898, prepaid = 809
-      ...computePrices(998),
+    // MRP 698: cod = 449, prepaid = 359 (20% prepaid discount)
+    cod: 449, prepaid: 359, mrp: 698,
       url: '/pain-oil/'
     },
     oil3: {
       id: 'oil3', sku: 'AVN-OIL-003',
       name: 'Pain Relief Oil', variant: 'Pack of 3',
       img: 'https://cdn.avnideepayurveda.in/home/assets/packs/oil-3.png',
-      // MRP 1497: cod = 1348, prepaid = 1214
-      ...computePrices(1497),
+    // MRP 1047: cod = 649, prepaid = 519 (20% prepaid discount)
+    cod: 649, prepaid: 519, mrp: 1047,
       url: '/pain-oil/'
     },
     hair: {
       id: 'hair', sku: 'AVN-HAIR-001',
       name: 'Herbal Hair Oil', variant: '100ml',
       img: 'https://cdn.avnideepayurveda.in/hair-oil/gallery/g1.webp',
-      // MRP 499: cod = 449, prepaid = 404
-      ...computePrices(465),
+      // hair: CO_PACKS on the hair-oil PDP (465/465, 899/899, 1299/1299);
+      // app-hairoil apPacks (449/404, 898/808, 1347/1212) — site-sync aligns
+      // both from /api/products when available.
+      cod: 465, prepaid: 465, mrp: 499,
       url: '/hair-oil/'
     },
     hair2: {
       id: 'hair2', sku: 'AVN-HAIR-002',
       name: 'Herbal Hair Oil', variant: 'Pack of 2',
       img: 'https://cdn.avnideepayurveda.in/hair-oil/gallery/g1.webp',
-      // MRP 998: cod = 898, prepaid = 809
-      ...computePrices(998),
+      cod: 899, prepaid: 899, mrp: 998,
       url: '/hair-oil/'
     },
     hair3: {
       id: 'hair3', sku: 'AVN-HAIR-003',
       name: 'Herbal Hair Oil', variant: 'Pack of 3',
       img: 'https://cdn.avnideepayurveda.in/hair-oil/gallery/g1.webp',
-      // MRP 1497: cod = 1348, prepaid = 1214
-      ...computePrices(1497),
+      cod: 1299, prepaid: 1299, mrp: 1497,
       url: '/hair-oil/'
     },
     balm: {
       id: 'balm', sku: 'AVN-BALM-001',
       name: 'Herbal Balm', variant: '10g Pack of 5',
       img: 'https://cdn.avnideepayurveda.in/herbal-balm/gallery/g1.webp',
-      // MRP 349: cod = 314, prepaid = 283
-      ...computePrices(349),
+      // balm: CO_PACKS on the herbal-balm PDP (299/299, 549/549, 799/799)
+      cod: 299, prepaid: 299, mrp: 349,
       url: '/herbal-balm/'
     },
     balm2: {
       id: 'balm2', sku: 'AVN-BALM-002',
       name: 'Herbal Balm', variant: 'Pack of 2',
       img: 'https://cdn.avnideepayurveda.in/herbal-balm/gallery/g1.webp',
-      // MRP 698: cod = 628, prepaid = 566
-      ...computePrices(698),
+      cod: 549, prepaid: 549, mrp: 698,
       url: '/herbal-balm/'
     },
     balm3: {
       id: 'balm3', sku: 'AVN-BALM-003',
       name: 'Herbal Balm', variant: 'Pack of 3',
       img: 'https://cdn.avnideepayurveda.in/herbal-balm/gallery/g1.webp',
-      // MRP 1047: cod = 943, prepaid = 849
-      ...computePrices(1047),
+      cod: 799, prepaid: 799, mrp: 1047,
       url: '/herbal-balm/'
     }
   };
@@ -143,6 +143,7 @@
   function load() { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } }
   function store() { try { localStorage.setItem(KEY, JSON.stringify(cart)); } catch (e) {} publishState(); }
   var cart = load();
+  var dropped = false;
 
   /* ---------- helpers ---------- */
   function ids() { return Object.keys(cart).filter(function (k) { return cart[k] > 0; }); }
@@ -360,8 +361,8 @@
       // below still calls waOrder().
       var last = ks[ks.length - 1];
       var p = P(last);
-      var here = location.pathname.replace(/\\/$/, '');
-      var there = p.url.replace(/\\/$/, '');
+      var here = location.pathname.replace(/\/$/, '');
+      var there = p.url.replace(/\/$/, '');
       syncPack(last); // popup must price the pack that is actually in the cart
       publishState(); // ...or the whole cart when it holds several products
       paintPopup();   // list the cart lines once the popup is up
@@ -427,7 +428,8 @@
       var items = links
         ? Array.prototype.slice.call(links.querySelectorAll('a')).map(function (a) {
             return { h: a.getAttribute('href'), t: a.textContent.trim(), on: a.classList.contains('on') };
-          })\n        : [
+          })
+        : [
             { h: '/', t: 'Home' }, { h: '/shilajit/', t: 'Shilajit' },
             { h: '/pain-oil/', t: 'Pain Oil' }, { h: '/#products', t: 'Bestsellers' },
             { h: '/#reviews', t: 'Reviews' }, { h: '/contact-us', t: 'Contact' }
@@ -460,9 +462,9 @@
         '<a class="rx-mnav-call" href="tel:+917060101043">Call +91 70601 01043</a></div>';
       document.body.appendChild(ov);
       document.body.appendChild(dr);
-      var here = (location.pathname || '/').replace(/\\/$/, '') || '/';
+      var here = (location.pathname || '/').replace(/\/$/, '') || '/';
       dr.querySelectorAll('.rx-mnav-links a').forEach(function (a) {
-        var h = (a.getAttribute('href') || '').split('#')[0].replace(/\\/$/, '') || '/';
+        var h = (a.getAttribute('href') || '').split('#')[0].replace(/\/$/, '') || '/';
         if (h === here) a.classList.add('on');
       });
       function openM() { ov.classList.add('on'); dr.classList.add('on'); document.documentElement.classList.add('mnav-lock'); syncBurger(true); }
