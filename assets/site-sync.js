@@ -66,7 +66,12 @@
     try {
       document.querySelectorAll('img[data-pimg]').forEach(function (img) {
         var o = admin[img.getAttribute('data-pimg')];
-        if (o && o.img && img.getAttribute('src') !== o.img) img.setAttribute('src', o.img);
+        if (!o || !o.img || img.getAttribute('src') === o.img) return;
+        // A <picture> <source> outranks the src attribute, so the responsive
+        // sources have to go before the admin-chosen image can show.
+        var pic = img.closest ? img.closest('picture') : null;
+        if (pic) Array.prototype.slice.call(pic.querySelectorAll('source')).forEach(function (s) { s.remove(); });
+        img.setAttribute('src', o.img);
       });
     } catch (e) {}
   }

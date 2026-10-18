@@ -410,8 +410,8 @@ describe('no pack-of-1 hard-coding left in the checkout code', () => {
     for (const page of ['index.html', 'shilajit/index.html', 'pain-oil/index.html', 'hair-oil/index.html', 'herbal-balm/index.html']) {
       expect(read(page), page).toContain('/assets/cart.js?v=rx30');
       expect(read(page), page).not.toContain('/assets/cart.js?v=rx29');
-      expect(read(page), page).toContain('/assets/site-sync.js?v=2');
-      expect(read(page), page).not.toContain('/assets/site-sync.js?v=1"');
+      expect(read(page), page).toContain('/assets/site-sync.js?v=3');
+      expect(read(page), page).not.toContain('/assets/site-sync.js?v=2"');
     }
   });
 
