@@ -119,7 +119,7 @@
     }
   };
 
-  var KEY = 'avn_cart_v1', FREE_ABOVE = 499, SHIP_FEE = 49;
+  var KEY = 'avn_cart_v1';
 
   /* ---------- admin catalog overrides (set by site-sync.js from /api/products) ---------- */
   function AP() { return window.AVN_ADMIN_PRODUCTS || {}; }
@@ -175,7 +175,7 @@
         '<div class="cart-row cart-shipline"><span>Delivery</span><b data-cart-del>—</b></div>' +
         '<button type="button" class="cart-btn" data-cart-checkout>Checkout — COD / Prepaid</button>' +
         '<button type="button" class="cart-btn2" data-cart-wa>Order on WhatsApp</button>' +
-        '<p class="cart-note">7-day easy returns • Lab tested • Free shipping above ₹499</p>' +
+        '<p class="cart-note">7-day easy returns • Lab tested • Free shipping</p>' +
       '</div>';
     document.body.appendChild(ov);
     document.body.appendChild(dr);
@@ -201,7 +201,7 @@
       list.innerHTML =
         '<div class="cart-empty">' +
         '<div class="e-ico">🛍️</div><b>Cart khaali hai</b>' +
-        '<p>Shilajit, Pain Oil, Hair Oil ya Balm add karein — COD available, free shipping ₹499+</p>' +
+        '<p>Shilajit, Pain Oil, Hair Oil ya Balm add karein — COD available, free shipping</p>' +
         '<a class="cart-btn2" href="/#products">Shop Bestsellers</a>' +
         '</div>';
     } else {
@@ -231,25 +231,19 @@
       }).join('');
     }
 
-    /* shipping progress */
+    /* shipping — always free, so the drawer total matches the order total */
     var st = sub();
     var ship = dr.querySelector('[data-cart-ship]');
     if (!n) { ship.style.display = 'none'; }
     else {
       ship.style.display = '';
-      if (st >= FREE_ABOVE) {
-        ship.innerHTML = '<div class="ok">🎉 <b>FREE delivery</b> unlocked!</div><div class="bar"><i style="width:100%"></i></div>';
-      } else {
-        var left = FREE_ABOVE - st, pct = Math.min(100, Math.round(st / FREE_ABOVE * 100));
-        ship.innerHTML = '<div>Sirf <b>' + inr(left) + '</b> aur — <b>FREE delivery</b> ke liye</div>' +
-          '<div class="bar"><i style="width:' + pct + '%"></i></div>';
-      }
+      ship.innerHTML = '<div class="ok">🎉 <b>FREE delivery</b> on all orders</div><div class="bar"><i style="width:100%"></i></div>';
     }
 
     /* totals */
     var mrpS = sum(function (p) { return p.mrp; });
     dr.querySelector('[data-cart-total]').textContent = inr(st);
-    dr.querySelector('[data-cart-del]').textContent = !n ? '—' : (st >= FREE_ABOVE ? 'FREE' : inr(SHIP_FEE));
+    dr.querySelector('[data-cart-del]').textContent = !n ? '—' : 'FREE';
     var saved = mrpS - st;
     dr.querySelector('[data-cart-save]').innerHTML = saved > 0
       ? 'Aapki total bachat: <b>' + inr(saved) + '</b>' +
@@ -258,7 +252,7 @@
 
     var co = dr.querySelector('[data-cart-checkout]');
     co.disabled = !n;
-    co.textContent = n ? 'Checkout — ' + inr(st + (st >= FREE_ABOVE ? 0 : SHIP_FEE)) : 'Checkout';
+    co.textContent = n ? 'Checkout — ' + inr(st) : 'Checkout';
   }
 
   /* ---------- open / close ---------- */
@@ -380,8 +374,8 @@
     });
     var st = sub();
     lines.push('', 'Subtotal: ' + inr(st));
-    lines.push('Delivery: ' + (st >= FREE_ABOVE ? 'FREE' : inr(SHIP_FEE)));
-    lines.push('Total: ' + inr(st + (st >= FREE_ABOVE ? 0 : SHIP_FEE)));
+    lines.push('Delivery: FREE');
+    lines.push('Total: ' + inr(st));
     lines.push('', 'COD available? Address: ');
     window.open('https://wa.me/917060101043?text=' + encodeURIComponent(lines.join('\n')), '_blank');
   }

@@ -124,3 +124,33 @@ describe('cart checkout button: every cart opens the order popup (WhatsApp is on
     expect(JSON.parse(w.localStorage.getItem('avn_pack'))).toEqual({ page: 'shilajit', i: 2 });
   });
 });
+
+describe('cart drawer total: no shipping fee is ever added', () => {
+  const money = (n) => '\u20b9' + n.toLocaleString('en-IN');
+  const openDrawer = (w) => {
+    w.document.body.insertAdjacentHTML('beforeend', '<button type="button" data-cart-open>cart</button>');
+    click(w, '[data-cart-open]');
+  };
+
+  it('a single oil pack shows FREE delivery and a total equal to the order total', () => {
+    const w = bootCart('/pain-oil/');
+    click(w, '[data-cart-add="oil"]'); // cod 249 - the drawer used to say "Delivery ₹49" / "Checkout — ₹298"
+    openDrawer(w);
+    const dr = w.document.querySelector('.cart-dr');
+    expect(dr.querySelector('[data-cart-total]').textContent).toBe(money(249));
+    expect(dr.querySelector('[data-cart-del]').textContent).toBe('FREE');
+    expect(dr.querySelector('[data-cart-checkout]').textContent).toBe('Checkout \u2014 ' + money(249));
+    expect(dr.querySelector('.cart-note').textContent).toContain('Free shipping');
+    expect(dr.querySelector('[data-cart-ship]').innerHTML).toContain('FREE delivery');
+  });
+
+  it('the WhatsApp order text lines carry no shipping fee either', () => {
+    const w = bootCart('/pain-oil/');
+    click(w, '[data-cart-add="oil"]');
+    w.document.body.insertAdjacentHTML('beforeend', '<button type="button" data-cart-wa>WA</button>');
+    click(w, '[data-cart-wa]');
+    const lines = decodeURIComponent(w.openedUrls[0].split('text=')[1]).split('\n');
+    expect(lines).toContain('Delivery: FREE');
+    expect(lines).toContain('Total: ' + money(249));
+  });
+});

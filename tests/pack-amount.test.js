@@ -408,8 +408,8 @@ describe('no pack-of-1 hard-coding left in the checkout code', () => {
     expect(read('herbal-balm/index.html')).toContain('app-balm.v3.js?v=20261018submitfix');
     // cart.js changed too -> every page that loads it must use the new URL
     for (const page of ['index.html', 'shilajit/index.html', 'pain-oil/index.html', 'hair-oil/index.html', 'herbal-balm/index.html']) {
-      expect(read(page), page).toContain('/assets/cart.js?v=rx29');
-      expect(read(page), page).not.toContain('/assets/cart.js?v=rx28');
+      expect(read(page), page).toContain('/assets/cart.js?v=rx30');
+      expect(read(page), page).not.toContain('/assets/cart.js?v=rx29');
       expect(read(page), page).toContain('/assets/site-sync.js?v=2');
       expect(read(page), page).not.toContain('/assets/site-sync.js?v=1"');
     }
