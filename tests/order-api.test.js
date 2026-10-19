@@ -9,7 +9,7 @@
  * 5. PATCH endpoint → Purchase CAPI with idempotency
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 // ============================================================
 // MOCKS
@@ -48,10 +48,12 @@ vi.mock('../functions/api/_capi.js', () => ({
 function createMockD1() {
   const store = new Map();
   const purchaseFlags = new Map();
+  const products = [];
 
   return {
     _store: store,
     _purchaseFlags: purchaseFlags,
+    _products: products,
 
     prepare: vi.fn((sql) => {
       const mockStmt = {
@@ -89,6 +91,7 @@ function createMockD1() {
               }
               return { success: true };
             }),
+            all: vi.fn(async () => ({ results: products })),
             first: vi.fn(async () => {
               // Handle SELECT purchase_capi_sent
               if (sql.includes('purchase_capi_sent')) {
@@ -121,6 +124,7 @@ function createMockD1() {
           };
           return stmt;
         }),
+        all: vi.fn(async () => ({ results: products })),
         first: vi.fn(async () => null),
         run: vi.fn(async () => ({ success: true })),
       };
@@ -141,7 +145,7 @@ function createMockD1() {
     // Helper to check state
     hasOrder(orderId) { return store.has(orderId); },
     getPurchaseCapiSent(orderId) { return purchaseFlags.get(orderId) || 0; },
-    reset() { store.clear(); purchaseFlags.clear(); capiEvents.length = 0; },
+    reset() { store.clear(); purchaseFlags.clear(); products.length = 0; capiEvents.length = 0; },
   };
 }
 
@@ -161,6 +165,17 @@ beforeEach(() => {
     META_ACCESS_TOKEN: 'test-token',
     META_PIXEL_ID: '123456789',
   };
+  // The PATCH confirm guard now verifies the Razorpay signature server-to-server
+  // via the admin worker. Stub fetch so tests get a "verified" answer without a
+  // real network call.
+  vi.stubGlobal('fetch', vi.fn(async () => ({
+    ok: true,
+    json: async () => ({ ok: true, data: { verified: true } }),
+  })));
+});
+
+afterEach(() => {
+  vi.unstubAllGlobals();
 });
 
 // ============================================================
@@ -421,6 +436,9 @@ describe('PATCH /api/order — confirm prepaid payment', () => {
       phone: '9876543210',
       amount: 999,
       autoConfirm: true,
+      razorpay_order_id: 'order_test_patch1',
+      razorpay_payment_id: 'pay_test_patch1',
+      razorpay_signature: 'sig_test_patch1',
     };
 
     const patchReq = new Request('https://avnideepayurveda.in/api/order', {
@@ -474,6 +492,9 @@ describe('PATCH /api/order — confirm prepaid payment', () => {
       phone: '9876543210',
       amount: 999,
       autoConfirm: true,
+      razorpay_order_id: 'order_test_patch2',
+      razorpay_payment_id: 'pay_test_patch2',
+      razorpay_signature: 'sig_test_patch2',
     };
 
     const patchReq1 = new Request('https://avnideepayurveda.in/api/order', {
@@ -496,6 +517,9 @@ describe('PATCH /api/order — confirm prepaid payment', () => {
       phone: '9876543210',
       amount: 999,
       autoConfirm: true,
+      razorpay_order_id: 'order_test_patch2',
+      razorpay_payment_id: 'pay_test_patch2',
+      razorpay_signature: 'sig_test_patch2',
     };
 
     const patchReq2 = new Request('https://avnideepayurveda.in/api/order', {
@@ -526,6 +550,57 @@ describe('PATCH /api/order — confirm prepaid payment', () => {
     expect(res.status).toBe(400);
     const data = await res.json();
     expect(data.error).toContain('orderId');
+  });
+
+  it('REJECTS a confirm with no Razorpay proof (payment-forgery guard)', async () => {
+    const { onRequestPost, onRequestPatch } = await import('../functions/api/order.js');
+
+    const postBody = {
+      orderId: 'AVN-1712345678-patch3',
+      name: 'Forgery Attempt',
+      phone: '9876543210',
+      paymentMethod: 'prepaid',
+      amount: 999,
+    };
+    const postReq = new Request('https://avnideepayurveda.in/api/order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(postBody),
+    });
+    await onRequestPost({ request: postReq, env: mockEnv, waitUntil: vi.fn() });
+    capiEvents.length = 0;
+
+    // Exactly the payload an attacker used to be able to send.
+    const patchReq = new Request('https://avnideepayurveda.in/api/order', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ orderId: 'AVN-1712345678-patch3', autoConfirm: true }),
+    });
+    const res = await onRequestPatch({ request: patchReq, env: mockEnv, waitUntil: vi.fn() });
+    expect(res.status).toBe(403);
+    expect(capiEvents.filter(e => e.eventName === 'Purchase')).toHaveLength(0);
+  });
+
+  it('REJECTS when the gateway reports the payment is not verified', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: true,
+      json: async () => ({ ok: true, data: { verified: false } }),
+    })));
+    const { onRequestPatch } = await import('../functions/api/order.js');
+
+    const patchReq = new Request('https://avnideepayurveda.in/api/order', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        orderId: 'AVN-1712345678-patch4',
+        autoConfirm: true,
+        razorpay_order_id: 'order_x',
+        razorpay_payment_id: 'pay_x',
+        razorpay_signature: 'sig_x',
+      }),
+    });
+    const res = await onRequestPatch({ request: patchReq, env: mockEnv, waitUntil: vi.fn() });
+    expect(res.status).toBe(403);
   });
 });
 
@@ -645,5 +720,107 @@ describe("Phone normalization � +91 / 0 prefix paste", () => {
     expect(response.status).toBe(200);
     expect(data.ok).toBe(true);
     expect(mockD1._store.get("AVN-test-phone0").phone).toBe("9876543210");
+  });
+});
+
+// ============================================================
+// TEST: ITEMISED CART — server re-verifies the total
+// ============================================================
+describe("Order API — itemised cart verification", () => {
+  async function post(body) {
+    const { onRequestPost } = await import("../functions/api/order.js");
+    const request = new Request("https://avnideepayurveda.in/api/order", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "CF-Connecting-IP": "203.0.113.42" },
+      body: JSON.stringify(body),
+    });
+    const response = await onRequestPost({ request, env: mockEnv, waitUntil: () => {} });
+    return { status: response.status, data: await response.json() };
+  }
+
+  it("ignores a tampered client amount and charges the catalogue total (COD)", async () => {
+    const { status } = await post({
+      orderId: "AVN-items-cod1",
+      name: "Cart User",
+      phone: "9876500001",
+      paymentMethod: "cod",
+      amount: 1250, // tampered — the real cart is MRP 5000 + MRP 698
+      product: "cart",
+      items: [{ family: "shilajit", pack: 2, qty: 1 }, { family: "oil", pack: 2, qty: 1 }],
+    });
+    expect(status).toBe(200);
+    // COD = MRP
+    expect(mockD1._store.get("AVN-items-cod1").amount).toBe(5698);
+  });
+
+  it("charges the prepaid total for an itemised prepaid cart", async () => {
+    const { status } = await post({
+      orderId: "AVN-items-pre1",
+      name: "Cart User",
+      phone: "9876500002",
+      paymentMethod: "prepaid",
+      amount: 1250,
+      product: "cart",
+      items: [{ family: "shilajit", pack: 2, qty: 1 }, { family: "oil", pack: 2, qty: 1 }],
+    });
+    expect(status).toBe(200);
+    expect(mockD1._store.get("AVN-items-pre1").amount).toBe(4558); // (5000 + 698) - 20%
+  });
+
+  it("honours quantity on an itemised line", async () => {
+    await post({
+      orderId: "AVN-items-qty1",
+      name: "Cart User",
+      phone: "9876500003",
+      paymentMethod: "cod",
+      product: "cart",
+      items: [{ family: "hair", pack: 1, qty: 2 }],
+    });
+    expect(mockD1._store.get("AVN-items-qty1").amount).toBe(998); // hair MRP 499 * 2
+  });
+
+  it("verifies itemised prices against the admin-managed products table", async () => {
+    mockD1._products.push(
+      { id: "shilajit", price_cod: 1300, price_prepaid: 1050, mrp: 2500 },
+      { id: "oil2", price_cod: 599, price_prepaid: 479, mrp: 998 }
+    );
+    const items = [
+      { id: "shilajit", family: "shilajit", pack: 1, qty: 1 },
+      { id: "oil2", family: "oil", pack: 2, qty: 1 },
+    ];
+    await post({
+      orderId: "AVN-items-db-cod",
+      name: "DB Price User",
+      phone: "9876500005",
+      paymentMethod: "cod",
+      amount: 1250, // plausible but wrong: the DB catalog is authoritative
+      product: "cart",
+      items,
+    });
+    // The row's MRP wins over its stale price_cod column: 2500 + 998.
+    expect(mockD1._store.get("AVN-items-db-cod").amount).toBe(3498);
+
+    await post({
+      orderId: "AVN-items-db-pre",
+      name: "DB Price User",
+      phone: "9876500006",
+      paymentMethod: "prepaid",
+      amount: 1250,
+      product: "cart",
+      items,
+    });
+    expect(mockD1._store.get("AVN-items-db-pre").amount).toBe(2798); // (2500 + 998) - 20%
+  });
+
+  it("falls back to the client amount when no items are supplied (legacy clients)", async () => {
+    await post({
+      orderId: "AVN-items-legacy1",
+      name: "Legacy User",
+      phone: "9876500004",
+      paymentMethod: "cod",
+      amount: 1250,
+      product: "Avnideep 6Pro Shilajit Capsules",
+    });
+    expect(mockD1._store.get("AVN-items-legacy1").amount).toBe(1250);
   });
 });

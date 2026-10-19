@@ -144,6 +144,7 @@ function closeOrderPopup(e){
   var overlay = document.getElementById('orderPopupOverlay');
   if(!overlay) return;
   overlay.classList.remove('active');
+  try { if (window.AVN_END_CART_CHECKOUT) window.AVN_END_CART_CHECKOUT(); } catch(e){}
   document.body.style.overflow = '';
   var err = document.getElementById('fErr');
   if(err) err.classList.remove('show');
@@ -609,28 +610,72 @@ function initVideo(){
 
 
 var CHECKOUT_MODE = 'advance';
+/* Homepage checkout prices the pack/cart the customer actually has (same
+   catalogue as assets/cart.js + the PDP CO_PACKS) — never hard-coded 999/1250. */
+var ROOT_PACKS = [
+  {mrp:2500},
+  {mrp:5000},
+  {mrp:7500}
+];
+ROOT_PACKS.forEach(function(p){p.cod=p.mrp;p.pre=Math.round(p.mrp*0.8);});
+function rootPackIdx(){
+  try{
+    var p = JSON.parse(localStorage.getItem('avn_pack')||'null');
+    if(p && p.page === 'shilajit' && p.i >= 0 && p.i < ROOT_PACKS.length) return p.i;
+  }catch(e){}
+  return 0;
+}
+function rootCartPriced(){
+  var CS = window.AVN_CART_STATE;
+  return !!(CS && CS.items && CS.items.length && (CS.mixed || CS.fromCart));
+}
+function rootPack(){
+  var CS = window.AVN_CART_STATE;
+  if(rootCartPriced()) return {pre:CS.prepaidTotal, cod:CS.codTotal, mrp:CS.mrpTotal, sku:'AVN-CART'};
+  var i = rootPackIdx();
+  if(window.AVN_CHECKOUT && window.AVN_CHECKOUT.pack){
+    var q = window.AVN_CHECKOUT.pack('shilajit', i);
+    if(q) return q;
+  }
+  return ROOT_PACKS[i] || ROOT_PACKS[0];
+}
+function rootPackLabel(){ var i = rootPackIdx(); return i > 0 ? ' (Pack of ' + (i + 1) + ')' : ''; }
+function rootOrderItems(){
+  var CS = window.AVN_CART_STATE;
+  if(rootCartPriced()){
+    return CS.items.map(function(it){ return { id: it.id, family: it.family || null, pack: it.pack || 1, qty: it.qty || 1 }; });
+  }
+  return [{ family: 'shilajit', pack: rootPackIdx()+1, qty: 1 }];
+}
 function getPay(){
   var c = $('input[name="paymentMethod"]:checked');
   return c ? c.value : 'advance';
 }
 function updatePay(){
   var m = getPay();
-  var amt = m === 'prepaid' ? 999 : 1250;
-  $('#sAmt').textContent = '₹'+amt;
-  $('#sTot').textContent = '₹'+amt;
-  $('#sSave').hidden = m!=='prepaid';
+  var PK = rootPack();
+  var amt = m === 'prepaid' ? PK.pre : PK.cod;
+  var amtF = '₹'+Number(amt).toLocaleString('en-IN');
+  var restF = '₹'+Number(PK.cod - 100).toLocaleString('en-IN');
+  if(window.AVN_CHECKOUT && window.AVN_CHECKOUT.renderSummary){
+    window.AVN_CHECKOUT.renderSummary({ method:m, checkoutMode:CHECKOUT_MODE, pack:PK, singleLabel:'Avnideep 6Pro Shilajit (30 capsules)'+rootPackLabel() });
+  } else {
+    $('#sAmt').textContent = amtF;
+    $('#sTot').textContent = amtF;
+    $('#sSave').hidden = m!=='prepaid';
+  }
   var btn = $('#oBtn');
   if(btn){
     var mainText, subText;
     if(m === 'prepaid'){
-      mainText = '⚡ Order Now - ₹999';
+      mainText = '⚡ Order Now - '+amtF;
       subText = '🔒 Secure Online Payment';
     } else if(CHECKOUT_MODE === 'full_cod'){
-      mainText = '⚡ Order Now (FULL COD) - ₹1250';
-      subText = '🔒 No advance • Pay ₹1,250 on delivery';
+      mainText = '⚡ Order Now (FULL COD) - '+amtF;
+      subText = '🔒 No advance • Pay '+amtF+' on delivery';
     } else {
       mainText = '🔖 Book with ₹100 Advance';
-      subText = '🔐 Pay ₹100 via Razorpay • Pay ₹1,150 cash on delivery';
+      subText = '🔐 Pay ₹100 via Razorpay • Pay '+restF+' cash on delivery';
     }
     btn.innerHTML = '<span>'+mainText+'</span><small>'+subText+'</small>';
   }
@@ -641,7 +686,7 @@ function updatePay(){
     } else if(CHECKOUT_MODE === 'full_cod'){
       ct.textContent = '🔐 FULL COD • No advance payment';
     } else {
-      ct.textContent = '🔐 ₹100 Advance • Pay ₹1,150 cash on delivery';
+      ct.textContent = '🔐 ₹100 Advance • Pay '+restF+' cash on delivery';
     }
   }
   var cT = $('#codCardTitle'), cS = $('#codCardSub');
@@ -651,28 +696,59 @@ function updatePay(){
       if(cS) cS.textContent = 'Pay on delivery (₹100 advance)';
     } else if(CHECKOUT_MODE === 'full_cod'){
       if(cT) cT.textContent = '💵 FULL COD';
-      if(cS) cS.textContent = 'Pay ₹1,250 on delivery • No advance';
+      if(cS) cS.textContent = 'Pay '+amtF+' on delivery • No advance';
     } else {
       if(cT) cT.textContent = '💰 ₹100 Advance + COD';
-      if(cS) cS.textContent = '₹100 now via Razorpay • Pay ₹1,150 cash on delivery';
+      if(cS) cS.textContent = '₹100 now via Razorpay • Pay '+restF+' cash on delivery';
     }
   }
   // Savings line
-  var sv = $('#sSaveAmt');
-  if(sv){
-    var total = 1250 - 999;
-    sv.textContent = '₹' + total;
+  if(!(window.AVN_CHECKOUT && window.AVN_CHECKOUT.renderSummary)){
+    var sv = $('#sSaveAmt');
+    if(sv) sv.textContent = '₹' + (PK.cod - PK.pre);
   }
   $$('.pay-card').forEach(function(c){
     var i = $('input[name="paymentMethod"]', c);
     c.classList.toggle('selected', !!(i && i.checked));
   });
+  // The amounts PRINTED ON THE CARDS follow the pack on screen too, so the
+  // home checkout can never show a stale hard-coded ₹1,125 / ₹1,250. Each
+  // card keeps its own price (prepaid ₹X, strike ₹Y / COD ₹Y) regardless of
+  // which one is selected.
+  var codF = '₹'+Number(PK.cod).toLocaleString('en-IN');
+  var preF = '₹'+Number(PK.pre).toLocaleString('en-IN');
+  var saveF = 'SAVE ₹'+Number(Math.max(0, PK.cod - PK.pre)).toLocaleString('en-IN');
+  $$('.pay-card').forEach(function(c){
+    var i = $('input[name="paymentMethod"]', c);
+    var v = i ? i.value : '';
+    if(v === 'prepaid'){
+      var pb = $('.pay-prices b', c), ps = $('.pay-prices small', c), chip = $('.save-badge', c);
+      if(pb) pb.textContent = preF;
+      if(ps) ps.textContent = codF;
+      if(chip) chip.textContent = saveF;
+    } else if(v === 'cod'){
+      var cb = $('.pay-top > b', c);
+      if(cb) cb.textContent = codF;
+    }
+  });
+  // Remember the customer's explicit choice so the next checkout opens with it
+  // (a fresh visit still defaults to Prepaid from the markup).
+  try{ localStorage.setItem('avn_pay_pref', m === 'prepaid' ? 'P' : 'C'); }catch(e){}
 }
 try{ window.updatePay = updatePay; }catch(e){}
 
 
 function initPay(){
   if(window.__payInit) return; window.__payInit = true;
+
+
+  // Restore the method the customer picked on a product page (Prepaid by default).
+  try{
+    if(localStorage.getItem('avn_pay_pref') === 'C'){
+      var codRadio = $('input[name="paymentMethod"][value="cod"]');
+      if(codRadio) codRadio.checked = true;
+    }
+  }catch(e){}
 
 
   $$('input[name="paymentMethod"]').forEach(function(i){i.addEventListener('change', updatePay)});
@@ -867,10 +943,11 @@ function build(status){
     paymentMethod: m === 'prepaid' ? 'prepaid' : (CHECKOUT_MODE === 'full_cod' ? 'cod' : 'advance_cod'),
 
 
-    amount: m === 'prepaid' ? 999 : 1250,
+    amount: m === 'prepaid' ? rootPack().pre : rootPack().cod,
 
 
     product: 'Avnideep 6Pro Vitality Shilajit Capsules',
+    items: rootOrderItems(),
 
 
     status: status,
@@ -1088,7 +1165,9 @@ function initForm(){
 
 
     // Strip any leading +91 / 91 / 0 the customer types - store only the clean 10-digit number
-    phone.value = phone.value.replace(/\D/g,'').replace(/^(91|0)/,'').slice(0,10);
+    var __pd = phone.value.replace(/\D/g,'');
+    if (__pd.length > 10) __pd = __pd.replace(/^(91|0)/,'');
+    phone.value = __pd.slice(0,10);
 
 
   });
@@ -1225,7 +1304,7 @@ function initForm(){
       '🏙️ City: ' + (payload.city || 'N/A') + '\n' +
 
 
-      ' Payment: ' + payload.paymentMethod.toUpperCase() + '\n' +
+      '💳 Payment: ' + payload.paymentMethod.toUpperCase() + '\n' +
 
 
       '💰 Amount: ₹' + payload.amount + '\n' +
@@ -2026,6 +2105,7 @@ function loadCheckoutMode(){
     fetch('https://avnideep-admin-api.officialavnideepayurveda.workers.dev/api/admin/payment-config').then(function(r){ return r.json(); }).then(function(d){
       if (d && d.ok && d.data && d.data.checkout_mode) {
         CHECKOUT_MODE = d.data.checkout_mode === 'full_cod' ? 'full_cod' : 'advance';
+        try { window.CHECKOUT_MODE = CHECKOUT_MODE; } catch(e){}
         try { window.CHECKOUT_MODE = CHECKOUT_MODE; } catch(e){}
       }
       updatePay();
@@ -2866,7 +2946,9 @@ function initTruecaller() {
   if (savedUser && savedUser.phone) {
 
 
-    document.getElementById('tcPhoneInput').value = String(savedUser.phone||'').replace(/\D/g,'').replace(/^(91|0)/,'').slice(0,10);
+    var __pd = String(savedUser.phone||'').replace(/\D/g,'');
+    if (__pd.length > 10) __pd = __pd.replace(/^(91|0)/,'');
+    document.getElementById('tcPhoneInput').value = __pd.slice(0,10);
 
 
     if (savedUser.name) document.getElementById('cName').value = savedUser.name;
@@ -2917,7 +2999,9 @@ function initTruecaller() {
     try { localStorage.setItem('truecaller_user', JSON.stringify(verifiedData)); } catch(e) {}
 
 
-    document.getElementById('tcPhoneInput').value = String(tcPhone||'').replace(/\D/g,'').replace(/^(91|0)/,'').slice(0,10);
+    var __pd = String(tcPhone||'').replace(/\D/g,'');
+    if (__pd.length > 10) __pd = __pd.replace(/^(91|0)/,'');
+    document.getElementById('tcPhoneInput').value = __pd.slice(0,10);
 
 
     if (tcName) document.getElementById('cName').value = tcName;
@@ -3199,7 +3283,9 @@ function initTruecaller() {
     try { localStorage.setItem('truecaller_user', JSON.stringify(data)); } catch(e) {}
 
 
-    document.getElementById('tcPhoneInput').value = String(phone||'').replace(/\D/g,'').replace(/^(91|0)/,'').slice(0,10);
+    var __pd = String(phone||'').replace(/\D/g,'');
+    if (__pd.length > 10) __pd = __pd.replace(/^(91|0)/,'');
+    document.getElementById('tcPhoneInput').value = __pd.slice(0,10);
 
 
     tcBtn.disabled = false;
@@ -3292,7 +3378,9 @@ function initTruecaller() {
     try { localStorage.setItem('truecaller_user', JSON.stringify(data)); } catch(e) {}
 
 
-    document.getElementById('tcPhoneInput').value = String(phone||'').replace(/\D/g,'').replace(/^(91|0)/,'').slice(0,10);
+    var __pd = String(phone||'').replace(/\D/g,'');
+    if (__pd.length > 10) __pd = __pd.replace(/^(91|0)/,'');
+    document.getElementById('tcPhoneInput').value = __pd.slice(0,10);
 
 
     if (name) document.getElementById('cName').value = name;
@@ -3443,6 +3531,7 @@ async function getPayConfig() {
     var cfg = d.ok ? d.data : null;
     if (cfg && cfg.checkout_mode) {
       CHECKOUT_MODE = cfg.checkout_mode === 'full_cod' ? 'full_cod' : 'advance';
+      try { window.CHECKOUT_MODE = CHECKOUT_MODE; } catch(e){}
     }
     return cfg || { razorpay_enabled: false, cod_enabled: true, key_id: '', checkout_mode: CHECKOUT_MODE };
   } catch(e) { return { razorpay_enabled: false, cod_enabled: true, key_id: '', checkout_mode: CHECKOUT_MODE }; }
@@ -3496,6 +3585,7 @@ async function openRazorpayCheckout(payload, chargeAmount) {
             payload.razorpay_order_id = response.razorpay_order_id;
             payload.razorpay_payment_id = response.razorpay_payment_id;
             payload.razorpay_signature = response.razorpay_signature;
+            try { sessionStorage.setItem('avn_rzp', JSON.stringify({ order_id: payload.orderId, razorpay_order_id: response.razorpay_order_id, razorpay_payment_id: response.razorpay_payment_id, razorpay_signature: response.razorpay_signature })); } catch(e){}
             if(!payload.advanceAmount){ await saveRzrOrder(payload); }
             resolve({ success: true, orderId: payload.orderId, razorpay_payment_id: payload.razorpay_payment_id || '' });
           } else reject(new Error('Verification failed'));

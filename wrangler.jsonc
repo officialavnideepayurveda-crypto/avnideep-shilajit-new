@@ -19,6 +19,7 @@
   ],
   "vars": {
     "ALLOWED_ORIGIN": "https://avnideepayurveda.in",
-    "NOTIFY_EMAIL": "support@avnideepayurveda.in"
+    "NOTIFY_EMAIL": "support@avnideepayurveda.in",
+    "ADMIN_API_URL": "https://avnideep-admin-api.officialavnideepayurveda.workers.dev/api/admin"
   }
 }

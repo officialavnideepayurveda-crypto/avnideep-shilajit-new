@@ -7,17 +7,18 @@
 (function () {
   'use strict';
 
-  // Two-step discount system:
-  // Step 1: Selling Price (COD) = MRP - 10% of MRP, rounded
-  // Step 2: Prepaid Price = Selling Price - 10% of Selling Price, rounded
-  // Total discount against MRP for prepaid = 19% (not 20%)
+  // PRICING RULE — one rule for the whole site (server twin:
+  // functions/api/_lib/pricing.js):
+  //   COD price     = product MRP
+  //   Prepaid price = MRP - 20%
+  // Nothing else is discounted. Every price below is DERIVED from the MRP, so a
+  // line item can never carry a made-up number (or, as it did before, the
+  // order's grand total), and COD/prepaid can never drift apart again.
+  var PREPAID_OFF = 0.2;
 
   function computePrices(mrp) {
-    // Step 1: Standard selling price (COD) = MRP - 10% of MRP
-    const cod = Math.round(mrp * 0.9);
-    // Step 2: Additional prepaid discount = 10% of selling price
-    const prepaid = Math.round(cod * 0.9);
-    return { cod, prepaid, mrp };
+    var m = Math.max(0, Math.round(Number(mrp) || 0));
+    return { mrp: m, cod: m, prepaid: Math.round(m * (1 - PREPAID_OFF)) };
   }
 
   var PRODUCTS = {
@@ -25,99 +26,97 @@
       id: 'shilajit', sku: 'AVN-6PRO-001',
       name: '6Pro Shilajit Capsules', variant: '30 Capsules',
       img: 'https://cdn.avnideepayurveda.in/home/assets/shilajit-1.png',
-      // Live-catalog prices (must match the PDP CO_PACKS + D1 /api/products);
-      // site-sync.js overrides these from /api/products when available.
-      // MRP 2500: cod = 1250, prepaid = 999
-      cod: 1250, prepaid: 999, mrp: 2500,
+      // MRP only — COD/prepaid are derived from it below (and from the
+      // admin/D1 MRP by site-sync.js once /api/products answers).
+      mrp: 2500,
       url: '/shilajit/'
     },
     oil: {
       id: 'oil', sku: 'AVN-OIL-001',
       name: 'Pain Relief Oil', variant: '60ml',
       img: 'https://cdn.avnideepayurveda.in/pain-oil/oil-1.png',
-    // MRP 349: cod = 249, prepaid = 199 (20% prepaid discount)
-    cod: 249, prepaid: 199, mrp: 349,
+    mrp: 349, // product-config MRP; COD 349, prepaid 279
       url: '/pain-oil/'
     },
     shilajit2: {
       id: 'shilajit2', sku: 'AVN-6PRO-002',
       name: '6Pro Shilajit Capsules', variant: 'Pack of 2',
       img: 'https://cdn.avnideepayurveda.in/home/assets/packs/shilajit-2.png',
-      // MRP 5000: cod = 2350, prepaid = 1899
-      cod: 2350, prepaid: 1899, mrp: 5000,
+      mrp: 5000, // COD 5000, prepaid 4000
       url: '/shilajit/'
     },
     shilajit3: {
       id: 'shilajit3', sku: 'AVN-6PRO-003',
       name: '6Pro Shilajit Capsules', variant: 'Pack of 3',
       img: 'https://cdn.avnideepayurveda.in/home/assets/packs/shilajit-3.png',
-      // MRP 7500: cod = 3350, prepaid = 2699
-      cod: 3350, prepaid: 2699, mrp: 7500,
+      mrp: 7500, // COD 7500, prepaid 6000
       url: '/shilajit/'
     },
     oil2: {
       id: 'oil2', sku: 'AVN-OIL-002',
       name: 'Pain Relief Oil', variant: 'Pack of 2',
       img: 'https://cdn.avnideepayurveda.in/home/assets/packs/oil-2.png',
-    // MRP 698: cod = 449, prepaid = 359 (20% prepaid discount)
-    cod: 449, prepaid: 359, mrp: 698,
+    mrp: 698, // COD 698, prepaid 558
       url: '/pain-oil/'
     },
     oil3: {
       id: 'oil3', sku: 'AVN-OIL-003',
       name: 'Pain Relief Oil', variant: 'Pack of 3',
       img: 'https://cdn.avnideepayurveda.in/home/assets/packs/oil-3.png',
-    // MRP 1047: cod = 649, prepaid = 519 (20% prepaid discount)
-    cod: 649, prepaid: 519, mrp: 1047,
+    mrp: 1047, // COD 1047, prepaid 838
       url: '/pain-oil/'
     },
     hair: {
       id: 'hair', sku: 'AVN-HAIR-001',
       name: 'Herbal Hair Oil', variant: '100ml',
       img: 'https://cdn.avnideepayurveda.in/hair-oil/gallery/g1.webp',
-      // hair: CO_PACKS on the hair-oil PDP (465/465, 899/899, 1299/1299);
-      // app-hairoil apPacks (449/404, 898/808, 1347/1212) — site-sync aligns
-      // both from /api/products when available.
-      cod: 465, prepaid: 465, mrp: 499,
+      mrp: 499, // COD 499, prepaid 399 (no admin row yet)
       url: '/hair-oil/'
     },
     hair2: {
       id: 'hair2', sku: 'AVN-HAIR-002',
       name: 'Herbal Hair Oil', variant: 'Pack of 2',
       img: 'https://cdn.avnideepayurveda.in/hair-oil/gallery/g1.webp',
-      cod: 899, prepaid: 899, mrp: 998,
+      mrp: 998, // COD 998, prepaid 798
       url: '/hair-oil/'
     },
     hair3: {
       id: 'hair3', sku: 'AVN-HAIR-003',
       name: 'Herbal Hair Oil', variant: 'Pack of 3',
       img: 'https://cdn.avnideepayurveda.in/hair-oil/gallery/g1.webp',
-      cod: 1299, prepaid: 1299, mrp: 1497,
+      mrp: 1497, // COD 1497, prepaid 1198
       url: '/hair-oil/'
     },
     balm: {
       id: 'balm', sku: 'AVN-BALM-001',
       name: 'Herbal Balm', variant: '10g Pack of 5',
       img: 'https://cdn.avnideepayurveda.in/herbal-balm/gallery/g1.webp',
-      // balm: CO_PACKS on the herbal-balm PDP (299/299, 549/549, 799/799)
-      cod: 299, prepaid: 299, mrp: 349,
+      mrp: 349, // COD 349, prepaid 279 (no admin row yet)
       url: '/herbal-balm/'
     },
     balm2: {
       id: 'balm2', sku: 'AVN-BALM-002',
       name: 'Herbal Balm', variant: 'Pack of 2',
       img: 'https://cdn.avnideepayurveda.in/herbal-balm/gallery/g1.webp',
-      cod: 549, prepaid: 549, mrp: 698,
+      mrp: 698, // COD 698, prepaid 558
       url: '/herbal-balm/'
     },
     balm3: {
       id: 'balm3', sku: 'AVN-BALM-003',
       name: 'Herbal Balm', variant: 'Pack of 3',
       img: 'https://cdn.avnideepayurveda.in/herbal-balm/gallery/g1.webp',
-      cod: 799, prepaid: 799, mrp: 1047,
+      mrp: 1047, // COD 1047, prepaid 838
       url: '/herbal-balm/'
     }
   };
+
+  // Derive both selling prices from the MRP exactly once, at load.
+  Object.keys(PRODUCTS).forEach(function (k) {
+    var pr = computePrices(PRODUCTS[k].mrp);
+    PRODUCTS[k].cod = pr.cod;
+    PRODUCTS[k].prepaid = pr.prepaid;
+    PRODUCTS[k].mrp = pr.mrp;
+  });
 
   var KEY = 'avn_cart_v1';
 
@@ -128,13 +127,17 @@
     var o = AP()[id];
     if (!o) return PRODUCTS[id];
     var base = PRODUCTS[id] || { id: id, variant: '', url: '/' };
+    // The admin MRP is the price: COD = MRP, prepaid = MRP - 20%. Legacy
+    // price_cod / price_prepaid overrides are ignored on purpose so a stale
+    // column cannot disagree with the MRP the customer is shown.
+    var pr = computePrices(o.mrp != null && o.mrp > 0 ? o.mrp : base.mrp);
     return {
       id: id, sku: o.sku || base.sku || id,
       name: o.name || base.name, variant: base.variant,
       img: o.img || base.img,
-      cod: (o.cod != null ? o.cod : base.cod),
-      prepaid: (o.prepaid != null ? o.prepaid : base.prepaid),
-      mrp: (o.mrp != null ? o.mrp : base.mrp),
+      cod: pr.cod,
+      prepaid: pr.prepaid,
+      mrp: pr.mrp,
       url: base.url
     };
   }
@@ -208,16 +211,14 @@
       list.innerHTML = ids().map(function (k) {
         var p = P(k), q = cart[k];
         if (!p) return '';
-        var save = p.mrp - p.cod;
         var preSave = p.cod - p.prepaid;
         return '' +
         '<div class="cart-it" data-key="' + k + '">' +
           '<img src="' + p.img + '" alt="' + p.name + '">' +
           '<div class="it-b">' +
             '<b>' + p.name + '</b><span class="it-v">' + p.variant + '</span>' +
-            '<div class="it-p">' + inr(p.mrp) + 'unia ' + inr(p.cod) +
-              (save > 0 ? ' <em>save ' + inr(save) + '</em>' : '') +
-              (preSave > 0 ? ' <em>prepaid save ' + inr(preSave) + '</em>' : '') + '</div>' +
+            '<div class="it-p">' + inr(p.cod) +
+              (preSave > 0 ? ' <em>prepaid ' + inr(p.prepaid) + ' \u00b7 20% off</em>' : '') + '</div>' +
             '<div class="it-q">' +
               '<button type="button" data-cart-dec aria-label="Decrease">−</button>' +
               '<span>' + q + '</span>' +
@@ -240,19 +241,27 @@
       ship.innerHTML = '<div class="ok">🎉 <b>FREE delivery</b> on all orders</div><div class="bar"><i style="width:100%"></i></div>';
     }
 
-    /* totals */
+    /* totals — the drawer quotes the method the customer last chose
+       (Prepaid is the site default), so the figure here is the same one the
+       checkout will open with. Every line still shows both prices. */
     var mrpS = sum(function (p) { return p.mrp; });
-    dr.querySelector('[data-cart-total]').textContent = inr(st);
+    var preS = sum(function (p) { return p.prepaid; });
+    var method = 'P';
+    try { method = localStorage.getItem('avn_pay_pref') === 'C' ? 'C' : 'P'; } catch (e) {}
+    var shown = method === 'C' ? st : preS;
+    dr.querySelector('[data-cart-total]').textContent = inr(shown);
+    var lbl = dr.querySelector('.cart-f .cart-row span');
+    if (lbl) lbl.textContent = method === 'C' ? 'Subtotal (COD)' : 'Subtotal (Prepaid)';
     dr.querySelector('[data-cart-del]').textContent = !n ? '—' : 'FREE';
-    var saved = mrpS - st;
-    dr.querySelector('[data-cart-save]').innerHTML = saved > 0
-      ? 'Aapki total bachat: <b>' + inr(saved) + '</b>' +
-        ((cart.shilajit || cart.shilajit2 || cart.shilajit3) ? ' &nbsp;•&nbsp; <span class="pre-note">Prepaid par Shilajit par extra off</span>' : '')
+    // COD is the MRP price, so the only saving that exists is the prepaid 20%.
+    var saved = st - preS;
+    dr.querySelector('[data-cart-save]').innerHTML = (saved > 0 && n)
+      ? 'Prepaid par 20% off \u2014 bachat: <b>' + inr(saved) + '</b>'
       : '';
 
     var co = dr.querySelector('[data-cart-checkout]');
     co.disabled = !n;
-    co.textContent = n ? 'Checkout — ' + inr(st) : 'Checkout';
+    co.textContent = n ? 'Checkout — ' + inr(shown) : 'Checkout';
   }
 
   /* ---------- open / close ---------- */
@@ -277,6 +286,14 @@
     return null;
   }
 
+  function packOf(id) {
+    var page = pageOf(id);
+    if (!page) return 1;
+    var tail = String(id).slice(page.length);
+    var i = tail ? parseInt(tail, 10) : 1;
+    return (i >= 1 && i <= 3) ? i : 1;
+  }
+
   function syncPack(id) {
     var page = pageOf(id);
     if (!page) return;
@@ -289,27 +306,38 @@
   function familyOf(id) { return pageOf(id); }
 
   /* ---------- cart -> checkout pricing state ---------- */
+  // Set when the customer pressed Checkout (or landed with ?open=1). It tells
+  // the order popup to price the WHOLE cart, including a cart that holds two
+  // packs of the same product family or a quantity > 1. Without it a single
+  // family cart is priced from avn_pack and its quantity was ignored.
+  var cartCheckout = false;
   function cartState() {
     var ks = ids().filter(function (k) { return !!P(k); });
     var fams = {}, items = [], codTotal = 0, prepaidTotal = 0, mrpTotal = 0;
     ks.forEach(function (k) {
-      var p = P(k), f = pageOf(k);
+      var p = P(k), f = pageOf(k), qty = cart[k];
       if (!p || !f) return;
       fams[f] = true;
+      // Keep the UNIT price separately: the line subtotal below is always
+      // unit price x quantity (never a pre-computed or grand total).
       items.push({
         id: k, name: p.name, variant: p.variant, family: f, url: p.url,
-        qty: cart[k], cod: p.cod * cart[k], prepaid: p.prepaid * cart[k], mrp: p.mrp * cart[k]
+        pack: packOf(k), qty: qty,
+        unitCod: p.cod, unitPrepaid: p.prepaid, unitMrp: p.mrp,
+        cod: p.cod * qty, prepaid: p.prepaid * qty, mrp: p.mrp * qty
       });
-      codTotal += p.cod * cart[k];
-      prepaidTotal += p.prepaid * cart[k];
-      mrpTotal += p.mrp * cart[k];
+      codTotal += p.cod * qty;
+      prepaidTotal += p.prepaid * qty;
+      mrpTotal += p.mrp * qty;
     });
     var families = Object.keys(fams);
     return {
       mixed: families.length > 1,
+      fromCart: cartCheckout,
       families: families,
       items: items,
       count: itemCount(),
+      lineCount: items.length,
       codTotal: codTotal,
       prepaidTotal: prepaidTotal,
       mrpTotal: mrpTotal
@@ -319,18 +347,217 @@
     try { window.AVN_CART_STATE = cartState(); } catch (e) {}
   }
 
-  /* Paint the popup's per-item summary lines and title. */
+  /* Price of one pack, from the same catalogue P() uses (hard-coded PRODUCTS
+     plus the admin/DB overrides in window.AVN_ADMIN_PRODUCTS). Every checkout
+     surface (PDP inline script, app bundle, homepage) reads this so a price
+     shown on the page can never drift from the price in the cart/summary. */
+  function packPrice(page, idx) {
+    var i = parseInt(idx, 10); if (!(i >= 0 && i <= 2)) i = 0;
+    var id = page + (i > 0 ? String(i + 1) : '');
+    var p = P(id);
+    if (!p) return null;
+    return { id: id, pre: p.prepaid, cod: p.cod, mrp: p.mrp, sku: p.sku, name: p.name, variant: p.variant };
+  }
+
+  /* ---------- checkout summary (single source of truth for the paint) ---------- */
+  var ADVANCE_DEFAULT = 100;
+  function fmtINR(n) { return '\u20b9' + Number(n || 0).toLocaleString('en-IN'); }
+
+  // Normalised price model shared by the summary, the button copy, the Razorpay
+  // gateway amount and the /api/order payload.
+  //  - mixed cart: subtotal = sum of the COD line totals; the per-item rows sum
+  //    to it, the prepaid discount row bridges COD -> prepaid, total = method total.
+  //  - single pack: subtotal/line = pack price, total = method price.
+  // The per-item (product) rows therefore never show the grand total.
+  function checkoutModel(opts) {
+    opts = opts || {};
+    var method = opts.method === 'prepaid' ? 'prepaid' : 'cod';
+    var st = window.AVN_CART_STATE;
+    // Price the cart when checkout started from the cart (any number of lines /
+    // quantities) or when it is a mixed cart routed with ?open=1. A direct PDP
+    // "Buy Now" with no cart checkout still prices the selected pack.
+    var cartDriven = !!(st && st.items && st.items.length && (st.mixed || st.fromCart));
+    var pack = opts.pack || { pre: 0, cod: 0, mrp: 0 };
+    var advance = (opts.advance == null) ? ADVANCE_DEFAULT : opts.advance;
+    var lines, subtotal, prepaidTotal, mrpTotal, count;
+    if (cartDriven) {
+      lines = st.items.map(function (it) {
+        var qty = Math.max(1, parseInt(it.qty, 10) || 1);
+        var unitCod = Number(it.unitCod != null ? it.unitCod : (it.cod / qty)) || 0;
+        var unitPrepaid = Number(it.unitPrepaid != null ? it.unitPrepaid : (it.prepaid / qty)) || 0;
+        var unitMrp = Number(it.unitMrp != null ? it.unitMrp : (it.mrp / qty)) || 0;
+        return {
+          id: it.id, name: it.name, variant: it.variant, family: it.family,
+          pack: it.pack, qty: qty,
+          label: it.name + ' (' + it.variant + ')' + (qty > 1 ? ' \u00d7 ' + qty : ''),
+          unit: unitCod, unitPrepaid: unitPrepaid, unitMrp: unitMrp,
+          cod: unitCod * qty, prepaid: unitPrepaid * qty, mrp: unitMrp * qty
+        };
+      });
+      subtotal = 0; prepaidTotal = 0; mrpTotal = 0;
+      lines.forEach(function (ln) {
+        subtotal += ln.cod; prepaidTotal += ln.prepaid; mrpTotal += ln.mrp;
+      });
+      count = lines.reduce(function (n, ln) { return n + ln.qty; }, 0);
+    } else {
+      lines = [];
+      subtotal = Number(pack.cod) || 0;
+      prepaidTotal = Number(pack.pre) || 0;
+      mrpTotal = Number(pack.mrp) || 0;
+      count = 1;
+    }
+    var total = method === 'prepaid' ? prepaidTotal : subtotal;
+    // This row is the COD -> prepaid difference only. Savings is measured
+    // against MRP, so the two are never subtracted twice from the same total.
+    var prepaidDiscount = Math.max(0, subtotal - prepaidTotal);
+    var payNow = method === 'prepaid' ? total : Math.min(advance, total);
+    var payLater = method === 'prepaid' ? 0 : Math.max(0, total - payNow);
+    return {
+      mixed: lines.length > 1, cartDriven: cartDriven, method: method, count: count, lines: lines,
+      subtotal: subtotal, prepaidTotal: prepaidTotal, mrpTotal: mrpTotal,
+      total: total, prepaidDiscount: prepaidDiscount,
+      savings: Math.max(0, mrpTotal - total),
+      advance: advance, payNow: payNow, payLater: payLater,
+      checkoutMode: opts.checkoutMode || 'advance'
+    };
+  }
+
+  // Paint the order popup's summary from a single verified model.
+  // opts: { method, checkoutMode, advance, pack:{pre,cod,mrp}, singleLabel }
+  function renderSummary(opts) {
+    try {
+      var model = checkoutModel(opts || {});
+      var sum = document.querySelector('.order-popup .summary') || document.querySelector('.summary');
+      if (!sum) return model;
+      var fmt = fmtINR;
+
+      // 1. anchor row: one product's own pack price, or the cart title + the
+      //    sum of the line subtotals. It is NEVER the grand total of the order
+      //    when the cart holds more than one line.
+      var anchor = sum.querySelector('.s-row');
+      if (anchor) {
+        var sp = anchor.querySelector('span');
+        var ab = anchor.querySelector('b') || sum.querySelector('#sAmt');
+        var anchorValue = model.mixed ? model.subtotal : model.total;
+        if (sp) {
+          if (model.mixed) {
+            sp.textContent = 'Your Cart \u2014 ' + model.count + ' items';
+          } else if (model.cartDriven && model.lines.length === 1) {
+            var only = model.lines[0];
+            // Keep the PDP's own product label when it already names this line
+            // (it may carry a friendlier name); the cart line only wins when
+            // the quantity has to be spelled out.
+            var base = (opts && opts.singleLabel) || sp.textContent || '';
+            if (!base) base = only.name + ' (' + only.variant + ')';
+            sp.textContent = only.qty > 1
+              ? (base + ' \u00d7 ' + only.qty + ' \u2014 ' + fmt(only.unit) + ' each')
+              : base;
+          } else {
+            sp.textContent = (opts && opts.singleLabel) || sp.textContent;
+          }
+        }
+        if (ab) ab.textContent = fmt(anchorValue);
+      }
+
+      // 2. drop rows this function owns so repeat paints stay idempotent.
+      var owned = sum.querySelectorAll('[data-cart-line],[data-adv-row]');
+      for (var i = owned.length - 1; i >= 0; i--) { if (owned[i].parentNode) owned[i].parentNode.removeChild(owned[i]); }
+
+      // 3. per-item rows for a multi-line cart, inserted after the anchor.
+      //    Each row is unit selling price x quantity for THAT product only.
+      if (model.mixed && anchor && anchor.parentNode) {
+        var insertBefore = anchor.nextSibling;
+        model.lines.forEach(function (ln) {
+          var row = document.createElement('div');
+          row.className = 's-row';
+          row.setAttribute('data-cart-line', '');
+          row.setAttribute('data-line-id', ln.id || '');
+          row.setAttribute('data-line-qty', String(ln.qty));
+          row.setAttribute('data-line-unit', String(ln.unit));
+          row.setAttribute('data-line-subtotal', String(ln.cod));
+          var s = document.createElement('span');
+          s.textContent = ln.label + ' \u2014 ' + fmt(ln.unit) + ' each';
+          var b = document.createElement('b');
+          b.textContent = fmt(ln.cod);
+          row.appendChild(s); row.appendChild(b);
+          anchor.parentNode.insertBefore(row, insertBefore);
+        });
+      }
+
+      // 4. prepaid discount row (shown only for prepaid).
+      // The separate prepaid-discount row only belongs in the summary when the
+      // product rows show COD amounts (a multi-line cart). A single product row
+      // already shows the prepaid price, so adding the discount again would
+      // subtract it twice.
+      var saveRow = sum.querySelector('#sSave');
+      if (saveRow) {
+        var showSave = model.method === 'prepaid' && model.mixed;
+        saveRow.hidden = !showSave;
+        // The page CSS sets .s-row{display:flex}, which overrides the hidden
+        // attribute; an inline display is required to actually hide the row.
+        saveRow.style.display = showSave ? '' : 'none';
+        var saveB = saveRow.querySelector('b');
+        if (saveB) saveB.textContent = '- ' + fmt(model.prepaidDiscount);
+      }
+
+      // 5. total row = the amount actually charged for the selected method.
+      var totB = sum.querySelector('#sTot');
+      if (totB) totB.textContent = fmt(model.total);
+
+      // 6. advance / COD split (advance checkout, COD method only).
+      var totalRow = sum.querySelector('.s-row.s-total') || (totB && totB.parentNode && totB.parentNode.classList && totB.parentNode.classList.contains('s-row') ? totB.parentNode : null);
+      if (model.method !== 'prepaid' && model.checkoutMode !== 'full_cod' && totalRow && totalRow.parentNode) {
+        var advRef = totalRow.nextSibling;
+        [['Advance paid now (Razorpay)', model.payNow], ['Remaining \u2014 pay on delivery (COD)', model.payLater]].forEach(function (pair) {
+          var row = document.createElement('div');
+          row.className = 's-row'; row.setAttribute('data-adv-row', '');
+          var s = document.createElement('span'); s.textContent = pair[0];
+          var b = document.createElement('b'); b.textContent = fmt(pair[1]);
+          row.appendChild(s); row.appendChild(b);
+          totalRow.parentNode.insertBefore(row, advRef);
+        });
+      }
+
+      // 7. savings line — against MRP for the method actually chosen. COD is
+      //    priced at MRP (so no saving); prepaid saves exactly 20%. The whole
+      //    block is hidden at zero instead of claiming a discount that is not
+      //    there. It is never added to / subtracted from the prepaid-discount
+      //    row above, so nothing is counted twice.
+      var sv = sum.querySelector('#sSaveAmt');
+      if (sv) sv.textContent = fmt(model.savings);
+      var svBox = sum.querySelector('.s-savings');
+      if (svBox) svBox.style.display = model.savings > 0 ? '' : 'none';
+
+      return model;
+    } catch (e) { return null; }
+  }
+
+  try {
+    window.AVN_CHECKOUT = {
+      renderSummary: renderSummary,
+      model: checkoutModel,
+      cartState: cartState,
+      pack: packPrice,
+      fmt: fmtINR,
+      // Shared MRP rule: { mrp, cod: mrp, prepaid: mrp - 20% }.
+      fromMrp: computePrices
+    };
+  } catch (e) {}
+
+  /* Paint the popup's per-item summary lines and title (mixed carts only). */
   function paintPopup() {
     [0, 150, 400, 900].forEach(function (delay) {
       setTimeout(function () {
         try {
           var st = window.AVN_CART_STATE;
-          if (!st || !st.mixed || !st.items || !st.items.length) return;
-          if (typeof window.renderCartLines === 'function') window.renderCartLines();
-          var sum = document.querySelector('.summary');
-          if (!sum) return;
-          var first = sum.querySelector('.s-row span');
-          if (first) first.textContent = 'Your Cart \u2014 ' + st.count + ' items';
+          if (!st || !st.items || !st.items.length) return;
+          if (!st.mixed && !st.fromCart) return;
+          if (window.AVN_CHECKOUT && window.AVN_CHECKOUT.renderSummary) {
+            var mc = document.querySelector('input[name="paymentMethod"]:checked');
+            window.AVN_CHECKOUT.renderSummary({ method: mc ? mc.value : 'cod' });
+          } else if (typeof window.renderCartLines === 'function') {
+            window.renderCartLines();
+          }
         } catch (e) {}
       }, delay);
     });
@@ -358,6 +585,15 @@
       var here = location.pathname.replace(/\/$/, '');
       var there = p.url.replace(/\/$/, '');
       syncPack(last); // popup must price the pack that is actually in the cart
+      // Carry the payment method the customer picked on THIS page into the
+      // checkout. The same-page popup reads the selection directly; a ?open=1
+      // handoff to another PDP restores it there (a fresh visit still defaults
+      // to Prepaid). Never touches the cart lines or an already-created order.
+      try {
+        var payEl = document.querySelector('.ap-pack[data-pay].on');
+        localStorage.setItem('avn_pay_pref', payEl ? payEl.getAttribute('data-pay') : 'P');
+      } catch (e) {}
+      cartCheckout = true; // price the whole cart, not just the last pack
       publishState(); // ...or the whole cart when it holds several products
       paintPopup();   // list the cart lines once the popup is up
       if (here === there && typeof openOrderPopup === 'function') { try { openOrderPopup(); } catch (e) {} }
@@ -481,6 +717,15 @@
   }
 
   /* ---------- public API ---------- */
+  // Closing the order popup ends the cart checkout session, so a later
+  // Buy Now on the same page prices the selected pack/quantity again.
+  try {
+    window.AVN_END_CART_CHECKOUT = function () {
+      cartCheckout = false;
+      try { if (window.AVN_CART_STATE) window.AVN_CART_STATE.fromCart = false; } catch (e) {}
+    };
+  } catch (e) {}
+
   window.AVN_CART = {
     add: function (id, q) { add(id, q || 1); },
     count: function () { return itemCount(); },
@@ -492,6 +737,11 @@
   // Publish the cart on load too, so a checkout that navigated to another
   // product page (?open=1) still finds AVN_CART_STATE there.
   publishState();
+  // check-out() navigates to the last item's PDP with ?open=1; the rebuilt
+  // state there must still know that the popup is a cart checkout.
+  if (/[?&]open=1/.test(location.search) || location.hash === '#buynow') {
+    try { window.AVN_CART_STATE.fromCart = true; } catch (e) {}
+  }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', renderBadge);
   else renderBadge();
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', buildMnav);

@@ -6,6 +6,7 @@
 
 import { sendCAPIEvent, buildUserData, buildCustomData } from './_capi';
 import { parseRefCookie, parseRefTs, recordOrderAttribution } from './_lib/attribution';
+import { pricesFromMrp, pricePacks } from './_lib/pricing';
 
 const jsonHeaders = (env) => ({
   "Access-Control-Allow-Origin": env.ALLOWED_ORIGIN || "*",
@@ -27,11 +28,33 @@ async function withTimeout(promise, ms = 5000, name = "request") {
 const REQUIRED = ["name", "phone", "paymentMethod"];
 
 // Order-total sanity range in ₹ (see "Step 4b" below before changing these).
-// Cheapest catalogue price today is ₹249 (oil) and the biggest coupon is ₹100
+// Cheapest catalogue price today is ₹279 (oil prepaid; COD ₹349) and the biggest coupon is ₹100
 // off with a ₹599 minimum spend, so ₹99 is comfortably below any genuine total
 // while blocking the "₹1 / 0 / negative / NaN order" abuse.
 const MIN_ORDER_AMOUNT = 99;
 const MAX_ORDER_AMOUNT = 100000;
+
+// Server-to-server Razorpay signature verification. The admin worker already
+// holds RAZORPAY_KEY_SECRET and exposes the same /razorpay/verify endpoint the
+// checkout calls, so the storefront never needs the secret locally. Used by the
+// PATCH confirm guard below.
+const DEFAULT_ADMIN_API_URL = "https://avnideep-admin-api.officialavnideepayurveda.workers.dev/api/admin";
+async function verifyRazorpayPayment(env, oid, pid, sig) {
+  if (!oid || !pid || !sig) return false;
+  const base = String(env.ADMIN_API_URL || DEFAULT_ADMIN_API_URL).replace(/\/+$/, "");
+  try {
+    const res = await withTimeout(fetch(base + "/razorpay/verify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ razorpay_order_id: oid, razorpay_payment_id: pid, razorpay_signature: sig }),
+    }), 8000, "razorpay_verify");
+    const data = await res.json().catch(() => null);
+    return !!(res.ok && data && data.ok && data.data && data.data.verified);
+  } catch (e) {
+    console.warn("RAZORPAY_VERIFY_FAILED", String(e.message || e).slice(0, 150));
+    return false;
+  }
+}
 
 // ============================================================
 // HELPERS
@@ -54,15 +77,21 @@ function normalizePhone(raw) {
 
 // Server-side fallback pricing. A valid client amount (Step 4a) always wins;
 // this only covers a caller that omits `amount`. It must mirror assets/cart.js
-// PRODUCTS and the PDP pack tables exactly, in ₹, indexed by pack number - 1.
-// (The old CODE_PRICES/PRICE_MAP pair drifted: oil was 314 instead of 249 and
-// prepaid was derived as cod * 0.9, so an amount-less oil order saved 283.)
-const CATALOGUE = {
-  shilajit: [{ cod: 1250, prepaid: 999 },  { cod: 2350, prepaid: 1899 }, { cod: 3350, prepaid: 2699 }],
-  oil:      [{ cod: 249,  prepaid: 199 },  { cod: 449,  prepaid: 359 },  { cod: 649,  prepaid: 519 }],
-  hair:     [{ cod: 465,  prepaid: 465 },  { cod: 899,  prepaid: 899 },  { cod: 1299, prepaid: 1299 }],
-  balm:     [{ cod: 299,  prepaid: 299 },  { cod: 549,  prepaid: 549 },  { cod: 799,  prepaid: 799 }],
+// PRODUCTS and the PDP pack tables exactly, indexed by pack number - 1.
+//
+// PRICING RULE: MRP is the COD price and prepaid is MRP - 20%. The catalogue
+// below therefore stores MRPs only and every price is derived through
+// pricesFromMrp(), so COD/prepaid can never drift from the MRP again.
+const CATALOGUE_MRP = {
+  shilajit: [2500, 5000, 7500],
+  oil:      [349, 698, 1047],
+  hair:     [499, 998, 1497],
+  balm:     [349, 698, 1047],
 };
+const CATALOGUE = Object.keys(CATALOGUE_MRP).reduce((acc, fam) => {
+  acc[fam] = pricePacks(CATALOGUE_MRP[fam].map((mrp) => ({ mrp })));
+  return acc;
+}, {});
 
 function getProductPrice(ref, body) {
   const m = String((body && body.paymentMethod) || "").trim().toLowerCase();
@@ -80,6 +109,77 @@ function getProductPrice(ref, body) {
   const pm = String(ref || "").match(/pack\s*of\s*(\d)/i);
   const idx = pm ? Math.min(Math.max(parseInt(pm[1], 10), 1), packs.length) - 1 : 0;
   return packs[idx][kind];
+}
+
+// Admin-managed product prices (D1 `products` table, the same table
+// /api/products serves and site-sync.js applies to the storefront). When a row
+// exists it is the source of truth; CATALOGUE below is the offline fallback so
+// an order can still be verified if the table is missing/unreachable.
+// Returns null when D1 has no rows (or the mock/DB cannot answer) — callers then
+// use CATALOGUE.
+async function loadProductPrices(env) {
+  try {
+    if (!env || !env.DB || typeof env.DB.prepare !== "function") return null;
+    const stmt = env.DB.prepare("SELECT id, price_cod, price_prepaid, mrp FROM products WHERE active = 1");
+    if (!stmt || typeof stmt.all !== "function") return null;
+    const res = await stmt.all();
+    const rows = (res && res.results) || [];
+    const map = {};
+    for (const r of rows) {
+      const id = String((r && r.id) || "").trim().toLowerCase();
+      if (!id) continue;
+      const storedCod = Number(r.price_cod);
+      const storedPrepaid = Number(r.price_prepaid);
+      const mrp = Number(r.mrp);
+      // PRICING RULE: the DB row's MRP is the price. Stored price_cod /
+      // price_prepaid are legacy columns; they are only used when a row has no
+      // MRP at all, so a stale column can never overrule the MRP again.
+      if (mrp > 0) {
+        map[id] = pricesFromMrp(mrp);
+        continue;
+      }
+      if (!(storedCod > 0) && !(storedPrepaid > 0)) continue;
+      const p = pricesFromMrp(storedCod > 0 ? storedCod : storedPrepaid);
+      map[id] = { cod: storedCod > 0 ? storedCod : p.cod, prepaid: storedPrepaid > 0 ? storedPrepaid : p.prepaid, mrp: p.mrp };
+    }
+    return Object.keys(map).length ? map : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+// Server-authoritative price for an itemised order. The client sends
+// items:[{ id, family, pack, qty }] (one entry per cart line); the total charged
+// is recomputed from the DB catalogue (falling back to CATALOGUE) so a tampered
+// client amount cannot under-pay. Every line is unit selling price x quantity,
+// and the order total is the sum of those lines — never a client grand total.
+// Returns null when there is nothing to verify (no items / unknown family).
+function priceItems(items, kind, dbPrices) {
+  if (!Array.isArray(items) || !items.length) return null;
+  let cod = 0, prepaid = 0;
+  for (const it of items) {
+    let fam = String((it && it.family) || "").trim().toLowerCase();
+    const qty = Math.max(1, parseInt((it && it.qty), 10) || 1);
+    let packRaw = parseInt((it && it.pack), 10) || 1;
+    const rawId = String((it && it.id) || "").trim().toLowerCase();
+    if (!fam && rawId) {
+      fam = rawId.replace(/\d+$/, "");
+      const tail = rawId.match(/(\d+)$/);
+      if (tail) packRaw = parseInt(tail[1], 10) || 1;
+    }
+    const packs = CATALOGUE[fam];
+    if (!packs) return null;
+    const pack = Math.min(Math.max(packRaw, 1), packs.length);
+    // Never let a client-supplied id point at a different (cheaper) product
+    // than the family/pack it claims: derive the catalogue id ourselves.
+    const id = fam + (pack > 1 ? pack : "");
+    const db = dbPrices && dbPrices[id];
+    const unitCod = db && db.cod > 0 ? db.cod : packs[pack - 1].cod;
+    const unitPrepaid = db && db.prepaid > 0 ? db.prepaid : packs[pack - 1].prepaid;
+    cod += unitCod * qty;
+    prepaid += unitPrepaid * qty;
+  }
+  return { cod, prepaid, kind };
 }
 
 function normalizeOrder(body, ip) {
@@ -979,6 +1079,27 @@ console.log('[KV-VERIFY] order write', { key: rateKey, type: 'rate_limit' });
       order.amount = clientAmount;
     }
 
+    // Step 4a-ii: If the client itemised the cart, recompute the total from the
+    // product catalogue. This is the single verified figure the summary, the
+    // Razorpay gateway and this DB write all agree on; a tampered client amount
+    // is ignored. DB prices (admin-managed) win over the bundled fallback.
+    try {
+      const kind = order.payment_method.includes("prepaid") ? "prepaid" : "cod";
+      const dbPrices = Array.isArray(body.items) && body.items.length ? await loadProductPrices(env) : null;
+      const verified = priceItems(body.items, kind, dbPrices);
+      if (verified) {
+        const clientAmount = body.amount === undefined || body.amount === null || body.amount === ""
+          ? null : Number(body.amount);
+        const verifiedTotal = kind === "prepaid" ? verified.prepaid : verified.cod;
+        if (Number.isFinite(clientAmount) && Math.abs(clientAmount - verifiedTotal) > 0.5) {
+          console.warn("PRICE_MISMATCH", { order_id: order.order_id, client: clientAmount, verified: verifiedTotal });
+        }
+        order.amount = verifiedTotal;
+      }
+    } catch (itemErr) {
+      console.warn("ITEM_PRICING_FAILED", String(itemErr.message || itemErr).slice(0, 100));
+    }
+
     // Step 4: Validate phone
     if (!/^[6-9]\d{9}$/.test(order.phone)) {
       return new Response(
@@ -1268,6 +1389,23 @@ export async function onRequestGet({ env }) {
 export async function onRequestPatch({ request, env, waitUntil }) {
   const wu = (typeof waitUntil === 'function') ? waitUntil : (p) => { if (p && typeof p.catch === 'function') p.catch(() => {}); };
   const jsonH = { ...jsonHeaders(env), "Access-Control-Allow-Methods": "POST, OPTIONS, GET, PATCH" };
+
+  // Best-effort: make sure newer columns exist before a PATCH touches them.
+  try { await ensureOrdersTable(env); } catch (e) { console.warn("PATCH_SCHEMA_FAILED", String(e.message || e).slice(0, 100)); }
+
+  // CSRF/origin check (mirror of POST) — blocks cross-site form posts.
+  try {
+    const origin = request.headers.get("Origin") || request.headers.get("Referer") || "";
+    const allowedHosts = ["avnideepayurveda.in", "avnideep-shilajit-new.pages.dev", "localhost", "127.0.0.1"];
+    if (origin) {
+      const originHost = new URL(origin).hostname.toLowerCase();
+      const allowed = allowedHosts.some(h => originHost === h || originHost.endsWith("." + h));
+      if (!allowed) {
+        console.warn("PATCH_CSRF_BLOCKED", { origin });
+        return new Response(JSON.stringify({ ok: false, error: "Access denied" }), { status: 403, headers: jsonH });
+      }
+    }
+  } catch (e) {}
   
   try {
     let body;
@@ -1295,11 +1433,65 @@ export async function onRequestPatch({ request, env, waitUntil }) {
     const newStatus = String(body.status || "").trim();
     const address = String(body.address || "").trim();
     const pincode = String(body.pincode || "").trim();
-    const razorpayPaymentId = String(body.razorpay_payment_id || "").trim();
-    
+    const razorpayPaymentId = String(body.razorpay_payment_id || body.razorpayPaymentId || "").trim();
+    const razorpayOrderId = String(body.razorpay_order_id || body.razorpayOrderId || "").trim();
+    const razorpaySignature = String(body.razorpay_signature || body.razorpaySignature || "").trim();
+
     // Backward compat: if old-style call (utr present or autoConfirm), use that flow
     const isOldStyle = (utr || autoConfirm) && !newStatus;
-    
+
+    // A request is a "payment confirmation" when it would move the order into a
+    // paid state (autoConfirm / utr legacy, or an explicit paid status).
+    const PAID_STATUSES = ["paid", "advance_paid", "payment_received", "payment_confirmed"];
+    const isPaymentConfirm = PAID_STATUSES.includes(
+      String(newStatus || (isOldStyle ? "payment_received" : "")).toLowerCase()
+    );
+
+    // 🛡️ PAYMENT-CONFIRM GUARD — this endpoint used to trust the client blindly,
+    // so anyone could mark any order paid (and fire Purchase CAPI + notifications)
+    // by PATCHing { orderId, autoConfirm:true }. A confirmation now needs either a
+    // Razorpay payment that verifies against the gateway, or a row the Razorpay
+    // webhook has already verified for this exact payment id.
+    if (isPaymentConfirm) {
+      let alreadyVerified = false;
+      if (env.DB) {
+        try {
+          const row = await env.DB.prepare(
+            "SELECT razorpay_payment_id, webhook_verified FROM orders WHERE order_id = ?"
+          ).bind(orderId).first();
+          if (row && Number(row.webhook_verified) === 1 && razorpayPaymentId &&
+              String(row.razorpay_payment_id || "") === razorpayPaymentId) {
+            alreadyVerified = true;
+          }
+        } catch (e) { console.warn("CONFIRM_LOOKUP_FAILED", String(e.message || e)); }
+      }
+      const sigOk = alreadyVerified
+        ? true
+        : await verifyRazorpayPayment(env, razorpayOrderId, razorpayPaymentId, razorpaySignature);
+      if (!sigOk) {
+        console.warn("PATCH_CONFIRM_REJECTED", { order_id: orderId, has_sig: !!razorpaySignature });
+        return new Response(
+          JSON.stringify({ ok: false, error: "Payment could not be verified." }),
+          { status: 403, headers: jsonH }
+        );
+      }
+      // Anti-replay: a single Razorpay payment must not confirm two orders.
+      if (env.DB && razorpayPaymentId) {
+        try {
+          const clash = await env.DB.prepare(
+            "SELECT order_id FROM orders WHERE razorpay_payment_id = ? AND order_id != ?"
+          ).bind(razorpayPaymentId, orderId).first();
+          if (clash) {
+            console.warn("PATCH_CONFIRM_REPLAY", { order_id: orderId, payment_id: razorpayPaymentId });
+            return new Response(
+              JSON.stringify({ ok: false, error: "Payment already linked to another order." }),
+              { status: 409, headers: jsonH }
+            );
+          }
+        } catch (e) {}
+      }
+    }
+
     // Build ORDER BY UPDATE clause dynamically
     const setClauses = [];
     const bindValues = [];
@@ -1324,6 +1516,18 @@ export async function onRequestPatch({ request, env, waitUntil }) {
       if (razorpayPaymentId) {
         setClauses.push("payment_note = ?");
         bindValues.push("Razorpay Payment ID: " + razorpayPaymentId);
+      }
+      if (razorpayOrderId) {
+        setClauses.push("razorpay_order_id = ?");
+        bindValues.push(razorpayOrderId);
+      }
+      if (razorpayPaymentId) {
+        setClauses.push("razorpay_payment_id = ?");
+        bindValues.push(razorpayPaymentId);
+      }
+      if (razorpaySignature) {
+        setClauses.push("razorpay_signature = ?");
+        bindValues.push(razorpaySignature);
       }
     }
     
@@ -1378,8 +1582,7 @@ export async function onRequestPatch({ request, env, waitUntil }) {
     }
     
     // Determine if this is a payment confirmation (send notifications)
-    const paidStatuses = ["paid", "advance_paid", "payment_received", "payment_confirmed"];
-    const isPaymentConfirm = paidStatuses.includes((newStatus || (isOldStyle ? "payment_received" : "")).toLowerCase());
+    // NOTE: isPaymentConfirm was already computed and verified up-front by the guard.
     
     if (isPaymentConfirm && d1UpdateOk) {
       // Send Telegram + Email in background

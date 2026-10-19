@@ -152,6 +152,7 @@ function closeOrderPopup(e){
   var overlay = document.getElementById('orderPopupOverlay');
   if(!overlay) return;
   overlay.classList.remove('active');
+  try { if (window.AVN_END_CART_CHECKOUT) window.AVN_END_CART_CHECKOUT(); } catch(e){}
   document.body.style.overflow = '';
   var err = document.getElementById('fErr');
   if(err) err.classList.remove('show');
@@ -619,14 +620,27 @@ function initVideo(){
 var CHECKOUT_MODE = 'advance';
 /* PACK SIZE pricing (synced with PDP #apSize selector + cart.js bundles) */
 var AP_PACKS=[
-{pre:299,cod:299,mrp:349,sku:'AVN-BALM-001'},
-{pre:549,cod:549,mrp:698,sku:'AVN-BALM-002'},
-{pre:799,cod:799,mrp:1047,sku:'AVN-BALM-003'}];
-function apPack(){var CS=window.AVN_CART_STATE;if(CS&&CS.mixed&&CS.items&&CS.items.length)return{pre:CS.prepaidTotal,cod:CS.codTotal,mrp:CS.mrpTotal,sku:'AVN-CART'};try{var p=JSON.parse(localStorage.getItem('avn_pack')||'null');if(p&&p.page==='balm'&&p.i>=0&&p.i<AP_PACKS.length)return AP_PACKS[p.i];}catch(e){}return AP_PACKS[0];}
-function apPackN(){var CS=window.AVN_CART_STATE;if(CS&&CS.mixed&&CS.items&&CS.items.length)return' ('+CS.count+' items)';try{var p=JSON.parse(localStorage.getItem('avn_pack')||'null');      if(p&&p.page==='balm'&&p.i>0)return ' (Pack of '+(p.i+1)+')';}catch(e){}return '';}
+{mrp:349,sku:'AVN-BALM-001'},
+{mrp:698,sku:'AVN-BALM-002'},
+{mrp:1047,sku:'AVN-BALM-003'}];
+AP_PACKS.forEach(function(p){p.cod=p.mrp;p.pre=Math.round(p.mrp*0.8);});
+/* A cart checkout prices EVERY line it holds (mixed cart, two packs of the
+   same product, or a quantity > 1). A direct Buy Now still prices the pack
+   selected on this page. All three read the same P() catalogue as the cart
+   via AVN_CHECKOUT.pack, so admin/DB price overrides apply everywhere. */
+function cartPriced(){var CS=window.AVN_CART_STATE;return !!(CS&&CS.items&&CS.items.length&&(CS.mixed||CS.fromCart));}
+/* Quantity chosen next to Add to Cart / Buy Now also prices a direct order
+   (the cart flow carries its own quantities in AVN_CART_STATE). */
+function directQty(){var el=document.getElementById('apQtyVal');var n=el?parseInt(el.textContent,10):1;return (n>=1&&n<=9)?n:1;}
+function directPack(){try{var p=JSON.parse(localStorage.getItem('avn_pack')||'null');if(p&&p.page==='balm'&&p.i>=0&&p.i<=2)return p.i+1;}catch(e){}return 1;}
+function withQty(q){var n=directQty();if(n===1)return q;return{pre:q.pre*n,cod:q.cod*n,mrp:q.mrp*n,sku:q.sku,id:q.id,name:q.name,variant:q.variant,qty:n,unitPre:q.pre,unitCod:q.cod,unitMrp:q.mrp};}
+function apPack(){var CS=window.AVN_CART_STATE;if(cartPriced())return{pre:CS.prepaidTotal,cod:CS.codTotal,mrp:CS.mrpTotal,sku:'AVN-CART'};var i=0,q=null;try{var p=JSON.parse(localStorage.getItem('avn_pack')||'null');if(p&&p.page==='balm'&&p.i>=0&&p.i<AP_PACKS.length)i=p.i;}catch(e){}if(window.AVN_CHECKOUT&&window.AVN_CHECKOUT.pack)q=window.AVN_CHECKOUT.pack('balm',i);return withQty(q||AP_PACKS[i]||AP_PACKS[0]);}
+function apPackN(){var CS=window.AVN_CART_STATE;if(cartPriced())return CS.count>1?' ('+CS.count+' items)':'';var extra='';try{var p=JSON.parse(localStorage.getItem('avn_pack')||'null');if(p&&p.page==='balm'&&p.i>0)extra=' (Pack of '+(p.i+1)+')';}catch(e){}if(directQty()>1)extra+=' \u00d7 '+directQty();return extra;}
+function cartItems(){var CS=window.AVN_CART_STATE;return CS&&CS.items?CS.items.map(function(x){return{id:x.id,family:x.family,pack:x.pack,qty:x.qty};}):[];}
+function cartLabel(){var CS=window.AVN_CART_STATE;return CS&&CS.items?CS.items.map(function(x){return x.name+' ('+x.variant+') \u00d7 '+x.qty;}).join('; '):'';}
 function getPay(){
   var c = $('input[name="paymentMethod"]:checked');
-  return c ? c.value : 'advance';
+  return c ? c.value : 'prepaid';
 }
 function updatePay(){
   var m = getPay();
@@ -635,9 +649,13 @@ function updatePay(){
   var rest = PK.cod - 100;
   var amtF = '₹'+Number(amt).toLocaleString('en-IN');
   var restF = '₹'+Number(rest).toLocaleString('en-IN');
-  $('#sAmt').textContent = amtF;
+  var __CS = window.AVN_CART_STATE;
+  var __mixed = cartPriced();
+  if(!__mixed) $('#sAmt').textContent = amtF; /* cart: anchor/subtotal is painted by renderCartLines */
   $('#sTot').textContent = amtF;
-  $('#sSave').hidden = m!=='prepaid';
+  var __showSave = !!(m==='prepaid' && __CS && __CS.items && __CS.items.length>1 && (__CS.mixed||__CS.fromCart));
+  var __saveRow = $('#sSave');
+  if(__saveRow){ __saveRow.hidden = !__showSave; __saveRow.style.display = __showSave ? '' : 'none'; }
   var btn = $('#oBtn');
   if(btn){
     var mainText, subText;
@@ -676,11 +694,13 @@ function updatePay(){
       if(cS) cS.textContent = '₹100 now via Razorpay • Pay '+restF+' cash on delivery';
     }
   }
-  // Savings line
+  // Savings line: measured against MRP for the amount actually payable in
+  // this method. The separate "prepaid discount" row is the COD -> prepaid
+  // difference, so neither number is subtracted twice.
   var sv = $('#sSaveAmt');
   if(sv){
-    var total = PK.mrp - PK.pre;
-    sv.textContent = '₹' + total;
+    var paid = m === 'prepaid' ? PK.pre : PK.cod;
+    sv.textContent = '₹' + Number(Math.max(0, PK.mrp - paid)).toLocaleString('en-IN');
   }
   // Pack-aware pay-card prices + summary (matches PDP #apSize selection)
   try{
@@ -694,10 +714,17 @@ function updatePay(){
     var codB = $('.pay-grid .pay-card:not(.recommended) .pay-top > b');
     if(codB) codB.textContent = fmt(PK.cod);
     var nm = $('.summary .s-row span');
-    if(nm) nm.textContent = 'Avnideep Herbal Balm (10g)'+apPackN();
+    if(nm && !__mixed) nm.textContent = 'Avnideep Herbal Balm (10g)'+apPackN()+(directQty()>1?' \u2014 '+fmt(PK.cod/directQty())+' each':'');
     var svB = $('#sSave b');
     if(svB) svB.textContent = '- '+fmt(PK.mrp-PK.pre);
   }catch(e){}
+  /* Paint the one verified model for BOTH a direct pack and the whole cart:
+     this is what adds the ₹100 advance / remaining-COD rows and keeps the
+     discount row out unless the product rows show COD prices. */
+  if(window.AVN_CHECKOUT && window.AVN_CHECKOUT.renderSummary){
+    try{ window.AVN_CHECKOUT.renderSummary({method:m, checkoutMode:CHECKOUT_MODE, pack:PK}); }catch(e){}
+  }
+  if(__mixed && typeof window.renderCartLines === 'function'){ try{ window.renderCartLines(); }catch(e){} }
   $$('.pay-card').forEach(function(c){
     var i = $('input[name="paymentMethod"]', c);
     c.classList.toggle('selected', !!(i && i.checked));
@@ -906,7 +933,8 @@ function build(status){
     amount: m === 'prepaid' ? apPack().pre : apPack().cod,
 
 
-    product: 'Avnideep Herbal Balm 10g' + apPackN(),
+    product: cartPriced() ? cartLabel() : 'Avnideep Herbal Balm 10g' + apPackN(),
+    items: cartPriced() ? cartItems() : [{family:'balm',pack:directPack(),qty:directQty()}],
 
 
     status: status,
@@ -1124,7 +1152,9 @@ function initForm(){
 
 
     // Strip any leading +91 / 91 / 0 the customer types - store only the clean 10-digit number
-    phone.value = phone.value.replace(/\D/g,'').replace(/^(91|0)/,'').slice(0,10);
+    var __pd = phone.value.replace(/\D/g,'');
+    if (__pd.length > 10) __pd = __pd.replace(/^(91|0)/,'');
+    phone.value = __pd.slice(0,10);
 
 
   });
@@ -1256,7 +1286,7 @@ function initForm(){
       '🏙️ City: ' + (payload.city || 'N/A') + '\n' +
 
 
-      ' Payment: ' + payload.paymentMethod.toUpperCase() + '\n' +
+      '💳 Payment: ' + payload.paymentMethod.toUpperCase() + '\n' +
 
 
       '💰 Amount: ₹' + payload.amount + '\n' +
@@ -2057,6 +2087,7 @@ function loadCheckoutMode(){
     fetch('https://avnideep-admin-api.officialavnideepayurveda.workers.dev/api/admin/payment-config').then(function(r){ return r.json(); }).then(function(d){
       if (d && d.ok && d.data && d.data.checkout_mode) {
         CHECKOUT_MODE = d.data.checkout_mode === 'full_cod' ? 'full_cod' : 'advance';
+        try { window.CHECKOUT_MODE = CHECKOUT_MODE; } catch(e){}
         try { window.CHECKOUT_MODE = CHECKOUT_MODE; } catch(e){}
       }
       updatePay();
@@ -2896,7 +2927,9 @@ function initTruecaller() {
   if (savedUser && savedUser.phone) {
 
 
-    document.getElementById('tcPhoneInput').value = String(savedUser.phone||'').replace(/\D/g,'').replace(/^(91|0)/,'').slice(0,10);
+    var __pd = String(savedUser.phone||'').replace(/\D/g,'');
+    if (__pd.length > 10) __pd = __pd.replace(/^(91|0)/,'');
+    document.getElementById('tcPhoneInput').value = __pd.slice(0,10);
 
 
     if (savedUser.name) document.getElementById('cName').value = savedUser.name;
@@ -2947,7 +2980,9 @@ function initTruecaller() {
     try { localStorage.setItem('truecaller_user', JSON.stringify(verifiedData)); } catch(e) {}
 
 
-    document.getElementById('tcPhoneInput').value = String(tcPhone||'').replace(/\D/g,'').replace(/^(91|0)/,'').slice(0,10);
+    var __pd = String(tcPhone||'').replace(/\D/g,'');
+    if (__pd.length > 10) __pd = __pd.replace(/^(91|0)/,'');
+    document.getElementById('tcPhoneInput').value = __pd.slice(0,10);
 
 
     if (tcName) document.getElementById('cName').value = tcName;
@@ -3229,7 +3264,9 @@ function initTruecaller() {
     try { localStorage.setItem('truecaller_user', JSON.stringify(data)); } catch(e) {}
 
 
-    document.getElementById('tcPhoneInput').value = String(phone||'').replace(/\D/g,'').replace(/^(91|0)/,'').slice(0,10);
+    var __pd = String(phone||'').replace(/\D/g,'');
+    if (__pd.length > 10) __pd = __pd.replace(/^(91|0)/,'');
+    document.getElementById('tcPhoneInput').value = __pd.slice(0,10);
 
 
     tcBtn.disabled = false;
@@ -3322,7 +3359,9 @@ function initTruecaller() {
     try { localStorage.setItem('truecaller_user', JSON.stringify(data)); } catch(e) {}
 
 
-    document.getElementById('tcPhoneInput').value = String(phone||'').replace(/\D/g,'').replace(/^(91|0)/,'').slice(0,10);
+    var __pd = String(phone||'').replace(/\D/g,'');
+    if (__pd.length > 10) __pd = __pd.replace(/^(91|0)/,'');
+    document.getElementById('tcPhoneInput').value = __pd.slice(0,10);
 
 
     if (name) document.getElementById('cName').value = name;
@@ -3473,6 +3512,7 @@ async function getPayConfig() {
     var cfg = d.ok ? d.data : null;
     if (cfg && cfg.checkout_mode) {
       CHECKOUT_MODE = cfg.checkout_mode === 'full_cod' ? 'full_cod' : 'advance';
+      try { window.CHECKOUT_MODE = CHECKOUT_MODE; } catch(e){}
     }
     return cfg || { razorpay_enabled: false, cod_enabled: true, key_id: '', checkout_mode: CHECKOUT_MODE };
   } catch(e) { return { razorpay_enabled: false, cod_enabled: true, key_id: '', checkout_mode: CHECKOUT_MODE }; }
@@ -3526,6 +3566,7 @@ async function openRazorpayCheckout(payload, chargeAmount) {
             payload.razorpay_order_id = response.razorpay_order_id;
             payload.razorpay_payment_id = response.razorpay_payment_id;
             payload.razorpay_signature = response.razorpay_signature;
+            try { sessionStorage.setItem('avn_rzp', JSON.stringify({ order_id: payload.orderId, razorpay_order_id: response.razorpay_order_id, razorpay_payment_id: response.razorpay_payment_id, razorpay_signature: response.razorpay_signature })); } catch(e){}
             if(!payload.advanceAmount){ await saveRzrOrder(payload); }
             resolve({ success: true, orderId: payload.orderId, razorpay_payment_id: payload.razorpay_payment_id || '' });
           } else reject(new Error('Verification failed'));

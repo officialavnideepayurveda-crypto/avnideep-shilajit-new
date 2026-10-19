@@ -257,7 +257,7 @@ body{background:var(--rx-bg)}
 @media(max-width:820px){.rx-doc{grid-template-columns:1fr}}
 .rx-doc-frame{position:relative;max-width:360px;margin:auto;width:100%}
 .rx-doc-frame::before{content:"";position:absolute;inset:-14px -14px auto -14px;height:72%;background:var(--rx-soft2);border-radius:44px;z-index:0}
-.rx-doc-frame img{position:relative;z-index:1;width:100%;aspect-ratio:4/5;object-fit:cover;object-position:top;display:block;border-radius:999px 999px 26px 26px;background:#fff;box-shadow:var(--rx-shadow-lg)}
+.rx-doc-frame img{position:relative;z-index:1;width:100%;height:auto;aspect-ratio:4/5;object-fit:cover;object-position:top;display:block;border-radius:999px 999px 26px 26px;background:#fff;box-shadow:var(--rx-shadow-lg)}
 .rx-doc-card{position:relative;z-index:2;background:#fff;border:1px solid var(--rx-line);border-radius:16px;padding:13px;text-align:center;box-shadow:var(--rx-shadow);margin:-36px 18px 0}
 .rx-doc-card b{color:var(--rx-brand);font-size:17px}
 .rx-doc-card span{font-size:12px;color:var(--rx-mut)}
@@ -324,7 +324,7 @@ body{background:var(--rx-bg)}
 
 .hero{max-width:1180px;margin:22px auto 0;display:grid;grid-template-columns:1.02fr .98fr;gap:34px;align-items:start;padding:0 16px}
 @media(max-width:900px){.hero{grid-template-columns:1fr}}
-.gallery .main{width:100%;aspect-ratio:1/1;object-fit:contain;background:var(--rx-soft);border-radius:var(--rx-radius);border:1px solid var(--rx-line);display:block}
+.gallery .main{width:100%;height:auto;aspect-ratio:1/1;object-fit:contain;background:var(--rx-soft);border-radius:var(--rx-radius);border:1px solid var(--rx-line);display:block}
 .thumbs{display:flex;gap:10px;margin-top:12px}
 .thumbs img{width:74px;height:74px;object-fit:cover;border-radius:14px;border:1.5px solid var(--rx-line);background:#fff;cursor:pointer;transition:border-color .18s,transform .18s}
 .thumbs img.on,.thumbs img:hover{border-color:var(--rx-brand);transform:translateY(-1px)}
@@ -625,7 +625,7 @@ ol.steps{margin:14px 0 0 20px;display:grid;gap:10px;font-size:14.5px}
 /* 4-benefits visual grid (mirrors main-site section) */
 .ben4-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:14px}
 .ben4-card{background:#fff;border:1px solid var(--rx-line);border-radius:18px;overflow:hidden;text-align:center;box-shadow:0 14px 34px -22px rgba(80,50,5,.4)}
-.ben4-card img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block}
+.ben4-card img{width:100%;height:auto;aspect-ratio:1/1;object-fit:cover;display:block}
 .ben4-card b{display:block;font-size:15.5px;color:var(--rx-ink);margin:12px 10px 4px}
 .ben4-card p{font-size:13px;color:var(--rx-mut);margin:0 12px 16px;line-height:1.5}
 @media(max-width:900px){.ben4-grid{grid-template-columns:repeat(2,1fr)}}
@@ -819,7 +819,7 @@ header{position:static}
 .rx-alsolike{max-width:1180px;margin:26px auto;padding:0 16px}
 .rx-xcard{display:grid;grid-template-columns:130px 1fr auto;gap:18px;align-items:center;background:#fff;border:1px solid var(--rx-line);border-radius:18px;padding:16px;box-shadow:var(--rx-shadow)}
 @media(max-width:640px){.rx-xcard{grid-template-columns:96px 1fr}.rx-xcard .xgo{grid-column:1/-1}}
-.rx-xcard img{width:100%;aspect-ratio:1/1;object-fit:contain;background:var(--rx-soft);border-radius:12px}
+.rx-xcard img{width:100%;height:auto;aspect-ratio:1/1;object-fit:contain;background:var(--rx-soft);border-radius:12px}
 .rx-xcard .xr{color:var(--rx-mut);font-size:12px;font-weight:600}
 .rx-xcard .xr b{background:var(--rx-green-ok);color:#fff;font-size:11px;padding:2px 7px;border-radius:6px;margin-right:5px}
 .rx-xcard h3{font-family:var(--rx-font-b);font-weight:800;font-size:16.5px;color:var(--rx-ink);margin:4px 0 4px}
@@ -859,11 +859,19 @@ header{position:static}
 .rx-page .contact-list{list-style:none;padding:0;margin:10px 0;display:grid;gap:10px}
 .rx-page .contact-list li{margin:0}
 
-/* 22) Story split — single clean image card */
-.rx-split-media{position:relative}
+/* 22) Story split — single clean image card
+   NOTE: height:auto is load-bearing. These images carry intrinsic width="1254"
+   height="1254" attributes; those are presentational hints that WIN over
+   aspect-ratio unless CSS owns the height, which made the square photo render
+   at its full pixel height (577x1254 on desktop, 342x1254 on a phone). */
+.rx-split-media{position:relative;width:100%;max-width:520px;margin-inline:auto}
 .rx-split-media::before{content:"";position:absolute;inset:24px -14px -14px 24px;background:var(--rx-soft2);border-radius:calc(var(--rx-radius) + 6px);z-index:0}
-.rx-split-img{position:relative;z-index:1;width:100%;display:block;aspect-ratio:1/1;object-fit:cover;border-radius:calc(var(--rx-radius) + 6px);box-shadow:var(--rx-shadow)}
+.rx-split-img{position:relative;z-index:1;width:100%;height:auto;max-height:520px;display:block;aspect-ratio:1/1;object-fit:cover;border-radius:calc(var(--rx-radius) + 6px);box-shadow:var(--rx-shadow)}
 @media(max-width:820px){.rx-split-media{max-width:440px;margin:0 auto}.rx-split-media::before{inset:16px -8px -8px 16px}}
+/* 22b) Same trap, kept for future markup: inside these CSS-sized cards an image
+   must let CSS own its height, otherwise an intrinsic height="…" attribute wins
+   and the photo renders at full pixel height. */
+.rx-split-media img,.rx-doc-frame img{height:auto}
 
 /* ==========================================================================
    23) LEGACY PDP SAFETY NET — mobile grid blowout + stray overflow
@@ -975,7 +983,7 @@ html.cart-lock,html.cart-lock body{overflow:hidden}
 
 /* LEFT — gallery */
 .ap-gal{position:relative;background:#fff}
-.ap-gal .main{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:16px;display:block}
+.ap-gal .main{width:100%;height:auto;aspect-ratio:1/1;object-fit:cover;border-radius:16px;display:block}
 .ap-off{position:absolute;top:12px;left:12px;z-index:2;background:var(--ap-green);color:#fff;font-weight:800;font-size:13px;line-height:1.15;text-align:center;padding:9px 11px;border-radius:50%}
 #thumbs{display:flex;gap:10px;margin-top:12px}
 #thumbs img{width:72px;height:72px;object-fit:cover;border-radius:10px;border:1.5px solid var(--ap-line);cursor:pointer;background:#fff;transition:border-color .15s}

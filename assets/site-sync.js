@@ -58,6 +58,11 @@
       if (changed && typeof window.apSyncPrice === 'function') {
         try { window.apSyncPrice(); } catch (e) {}
       }
+      // The DB prices above are the source of truth; repaint an already-open
+      // order popup / summary so it cannot keep showing the bundled fallback.
+      if (changed && typeof window.updatePay === 'function') {
+        try { window.updatePay(); } catch (e) {}
+      }
       return changed;
     } catch (e) { return false; }
   }
@@ -176,9 +181,17 @@
         var admin = {}, oos = {};
         j.products.forEach(function (p) {
           if (!p || !p.id) return;
+          // PRICING RULE: MRP is the COD price, prepaid is MRP - 20%. The API
+          // already derives them, but deriving again here means an older /
+          // cached catalog response can never re-introduce a stale
+          // price_cod / price_prepaid pair into the storefront.
+          var rule = (window.AVN_CHECKOUT && window.AVN_CHECKOUT.fromMrp) || null;
+          var pr = (rule && Number(p.mrp) > 0)
+            ? rule(p.mrp)
+            : { mrp: Number(p.mrp) || 0, cod: Number(p.price_cod) || 0, prepaid: Number(p.price_prepaid) || 0 };
           admin[p.id] = {
             name: p.name, sku: p.sku,
-            prepaid: p.price_prepaid, cod: p.price_cod, mrp: p.mrp,
+            prepaid: pr.prepaid, cod: pr.cod, mrp: pr.mrp,
             img: p.image_url, badge: p.badge
           };
           if (p.out_of_stock) oos[p.id] = true;

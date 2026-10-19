@@ -90,8 +90,9 @@ describe('cart checkout button: every cart opens the order popup (WhatsApp is on
     expect(w.openedUrls.length).toBe(0);
     expect(w.AVN_CART_STATE.mixed).toBe(true);
     expect(w.AVN_CART_STATE.items.length).toBe(2);
-    expect(w.AVN_CART_STATE.codTotal).toBe(249 + 1250);
-    expect(w.AVN_CART_STATE.prepaidTotal).toBe(199 + 999);
+    // COD = MRP (oil 349 + shilajit 2,500); prepaid = MRP - 20%
+    expect(w.AVN_CART_STATE.codTotal).toBe(349 + 2500);
+    expect(w.AVN_CART_STATE.prepaidTotal).toBe(279 + 2000);
     expect(w.AVN_CART_STATE.count).toBe(2);
   });
 
@@ -132,16 +133,32 @@ describe('cart drawer total: no shipping fee is ever added', () => {
     click(w, '[data-cart-open]');
   };
 
-  it('a single oil pack shows FREE delivery and a total equal to the order total', () => {
+  it('a single oil pack shows FREE delivery and the prepaid total (site default)', () => {
     const w = bootCart('/pain-oil/');
-    click(w, '[data-cart-add="oil"]'); // cod 249 - the drawer used to say "Delivery ₹49" / "Checkout — ₹298"
+    click(w, '[data-cart-add="oil"]'); // MRP 349, prepaid 279 — never the old ₹298/₹499
     openDrawer(w);
     const dr = w.document.querySelector('.cart-dr');
-    expect(dr.querySelector('[data-cart-total]').textContent).toBe(money(249));
+    expect(dr.querySelector('[data-cart-total]').textContent).toBe(money(279));
+    expect(dr.querySelector('.cart-f .cart-row span').textContent).toBe('Subtotal (Prepaid)');
     expect(dr.querySelector('[data-cart-del]').textContent).toBe('FREE');
-    expect(dr.querySelector('[data-cart-checkout]').textContent).toBe('Checkout \u2014 ' + money(249));
+    expect(dr.querySelector('[data-cart-checkout]').textContent).toBe('Checkout \u2014 ' + money(279));
     expect(dr.querySelector('.cart-note').textContent).toContain('Free shipping');
     expect(dr.querySelector('[data-cart-ship]').innerHTML).toContain('FREE delivery');
+    // both prices stay visible on the line so COD is never hidden
+    const line = dr.querySelector('.cart-it .it-p').textContent;
+    expect(line).toContain(money(349));
+    expect(line).toContain(money(279));
+  });
+
+  it('a deliberate COD choice quotes ₹349 in the drawer', () => {
+    const w = bootCart('/pain-oil/');
+    w.localStorage.setItem('avn_pay_pref', 'C');
+    click(w, '[data-cart-add="oil"]');
+    openDrawer(w);
+    const dr = w.document.querySelector('.cart-dr');
+    expect(dr.querySelector('[data-cart-total]').textContent).toBe(money(349));
+    expect(dr.querySelector('.cart-f .cart-row span').textContent).toBe('Subtotal (COD)');
+    expect(dr.querySelector('[data-cart-checkout]').textContent).toBe('Checkout \u2014 ' + money(349));
   });
 
   it('the WhatsApp order text lines carry no shipping fee either', () => {
@@ -151,6 +168,6 @@ describe('cart drawer total: no shipping fee is ever added', () => {
     click(w, '[data-cart-wa]');
     const lines = decodeURIComponent(w.openedUrls[0].split('text=')[1]).split('\n');
     expect(lines).toContain('Delivery: FREE');
-    expect(lines).toContain('Total: ' + money(249));
+    expect(lines).toContain('Total: ' + money(349));
   });
 });

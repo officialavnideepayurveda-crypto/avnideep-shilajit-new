@@ -897,7 +897,7 @@
           
           <div class="amount-section">
             <div class="amount-label">Amount Payable</div>
-            <div class="amount-value">₹999</div>
+            <div class="amount-value">—</div>
             <div class="verified-badge">
               <svg fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
               Verified
@@ -936,7 +936,7 @@
           <div class="mobile-amount-box">
             <div class="mobile-amount-label">Amount Payable</div>
             <div class="mobile-amount-display">
-              <div class="mobile-amount-value">₹999</div>
+              <div class="mobile-amount-value">—</div>
               <div class="mobile-verified">
                 <svg fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
                 Verified
@@ -981,15 +981,15 @@
             <div style="display: grid; gap: 6px; font-size: 11px; color: #78350f;">
               <div style="display: flex; justify-content: space-between;">
                 <span>MRP:</span>
-                <span style="text-decoration: line-through;" id="pb-mrp">₹1250</span>
+                <span style="text-decoration: line-through;" id="pb-mrp">₹2,500</span>
               </div>
               <div style="display: flex; justify-content: space-between; color: #dc2626; font-weight: 700;">
                 <span>Discount:</span>
-                <span id="pb-disc">-₹251</span>
+                <span id="pb-disc">-₹500</span>
               </div>
               <div style="border-top: 1px solid #fcd34d; padding-top: 6px; display: flex; justify-content: space-between; font-weight: 700; color: #16a34a;">
                 <span>Pay:</span>
-                <span id="pb-pay">₹999 ✓</span>
+                <span id="pb-pay">₹2,000 ✓</span>
               </div>
             </div>
           </div>
@@ -1093,14 +1093,17 @@
 
   <script>
     const params = new URLSearchParams(window.location.search);
-    const amount = Number(params.get('amount') || "999");
-    const orderId = params.get('order_id') || "AVN-681164";
+    // Recover the real amount from the order the checkout stored; never invent
+    // a Pack-of-1 total when the URL is missing it.
+    const storedOrder = (() => { try { return JSON.parse(sessionStorage.getItem('avn_prepaid_order') || 'null'); } catch (e) { return null; } })();
+    const amount = Number(params.get('amount') || (storedOrder && storedOrder.amount) || 0);
+    const orderId = params.get('order_id') || (storedOrder && storedOrder.orderId) || "";
     const API_ENDPOINT = "./api/order";
 
     // Paint the ACTUAL order (amount + product/pack + reference) from the URL.
     // This page used to show hard-coded pack-of-1 values (₹999 / generic name)
     // for every order, including Pack of 2 / Pack of 3 purchases.
-    const productName = params.get('name') || params.get('product') || 'Ayurvedic Herbal Supplement';
+    const productName = params.get('name') || params.get('product') || (storedOrder && storedOrder.product) || 'Ayurvedic Herbal Supplement';
     const inr = (n) => '₹' + Number(n).toLocaleString('en-IN');
     document.querySelectorAll('.amount-value, .mobile-amount-value').forEach(el => { el.textContent = inr(amount); });
     document.querySelectorAll('.product-name, .mobile-product').forEach(el => { el.textContent = productName; });
@@ -1111,10 +1114,14 @@
     // known pack amounts so Pack of 2 (1899/2350) and Pack of 3 (2699/3350)
     // show their real MRP/discount.
     (function paintBreakdown(){
+      // PRICING RULE: COD price = MRP, prepaid = MRP - 20%. So a prepaid amount
+      // is 80% of the MRP and a COD amount *is* the MRP. `mrp` from the URL wins.
+      var method = String(params.get('method') || params.get('payment_method') || '').toLowerCase();
       var mrp = Number(params.get('mrp') || '0');
       if (!mrp) {
-        var KNOWN = { 999:2500, 1250:2500, 1899:5000, 2350:5000, 2699:7500, 3350:7500, 199:349, 249:349, 359:698, 449:698, 519:1047, 649:1047 };
-        mrp = KNOWN[amount] || amount;
+        mrp = method.indexOf('pre') >= 0
+          ? Math.round(Number(amount) / 0.8)
+          : Number(amount);
       }
       if (mrp < amount) mrp = amount;
       var disc = mrp - amount;
@@ -1123,7 +1130,7 @@
       set('pb-mrp', inr(mrp));
       set('pb-disc', '-' + inr(disc));
       set('pb-pay', inr(amount) + ' ✓');
-      set('pb-off-label', '🎁 ' + pct + '% Discount!');
+      set('pb-off-label', disc > 0 ? '🎁 ' + pct + '% prepaid discount' : 'COD • MRP price');
     })();
 
     // Safety net: if the Razorpay Redirect URL is ever pointed back to this

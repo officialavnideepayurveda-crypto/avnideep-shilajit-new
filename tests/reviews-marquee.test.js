@@ -83,7 +83,7 @@ describe('scrolling reviews marquee (Glowasy-style, 2 opposite rows)', () => {
   });
 
   it('pages load the marquee css (cache-busted past rx20)', () => {
-    const versions = { 'index.html': 'rx28', 'shilajit/index.html': 'rx28', 'pain-oil/index.html': 'rx28' };
+    const versions = { 'index.html': 'rx29', 'shilajit/index.html': 'rx29', 'pain-oil/index.html': 'rx29' };
     for (const page of Object.keys(versions)) {
       expect(read(page), page).toContain('/assets/renee-theme.css?v=' + versions[page]);
       expect(read(page), page).not.toContain('/assets/renee-theme.css?v=rx20');

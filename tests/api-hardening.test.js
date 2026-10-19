@@ -177,7 +177,7 @@ describe('BUG #3: /api/order validates the amount', () => {
   });
 
   it('accepts genuine catalogue amounts', async () => {
-    for (const amount of [249, 549, 999, 1250, 3350]) {
+    for (const amount of [279, 349, 499, 698, 2500]) {
       const r = await postOrder(env, orderBody({ amount }));
       expect(r.status, `amount ${amount}: ${JSON.stringify(r.data)}`).toBe(200);
       expect(r.data.ok).toBe(true);
@@ -198,14 +198,17 @@ describe('/api/order prices the pack server-side when amount is omitted', () => 
     db.prepare('SELECT amount FROM orders WHERE phone = ?').get(phone).amount;
 
   it.each([
-    ['Avnideep Pain Relief Oil 60ml', 'cod', 249],
-    ['Avnideep Pain Relief Oil 60ml', 'prepaid', 199],
-    ['Avnideep Pain Relief Oil 60ml (Pack of 3)', 'cod', 649],
-    ['Avnideep Pain Relief Oil 60ml (Pack of 2)', 'prepaid', 359],
-    ['Avnideep 6Pro Shilajit Capsules (Pack of 3)', 'prepaid', 2699],
-    ['Avnideep 6Pro Shilajit Capsules (Pack of 2)', 'prepaid', 1899],
-    ['Avnideep Herbal Balm 10g (Pack of 2)', 'cod', 549],
-    ['Avnideep Herbal Hair Oil 100ml (Pack of 3)', 'cod', 1299],
+    // PRICING RULE: COD = MRP, prepaid = MRP - 20%.
+    // oil MRP 349 / 698 / 1047 · shilajit 2500 / 5000 / 7500 ·
+    // balm 349 / 698 / 1047 · hair 499 / 998 / 1497
+    ['Avnideep Pain Relief Oil 60ml', 'cod', 349],
+    ['Avnideep Pain Relief Oil 60ml', 'prepaid', 279],
+    ['Avnideep Pain Relief Oil 60ml (Pack of 3)', 'cod', 1047],
+    ['Avnideep Pain Relief Oil 60ml (Pack of 2)', 'prepaid', 558],
+    ['Avnideep 6Pro Shilajit Capsules (Pack of 3)', 'prepaid', 6000],
+    ['Avnideep 6Pro Shilajit Capsules (Pack of 2)', 'prepaid', 4000],
+    ['Avnideep Herbal Balm 10g (Pack of 2)', 'cod', 698],
+    ['Avnideep Herbal Hair Oil 100ml (Pack of 3)', 'cod', 1497],
   ])('%s / %s -> Rs.%i', async (product, paymentMethod, expected) => {
     const phone = '9876500001';
     const body = orderBody({ product, paymentMethod, phone });

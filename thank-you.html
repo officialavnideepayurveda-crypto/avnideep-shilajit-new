@@ -250,9 +250,25 @@
 
       <div class="order-row">
 
-        <span class="order-label">&#x1F4B5; Amount</span>
+        <span class="order-label">&#x1F4B5; Total order amount</span>
 
         <span class="order-value gold" id="displayAmount">&#x20B9; ---</span>
+
+      </div>
+
+      <div class="order-row" id="displayAdvanceRow" style="display:none">
+
+        <span class="order-label">&#x2705; Advance paid now</span>
+
+        <span class="order-value green" id="displayAdvance">&#x20B9; 100</span>
+
+      </div>
+
+      <div class="order-row" id="displayCodRow" style="display:none">
+
+        <span class="order-label">&#x1F4B5; Remaining (pay on delivery)</span>
+
+        <span class="order-value gold" id="displayCod">&#x20B9; ---</span>
 
       </div>
 
@@ -390,6 +406,19 @@
 
     var isRazorpaySuccess = !!razorpayPaymentId;
 
+    // Verified Razorpay ids stashed by the checkout right before redirect. The
+    // server now requires them to prove the payment before confirming an order.
+    var razorpaySignature = params.get('razorpay_signature') || '';
+    try {
+      var rzpStash = JSON.parse(sessionStorage.getItem('avn_rzp') || 'null');
+      if (rzpStash) {
+        razorpayOrderId = razorpayOrderId || rzpStash.razorpay_order_id || '';
+        razorpayPaymentId = razorpayPaymentId || rzpStash.razorpay_payment_id || '';
+        razorpaySignature = razorpaySignature || rzpStash.razorpay_signature || '';
+        if (!orderId) orderId = rzpStash.order_id || '';
+      }
+    } catch(e){}
+
 
 
     var isConfirmedCod = (method === 'cod' || method === 'cod_whatsapp') && !!orderId;
@@ -441,15 +470,17 @@
 
 
     // Apply default amount (pack-aware safety net: never fall back to Pack-of-1
-    // 999/1250 when the URL + storage both miss but the product name carries
-    // the pack, e.g. old cached redirects).
+    // prices when the URL + storage both miss but the product name carries the
+    // pack, e.g. old cached redirects).
+    // PRICING RULE: COD = MRP, prepaid = MRP - 20% (Shilajit pack MRPs
+    // 2,500 / 5,000 / 7,500 — the same rule the PDP and /api/order use).
     if (amount === null || isNaN(amount)) {
       var _nm = (name || '').toLowerCase();
       var _isPack3 = _nm.indexOf('pack of 3') >= 0 || _nm.indexOf('pack 3') >= 0;
       var _isPack2 = _nm.indexOf('pack of 2') >= 0 || _nm.indexOf('pack 2') >= 0;
-      if (_isPack3) amount = (method === 'cod' || method === 'cod_whatsapp') ? 3350 : (isRazorpaySuccess || method === 'prepaid' ? 2699 : 3350);
-      else if (_isPack2) amount = (method === 'cod' || method === 'cod_whatsapp') ? 2350 : (isRazorpaySuccess || method === 'prepaid' ? 1899 : 2350);
-      else amount = isRazorpaySuccess ? 999 : 1250;
+      var _mrp = _isPack3 ? 7500 : (_isPack2 ? 5000 : 2500);
+      var _payingPrepaid = isRazorpaySuccess || method === 'prepaid';
+      amount = _payingPrepaid ? Math.round(_mrp * 0.8) : _mrp;
     }
 
 
@@ -595,7 +626,13 @@
 
             amount: amount,
 
-            autoConfirm: true
+            autoConfirm: true,
+
+            razorpay_order_id: razorpayOrderId,
+
+            razorpay_payment_id: razorpayPaymentId,
+
+            razorpay_signature: razorpaySignature
 
           }),
 
@@ -629,9 +666,28 @@
 
       if(name) document.getElementById('displayName').textContent = name;
 
-      document.getElementById('displayAmount').textContent = '\u20B9 ' + amount;
+      var totalAmount = Number(amount);
+      if (!isFinite(totalAmount) || totalAmount < 0) totalAmount = 0;
+      var money = function (n) { return '\u20B9 ' + Number(n || 0).toLocaleString('en-IN'); };
+      document.getElementById('displayAmount').textContent = money(totalAmount);
 
-      document.getElementById('displayPayment').textContent = method === 'prepaid' ? 'Prepaid' : (method === 'advance_cod' ? '₹100 Advance + COD' : 'COD');
+      // For ₹100 advance + COD show the TOTAL, the ₹100 already paid via
+      // Razorpay and the balance due on delivery. The advance is part of the
+      // total, never added on top of it.
+      var isAdvanceOrder = method === 'advance_cod' || method === 'advance';
+      var advRow = document.getElementById('displayAdvanceRow');
+      var codRow = document.getElementById('displayCodRow');
+      if (isAdvanceOrder) {
+        var advPaid = Math.min(100, totalAmount);
+        var codDue = Math.max(0, totalAmount - advPaid);
+        if (advRow) { advRow.style.display = ''; document.getElementById('displayAdvance').textContent = money(advPaid); }
+        if (codRow) { codRow.style.display = ''; document.getElementById('displayCod').textContent = money(codDue); }
+      } else {
+        if (advRow) advRow.style.display = 'none';
+        if (codRow) codRow.style.display = 'none';
+      }
+
+      document.getElementById('displayPayment').textContent = method === 'prepaid' ? 'Prepaid' : (isAdvanceOrder ? '₹100 Advance + COD' : 'COD');
 
 
 
