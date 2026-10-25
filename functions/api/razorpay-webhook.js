@@ -3,6 +3,14 @@
 // Signature verification using HMAC SHA256
 // Location: /api/razorpay-webhook
 
+import {
+  paymentKind,
+  toPaise,
+  fromPaise,
+  verifiedPaymentState,
+  DEFAULT_ADVANCE_AMOUNT,
+} from "./_lib/pricing";
+
 const jsonHeaders = {
   "Content-Type": "application/json; charset=utf-8",
   "Access-Control-Allow-Origin": "*",
@@ -143,36 +151,85 @@ export async function onRequestPost({ request, env, waitUntil }) {
     
     switch (eventName) {
       case "payment.captured":
-        // Payment successfully captured - update order in D1
+        // Payment captured by the gateway. Distinguish a full prepaid payment
+        // from a booking advance: the stored order decides, never the event.
         if (env.DB && payment.order_id) {
           try {
-            const updRes = await env.DB.prepare(
-              `UPDATE orders SET 
-                payment_status = 'paid',
-                payment_captured = 1,
-                razorpay_payment_id = ?,
-                razorpay_order_id = ?,
-                webhook_verified = 1,
-                status = CASE
-                  WHEN status IN ('pending', 'payment_pending', 'prepaid') THEN 'paid'
-                  WHEN status = 'advance_paid' THEN 'advance_paid'
-                  ELSE status
-                END,
-                updated_at = ?
-              WHERE razorpay_order_id = ? OR razorpay_payment_id = ?`
-            ).bind(
-              payment.id || "",
-              payment.order_id || "",
-              new Date().toISOString(),
-              payment.order_id || "",
-              payment.id || ""
-            ).run();
-            const changes = (updRes && updRes.meta && updRes.meta.changes) || 0;
-            if (changes === 0) {
+            const row = await env.DB.prepare(
+              "SELECT * FROM orders WHERE razorpay_order_id = ? OR razorpay_payment_id = ?"
+            ).bind(payment.order_id || "", payment.id || "").first();
+            if (!row) {
               // Order row not found yet - ask Razorpay to retry
               return new Response(
                 JSON.stringify({ ok: false, error: "Order not found yet", retry: true }),
                 { status: 503, headers: jsonHeaders }
+              );
+            }
+
+            const method = paymentKind(row.payment_method);
+            if (method === "cod") {
+              console.warn("WEBHOOK_CAPTURED_FOR_COD", { order: row.order_id });
+              return new Response(
+                JSON.stringify({ ok: true, event: eventName, processed: false, note: "COD order has no online capture" }),
+                { status: 200, headers: jsonHeaders }
+              );
+            }
+            const totalPaise = Number(row.amount_paise) > 0 ? Number(row.amount_paise) : toPaise(row.amount);
+            const duePaise = Number(row.online_due_paise) > 0
+              ? Number(row.online_due_paise)
+              : (method === "prepaid" ? totalPaise : toPaise(row.advance_amount || DEFAULT_ADVANCE_AMOUNT));
+            const expected = method === "prepaid" ? totalPaise : Math.min(duePaise, totalPaise);
+            // Reject a captured amount that cannot be this order's online due
+            // (e.g. a ₹1 Razorpay order replayed against a prepaid order).
+            if (payment.amount != null && Number(payment.amount) !== expected) {
+              console.error("WEBHOOK_AMOUNT_MISMATCH", { order: row.order_id, captured: payment.amount, expected });
+              return new Response(
+                JSON.stringify({ ok: false, error: "Captured amount does not match the order" }),
+                { status: 409, headers: jsonHeaders }
+              );
+            }
+            const state = verifiedPaymentState(method, fromPaise(totalPaise), fromPaise(expected));
+            const updRes = await env.DB.prepare(
+              `UPDATE orders SET
+                payment_status = ?,
+                payment_captured = ?,
+                razorpay_payment_id = ?,
+                razorpay_order_id = ?,
+                webhook_verified = 1,
+                status = ?,
+                amount_paise = ?,
+                online_due_paise = ?,
+                online_due_amount = ?,
+                online_paid_paise = ?,
+                online_paid_amount = ?,
+                advance_amount = ?,
+                cod_due_paise = ?,
+                cod_due = ?,
+                updated_at = ?
+              WHERE order_id = ? AND (razorpay_payment_id IS NULL OR razorpay_payment_id = '' OR razorpay_payment_id = ?)`
+            ).bind(
+              state.paymentStatus,
+              method === "prepaid" ? 1 : 0,
+              payment.id || "",
+              payment.order_id || "",
+              state.orderStatus,
+              totalPaise,
+              expected,
+              fromPaise(expected),
+              state.onlinePaidPaise,
+              fromPaise(state.onlinePaidPaise),
+              fromPaise(state.onlinePaidPaise),
+              state.codDuePaise,
+              fromPaise(state.codDuePaise),
+              new Date().toISOString(),
+              row.order_id,
+              payment.id || ""
+            ).run();
+            const changes = (updRes && updRes.meta && updRes.meta.changes) || 0;
+            if (changes === 0) {
+              return new Response(
+                JSON.stringify({ ok: true, event: eventName, processed: false, note: "Already recorded" }),
+                { status: 200, headers: jsonHeaders }
               );
             }
           } catch (dbErr) {
@@ -196,10 +253,11 @@ export async function onRequestPost({ request, env, waitUntil }) {
               `UPDATE orders SET 
                 payment_status = 'failed',
                 payment_captured = 0,
-                status = 'payment_failed',
+                status = CASE WHEN payment_status IN ('paid','partially_paid') THEN status ELSE 'payment_failed' END,
                 webhook_verified = 1,
                 updated_at = ?
-              WHERE razorpay_order_id = ?`
+              WHERE razorpay_order_id = ?
+                AND payment_status NOT IN ('paid','partially_paid')`
             ).bind(
               new Date().toISOString(),
               payment.order_id
@@ -219,8 +277,14 @@ export async function onRequestPost({ request, env, waitUntil }) {
           try {
             await env.DB.prepare(
               `UPDATE orders SET 
-                payment_status = 'paid',
-                payment_captured = 1,
+                payment_status = CASE WHEN payment_method = 'prepaid' THEN 'paid' ELSE 'partially_paid' END,
+                payment_captured = CASE WHEN payment_method = 'prepaid' THEN 1 ELSE 0 END,
+                status = CASE WHEN payment_method = 'prepaid' THEN 'paid' ELSE 'advance_paid' END,
+                advance_amount = CASE WHEN payment_method = 'prepaid' THEN amount ELSE online_due_amount END,
+                online_paid_amount = CASE WHEN payment_method = 'prepaid' THEN amount ELSE online_due_amount END,
+                online_paid_paise = online_due_paise,
+                cod_due = CASE WHEN payment_method = 'prepaid' THEN 0 ELSE amount - online_due_amount END,
+                cod_due_paise = CASE WHEN payment_method = 'prepaid' THEN 0 ELSE amount_paise - online_due_paise END,
                 webhook_verified = 1,
                 updated_at = ?
               WHERE razorpay_order_id = ?`

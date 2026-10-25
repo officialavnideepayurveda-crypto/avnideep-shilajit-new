@@ -20,7 +20,7 @@ const read = (rel) => readFileSync(resolve(ROOT, rel), 'utf8');
 
 // Product MRPs currently in the catalogue (admin/DB values).
 const MRPS = {
-  shilajit: [2500, 5000, 7500],
+  shilajit: [1250, 2500, 3750],
   oil: [349, 698, 1047],
   hair: [499, 998, 1497],
   balm: [349, 698, 1047],
@@ -62,28 +62,35 @@ describe('the shared MRP rule', () => {
     }
   });
 
-  it('cart.js exposes COD = MRP for every pack, with no stale cod/prepaid literal', () => {
+  it('cart.js exposes the configured COD / advance / prepaid triple for every pack', () => {
     const w = bootCart();
+    // Explicit admin-configured prices for the single packs.
+    const EXPLICIT = {
+      oil: { cod: 349, adv: 320, pre: 299 },
+      shilajit: { cod: 1250, adv: 1200, pre: 1000 },
+    };
     Object.entries(MRPS).forEach(([family, mrps]) => {
       mrps.forEach((mrp, i) => {
         const pack = w.AVN_CHECKOUT.pack(family, i);
+        const ex = i === 0 ? EXPLICIT[family] : null;
         expect(pack, `${family} pack ${i + 1}`).toBeTruthy();
-        expect(pack.cod, `${family} pack ${i + 1} COD`).toBe(mrp);
-        expect(pack.pre, `${family} pack ${i + 1} prepaid`).toBe(Math.round(mrp * 0.8));
+        expect(pack.cod, `${family} pack ${i + 1} COD`).toBe(ex ? ex.cod : mrp);
+        expect(pack.pre, `${family} pack ${i + 1} prepaid`).toBe(ex ? ex.pre : Math.round(mrp * 0.8));
+        expect(pack.adv, `${family} pack ${i + 1} advance total`).toBe(ex ? ex.adv : mrp);
         expect(pack.mrp).toBe(mrp);
       });
     });
   });
 
-  it('admin/DB overrides are priced from their MRP, never their price_cod column', () => {
+  it('admin/DB explicit prices are authoritative for the checkout', () => {
     const w = bootCart();
-    // A stale pair that disagrees with the MRP — the MRP must win.
     w.AVN_ADMIN_PRODUCTS = {
-      oil: { name: 'Pain Relief Oil', sku: 'AVN-OIL-001', cod: 249, prepaid: 199, mrp: 499 },
+      oil: { name: 'Pain Relief Oil', sku: 'AVN-OIL-001', price_cod: 249, price_prepaid: 199, price_advance: 230, mrp: 499 },
     };
     const pack = w.AVN_CHECKOUT.pack('oil', 0);
-    expect(pack.cod).toBe(499);
-    expect(pack.pre).toBe(399);
+    expect(pack.cod).toBe(249);
+    expect(pack.pre).toBe(199);
+    expect(pack.adv).toBe(230);
   });
 
   it('every catalogue file derives cod/prepaid from mrp (no hard-coded pairs)', () => {

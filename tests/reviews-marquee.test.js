@@ -39,8 +39,9 @@ describe('scrolling reviews marquee (Glowasy-style, 2 opposite rows)', () => {
     });
   }
 
-  it('PDP herbs ride the same auto-scroll rows (shilajit 6, pain-oil 12, seamless halves)', () => {
-    const counts = { 'shilajit/index.html': 6, 'pain-oil/index.html': 12 };
+  it('PDP herbs ride the same auto-scroll rows (shilajit 6, seamless halves)', () => {
+    // pain-oil ke ingredients carousel page se hata diye gaye hain (sirf reviews + checkout rakhe gaye)
+    const counts = { 'shilajit/index.html': 6 };
     for (const page of Object.keys(counts)) {
       const d = dom(page);
       const mqs = herbsMq(d);
@@ -83,7 +84,7 @@ describe('scrolling reviews marquee (Glowasy-style, 2 opposite rows)', () => {
   });
 
   it('pages load the marquee css (cache-busted past rx20)', () => {
-    const versions = { 'index.html': 'rx29', 'shilajit/index.html': 'rx29', 'pain-oil/index.html': 'rx29' };
+    const versions = { 'index.html': 'rx30', 'shilajit/index.html': 'rx30', 'pain-oil/index.html': 'rx30' };
     for (const page of Object.keys(versions)) {
       expect(read(page), page).toContain('/assets/renee-theme.css?v=' + versions[page]);
       expect(read(page), page).not.toContain('/assets/renee-theme.css?v=rx20');

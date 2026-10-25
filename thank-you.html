@@ -322,7 +322,7 @@
 
 
 
-    <div class="tracking-info">🔍 अपना Order ट्रैक करें: WhatsApp पर Order ID भेजें</div>
+    <div class="tracking-info">अपना Order ट्रैक करें: <a href="/track-order" style="color:#8b5e3c;font-weight:700;text-decoration:underline;">Track your order</a></div>
 
   </div>
 
@@ -387,6 +387,10 @@
     var amountParam = params.get('amount');
 
     var amount = amountParam !== null ? parseFloat(amountParam) : null;
+
+    var phoneParam = params.get('phone') || '';
+    var verifiedOrder = null;
+    var verificationFailed = false;
 
     var name = params.get('name') || '';
 
@@ -671,23 +675,32 @@
       var money = function (n) { return '\u20B9 ' + Number(n || 0).toLocaleString('en-IN'); };
       document.getElementById('displayAmount').textContent = money(totalAmount);
 
-      // For ₹100 advance + COD show the TOTAL, the ₹100 already paid via
-      // Razorpay and the balance due on delivery. The advance is part of the
-      // total, never added on top of it.
+      // Show the TOTal, the amount the server verified as paid online and the
+      // balance due on delivery. Values come from the order row, never from a
+      // hardcoded ₹100 or the URL alone.
       var isAdvanceOrder = method === 'advance_cod' || method === 'advance';
       var advRow = document.getElementById('displayAdvanceRow');
       var codRow = document.getElementById('displayCodRow');
-      if (isAdvanceOrder) {
-        var advPaid = Math.min(100, totalAmount);
-        var codDue = Math.max(0, totalAmount - advPaid);
+      var serverOnlinePaid = verifiedOrder ? Number(verifiedOrder.onlinePaid) || 0 : null;
+      var serverCodDue = verifiedOrder ? Number(verifiedOrder.codDue) || 0 : null;
+      if (isAdvanceOrder || method === 'prepaid') {
+        var advPaid = isAdvanceOrder
+          ? (serverOnlinePaid != null ? serverOnlinePaid : 0)
+          : (serverOnlinePaid != null ? serverOnlinePaid : totalAmount);
+        var codDue = isAdvanceOrder
+          ? (serverCodDue != null ? serverCodDue : Math.max(0, totalAmount - advPaid))
+          : 0;
         if (advRow) { advRow.style.display = ''; document.getElementById('displayAdvance').textContent = money(advPaid); }
-        if (codRow) { codRow.style.display = ''; document.getElementById('displayCod').textContent = money(codDue); }
+        if (codRow) { codRow.style.display = isAdvanceOrder && codDue > 0 ? '' : 'none'; document.getElementById('displayCod').textContent = money(codDue); }
       } else {
         if (advRow) advRow.style.display = 'none';
-        if (codRow) codRow.style.display = 'none';
+        if (codRow) codRow.style.display = '';
+        if (codRow) document.getElementById('displayCod').textContent = money(serverCodDue != null ? serverCodDue : totalAmount);
       }
 
-      document.getElementById('displayPayment').textContent = method === 'prepaid' ? 'Prepaid' : (isAdvanceOrder ? '₹100 Advance + COD' : 'COD');
+      document.getElementById('displayPayment').textContent = verificationFailed
+        ? 'Payment verification pending'
+        : (method === 'prepaid' ? 'Prepaid' : (isAdvanceOrder ? 'Advance + COD' : 'Cash on Delivery'));
 
 
 
@@ -755,9 +768,46 @@
 
 
 
-    // Show page after a brief animation delay
+    // Verify the payment (idempotent) and fetch the server-verified order
+    // summary before painting the page. The URL amount is only a fallback for
+    // older links; a new order always displays the stored totals.
+    function confirmAndShow(){
+      var tasks = [];
+      if (isRazorpaySuccess && orderId) {
+        tasks.push(fetch('/api/order', {
+          method: 'PATCH',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({
+            orderId: orderId,
+            phone: phoneParam || storedPhone,
+            autoConfirm: true,
+            razorpay_order_id: razorpayOrderId,
+            razorpay_payment_id: razorpayPaymentId,
+            razorpay_signature: razorpaySignature
+          })
+        }).then(function(r){ return r.json(); }).catch(function(){ return { ok:false }; }));
+      } else { tasks.push(Promise.resolve({ ok:true })); }
 
-    setTimeout(showPage, 800);
+      Promise.all(tasks).then(function(results){
+        var confirmRes = results[0] || {};
+        if (isRazorpaySuccess && !confirmRes.ok) verificationFailed = true;
+        var phoneForKey = phoneParam || storedPhone;
+        if (orderId && phoneForKey) {
+          return fetch('/api/order?order_id=' + encodeURIComponent(orderId) + '&phone=' + encodeURIComponent(phoneForKey))
+            .then(function(r){ return r.json(); })
+            .then(function(d){
+              if (d && d.ok && d.order) {
+                verifiedOrder = d.order;
+                amount = Number(d.order.amount) || amount;
+                method = d.order.paymentMethod || method;
+              }
+            }).catch(function(){});
+        }
+      }).catch(function(){ if (isRazorpaySuccess) verificationFailed = true; })
+        .then(function(){ setTimeout(showPage, 200); });
+    }
+
+    confirmAndShow();
 
   })();
 

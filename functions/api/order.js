@@ -6,7 +6,18 @@
 
 import { sendCAPIEvent, buildUserData, buildCustomData } from './_capi';
 import { parseRefCookie, parseRefTs, recordOrderAttribution } from './_lib/attribution';
-import { pricesFromMrp, pricePacks } from './_lib/pricing';
+import {
+  pricesFromMrp,
+  pricePacks,
+  paymentKind,
+  splitPaymentPaise,
+  toPaise,
+  fromPaise,
+  initialPaymentState,
+  verifiedPaymentState,
+  normalizePaymentConfig,
+  DEFAULT_ADVANCE_AMOUNT,
+} from './_lib/pricing';
 
 const jsonHeaders = (env) => ({
   "Access-Control-Allow-Origin": env.ALLOWED_ORIGIN || "*",
@@ -39,6 +50,38 @@ const MAX_ORDER_AMOUNT = 100000;
 // checkout calls, so the storefront never needs the secret locally. Used by the
 // PATCH confirm guard below.
 const DEFAULT_ADMIN_API_URL = "https://avnideep-admin-api.officialavnideepayurveda.workers.dev/api/admin";
+const DEFAULT_ADMIN_WORKER_URL = "https://avnideep-admin-api.officialavnideepayurveda.workers.dev";
+
+function adminWorkerBase(env) {
+  const explicit = String(env.ADMIN_WORKER_URL || "").trim().replace(/\/+$/, "");
+  if (explicit) return explicit;
+  const api = String(env.ADMIN_API_URL || DEFAULT_ADMIN_API_URL).replace(/\/+$/, "");
+  return api.replace(/\/api\/admin$/i, "") || DEFAULT_ADMIN_WORKER_URL;
+}
+
+// Fire-and-forget nudge so a confirmed/paid order is booked on Ekart within
+// seconds instead of waiting for the 10-minute cron. The admin Worker re-checks
+// eligibility, auto_book, mode and live approval before calling Ekart, and the
+// booking itself is idempotent.
+async function triggerEkartBooking(env, orderId) {
+  if (!env || !env.EKART_INTERNAL_KEY || !orderId) return false;
+  try {
+    const res = await withTimeout(fetch(adminWorkerBase(env) + "/api/internal/ekart/book", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Internal-Key": env.EKART_INTERNAL_KEY,
+      },
+      body: JSON.stringify({ order_id: orderId }),
+    }), 6000, "ekart_book");
+    if (!res.ok) console.warn("EKART_BOOK_TRIGGER", orderId, res.status);
+    return res.ok;
+  } catch (e) {
+    console.warn("EKART_BOOK_TRIGGER_FAILED", orderId, String(e.message || e).slice(0, 150));
+    return false;
+  }
+}
+
 async function verifyRazorpayPayment(env, oid, pid, sig) {
   if (!oid || !pid || !sig) return false;
   const base = String(env.ADMIN_API_URL || DEFAULT_ADMIN_API_URL).replace(/\/+$/, "");
@@ -83,32 +126,58 @@ function normalizePhone(raw) {
 // below therefore stores MRPs only and every price is derived through
 // pricesFromMrp(), so COD/prepaid can never drift from the MRP again.
 const CATALOGUE_MRP = {
-  shilajit: [2500, 5000, 7500],
+  shilajit: [1250, 2500, 3750],
   oil:      [349, 698, 1047],
   hair:     [499, 998, 1497],
   balm:     [349, 698, 1047],
 };
+// Per-pack explicit overrides — the bundled OFFLINE fallback only. The live
+// source of truth is the D1 `products` row (price_cod / price_advance /
+// price_prepaid). Single packs carry the configured booking-advance TOTAL and,
+// where it differs from MRP - 20%, an explicit prepaid price.
+const CATALOGUE_EXPLICIT = {
+  shilajit: [{ advance: 1200 }],
+  oil:      [{ advance: 320, prepaid: 299 }],
+};
 const CATALOGUE = Object.keys(CATALOGUE_MRP).reduce((acc, fam) => {
-  acc[fam] = pricePacks(CATALOGUE_MRP[fam].map((mrp) => ({ mrp })));
+  const ex = CATALOGUE_EXPLICIT[fam] || [];
+  acc[fam] = pricePacks(CATALOGUE_MRP[fam].map((mrp, i) => ({ mrp, explicit: ex[i] })));
   return acc;
 }, {});
+
+function familyFromText(ref) {
+  const text = " " + String(ref || "").toLowerCase() + " ";
+  return /shilajit/.test(text) ? "shilajit" :
+    /hair/.test(text) ? "hair" :
+    /balm/.test(text) ? "balm" :
+    /oil|pain/.test(text) ? "oil" : null;
+}
+
+function packFromText(ref) {
+  const pm = String(ref || "").match(/pack\s*of\s*(\d)/i);
+  return pm ? Math.min(Math.max(parseInt(pm[1], 10), 1), 3) : 1;
+}
 
 function getProductPrice(ref, body) {
   const m = String((body && body.paymentMethod) || "").trim().toLowerCase();
   const kind = m.includes("prepaid") ? "prepaid" : "cod";
-  const text = " " + String(ref || "").toLowerCase() + " ";
-  const prodMatch =
-    /shilajit/.test(text) ? "shilajit" :
-    /hair/.test(text) ? "hair" :
-    /balm/.test(text) ? "balm" :
-    /oil|pain/.test(text) ? "oil" : null;
-  const packs = CATALOGUE[prodMatch] || CATALOGUE.shilajit;
+  const packs = CATALOGUE[familyFromText(ref)] || CATALOGUE.shilajit;
   // The client labels multi-packs "(Pack of 2|3)"; pack 1 and mixed-cart
-  // " (N items)" labels fall back to pack 1 (the client sends its own total for
-  // those and Step 4a prefers it anyway).
-  const pm = String(ref || "").match(/pack\s*of\s*(\d)/i);
-  const idx = pm ? Math.min(Math.max(parseInt(pm[1], 10), 1), packs.length) - 1 : 0;
+  // " (N items)" labels fall back to pack 1.
+  const idx = packFromText(ref) - 1;
   return packs[idx][kind];
+}
+
+// Legacy clients (payment.html, old cached PDPs) sent only a product label and
+// an amount. Convert the label into the same itemised line the new checkout
+// sends, so the server can price it from the catalogue instead of trusting the
+// browser total.
+function syntheticItemsFromBody(body) {
+  if (!body || Array.isArray(body.items) && body.items.length) return null;
+  const family = familyFromText(body.product);
+  if (!family) return null;
+  const qty = Math.max(1, Math.min(99, parseInt(body.qty, 10) || 1));
+  return [{ family, pack: packFromText(body.product), qty }];
 }
 
 // Admin-managed product prices (D1 `products` table, the same table
@@ -120,30 +189,61 @@ function getProductPrice(ref, body) {
 async function loadProductPrices(env) {
   try {
     if (!env || !env.DB || typeof env.DB.prepare !== "function") return null;
-    const stmt = env.DB.prepare("SELECT id, price_cod, price_prepaid, mrp FROM products WHERE active = 1");
-    if (!stmt || typeof stmt.all !== "function") return null;
-    const res = await stmt.all();
-    const rows = (res && res.results) || [];
+    // `price_advance` may not exist on older DBs — fall back to the legacy
+    // column set so an order can still be verified.
+    let rows = [];
+    try {
+      const res = await env.DB.prepare("SELECT id, price_cod, price_prepaid, price_advance, mrp FROM products WHERE active = 1").all();
+      rows = (res && res.results) || [];
+    } catch (colErr) {
+      const res = await env.DB.prepare("SELECT id, price_cod, price_prepaid, mrp FROM products WHERE active = 1").all();
+      rows = (res && res.results) || [];
+    }
     const map = {};
     for (const r of rows) {
       const id = String((r && r.id) || "").trim().toLowerCase();
       if (!id) continue;
-      const storedCod = Number(r.price_cod);
-      const storedPrepaid = Number(r.price_prepaid);
-      const mrp = Number(r.mrp);
-      // PRICING RULE: the DB row's MRP is the price. Stored price_cod /
-      // price_prepaid are legacy columns; they are only used when a row has no
-      // MRP at all, so a stale column can never overrule the MRP again.
-      if (mrp > 0) {
-        map[id] = pricesFromMrp(mrp);
-        continue;
-      }
-      if (!(storedCod > 0) && !(storedPrepaid > 0)) continue;
-      const p = pricesFromMrp(storedCod > 0 ? storedCod : storedPrepaid);
-      map[id] = { cod: storedCod > 0 ? storedCod : p.cod, prepaid: storedPrepaid > 0 ? storedPrepaid : p.prepaid, mrp: p.mrp };
+      // Each row carries an explicit COD / advance-total / prepaid triple. A
+      // field left at 0 falls back to the default rule (MRP = COD, prepaid =
+      // MRP - 20%, advance = COD) via pricesFromMrp().
+      const explicit = {
+        cod: Number(r.price_cod),
+        prepaid: Number(r.price_prepaid),
+        advance: Number(r.price_advance),
+      };
+      const mrp = Number(r.mrp) || explicit.cod || explicit.prepaid;
+      if (!(mrp > 0) && !(explicit.advance > 0)) continue;
+      map[id] = pricesFromMrp(mrp, explicit);
     }
     return Object.keys(map).length ? map : null;
   } catch (e) {
+    return null;
+  }
+}
+
+// Payment-method config (single source of truth = D1 settings section
+// 'payment'). Admin edits these; the storefront + order API both read them so
+// the enabled options, the default selection and the flat booking advance can
+// never drift between admin, storefront and backend.
+async function loadPaymentConfig(env) {
+  const defaults = normalizePaymentConfig({});
+  try {
+    if (!env || !env.DB || typeof env.DB.prepare !== "function") return defaults;
+    const res = await env.DB.prepare("SELECT key, value FROM settings WHERE section = 'payment'").all();
+    const raw = {};
+    for (const row of (res && res.results) || []) {
+      const k = String((row && row.key) || "").trim();
+      const v = String(row && row.value == null ? "" : row.value).trim();
+      if (k === "advance_amount") { const n = Math.round(Number(v)); if (Number.isFinite(n) && n > 0) raw.advance_amount = n; }
+      else if (k === "cod_enabled" || k === "advance_enabled" || k === "prepaid_enabled") raw[k] = v === "1" || v === "true" || v === "yes" || v === "on";
+      else if (k === "default_method" || k === "checkout_mode") raw[k] = v.toLowerCase();
+    }
+    return normalizePaymentConfig(raw);
+  } catch (e) {
+    // A fresh database without the settings table has no admin configuration
+    // to be stale: fall back to the documented defaults. Any other DB failure
+    // is ambiguous, so refuse the order rather than charge a wrong amount.
+    if (/no such table/i.test(String(e && e.message || e))) return defaults;
     return null;
   }
 }
@@ -154,9 +254,9 @@ async function loadProductPrices(env) {
 // client amount cannot under-pay. Every line is unit selling price x quantity,
 // and the order total is the sum of those lines — never a client grand total.
 // Returns null when there is nothing to verify (no items / unknown family).
-function priceItems(items, kind, dbPrices) {
+function priceItems(items, dbPrices) {
   if (!Array.isArray(items) || !items.length) return null;
-  let cod = 0, prepaid = 0;
+  let cod = 0, advance = 0, prepaid = 0;
   for (const it of items) {
     let fam = String((it && it.family) || "").trim().toLowerCase();
     const qty = Math.max(1, parseInt((it && it.qty), 10) || 1);
@@ -175,11 +275,22 @@ function priceItems(items, kind, dbPrices) {
     const id = fam + (pack > 1 ? pack : "");
     const db = dbPrices && dbPrices[id];
     const unitCod = db && db.cod > 0 ? db.cod : packs[pack - 1].cod;
+    // Advance total: explicit per-product value if configured, else it equals
+    // the COD total (the default when no booking incentive is set).
+    const unitAdvance = db && db.advance > 0 ? db.advance : (db && db.cod > 0 ? db.cod : packs[pack - 1].advance);
     const unitPrepaid = db && db.prepaid > 0 ? db.prepaid : packs[pack - 1].prepaid;
     cod += unitCod * qty;
+    advance += unitAdvance * qty;
     prepaid += unitPrepaid * qty;
   }
-  return { cod, prepaid, kind };
+  return { cod, advance, prepaid };
+}
+
+// Pick the order total that matches the chosen payment kind.
+function totalFor(kind, totals) {
+  if (kind === "prepaid") return totals.prepaid;
+  if (kind === "advance") return totals.advance;
+  return totals.cod;
 }
 
 function normalizeOrder(body, ip) {
@@ -190,6 +301,20 @@ function normalizeOrder(body, ip) {
     pincode: String(body.pincode || "").trim().slice(0, 6),
     address: String(body.address || "").trim().slice(0, 500),
     payment_method: String(body.paymentMethod || "cod").trim().toLowerCase(),
+    // Payable-now (online) and still-due-on-delivery split. Filled after the
+    // server-authoritative total is known; defaults keep the INSERT valid.
+    // NOTE: advance_amount is the VERIFIED amount paid online (not the amount
+    // due), so a freshly created order starts at 0 for every method.
+    advance_amount: 0,
+    online_paid_amount: 0,
+    online_due_amount: 0,
+    cod_due: 0,
+    amount_paise: 0,
+    online_paid_paise: 0,
+    online_due_paise: 0,
+    cod_due_paise: 0,
+    pricing_snapshot: "",
+    config_snapshot: "",
     // Server-side sanity price. A valid client amount (if sent) overrides this
     // AFTER Step 4a's range validation; an absent/invalid amount falls back to
     // this catalogue price so the order can never save as 0/negative.
@@ -198,10 +323,9 @@ function normalizeOrder(body, ip) {
     // Workflow status is whitelisted to the states the checkout legitimately
     // creates. Anything else (e.g. "delivered"/"paid") is coerced to cod_order so
     // a caller can't set an order to a fulfilled/paid state.
-    status: (function(){
-      var s = String(body.status || "").trim().toLowerCase();
-      return (s === "payment_pending" || s === "advance_paid" || s === "cod_order") ? s : "cod_order";
-    })(),
+    // The initial status is derived server-side from the verified payment kind
+    // (see Step 4c). Any client-supplied status is ignored.
+    status: "",
     page_url: String(body.pageUrl || "").slice(0, 300),
     utr: String(body.utr || "").trim().slice(0, 50),
     payment_note: String(body.paymentNote || "").trim().slice(0, 200),
@@ -302,13 +426,40 @@ async function sendTelegram(order, env) {
 // Saves ~12 D1 statements per order — critical for D1 free-tier quotas under traffic.
 let ordersSchemaBootstrapped = false;
 
+// Additive payment columns. Old orders tables predate them (and a stale KV
+// schema flag can skip saveToD1's bootstrap), so the ensure step below always
+// attempts them once per isolate. "duplicate column" is the normal no-op.
+const ORDER_PAYMENT_COLUMNS = [
+  `ALTER TABLE orders ADD COLUMN advance_amount REAL DEFAULT 0`,
+  `ALTER TABLE orders ADD COLUMN cod_due REAL DEFAULT 0`,
+  `ALTER TABLE orders ADD COLUMN online_due_amount REAL DEFAULT 0`,
+  `ALTER TABLE orders ADD COLUMN online_paid_amount REAL DEFAULT 0`,
+  `ALTER TABLE orders ADD COLUMN amount_paise INTEGER DEFAULT 0`,
+  `ALTER TABLE orders ADD COLUMN online_due_paise INTEGER DEFAULT 0`,
+  `ALTER TABLE orders ADD COLUMN online_paid_paise INTEGER DEFAULT 0`,
+  `ALTER TABLE orders ADD COLUMN cod_due_paise INTEGER DEFAULT 0`,
+  `ALTER TABLE orders ADD COLUMN pricing_snapshot TEXT DEFAULT ''`,
+  `ALTER TABLE orders ADD COLUMN config_snapshot TEXT DEFAULT ''`,
+];
+async function ensurePaymentColumns(env) {
+  for (const ddl of ORDER_PAYMENT_COLUMNS) {
+    try { await env.DB.prepare(ddl).run(); }
+    catch (e) {
+      const m = String(e.message || e);
+      if (m.indexOf('duplicate column name') < 0 && m.indexOf('already exists') < 0) {
+        console.log('D1_ALTER_COLUMN_FAILED', m.slice(0, 100));
+      }
+    }
+  }
+}
+
 // WARN-3 FIX: ensure the orders table exists BEFORE the duplicate-detection query runs
 // (previously the table was only created inside saveToD1, so the very first request
 // logged "no such table: orders" in the dedup check). Idempotent + once-only via flags.
 async function ensureOrdersTable(env) {
   if (!env?.DB || ordersSchemaBootstrapped) return true;
   try {
-    if ((await env.RATE_LIMIT_KV?.get('d1_schema_orders_v2')) === '1') {
+    if ((await env.RATE_LIMIT_KV?.get('d1_schema_orders_v4')) === '1') {
       ordersSchemaBootstrapped = true;
       return true;
     }
@@ -344,8 +495,21 @@ async function ensureOrdersTable(env) {
       webhook_verified INTEGER DEFAULT 0,
       refund_status TEXT DEFAULT '',
       purchase_capi_sent INTEGER DEFAULT 0,
+      advance_amount REAL DEFAULT 0,
+      cod_due REAL DEFAULT 0,
+      online_due_amount REAL DEFAULT 0,
+      online_paid_amount REAL DEFAULT 0,
+      amount_paise INTEGER DEFAULT 0,
+      online_due_paise INTEGER DEFAULT 0,
+      online_paid_paise INTEGER DEFAULT 0,
+      cod_due_paise INTEGER DEFAULT 0,
+      pricing_snapshot TEXT DEFAULT '',
+      config_snapshot TEXT DEFAULT '',
       updated_at TEXT DEFAULT ''
     )`).run();
+    // A pre-existing table is not changed by IF NOT EXISTS; add any missing
+    // payment columns before caching the schema as ready.
+    await ensurePaymentColumns(env);
     ordersSchemaBootstrapped = true;
     return true;
   } catch (e) {
@@ -364,7 +528,7 @@ async function saveToD1(order, env) {
     // Auto-create orders table only once (KV flag) - avoids 14 D1 statements on every order
     let schemaDone = null;
     if (ordersSchemaBootstrapped) { schemaDone = '1'; }
-    else { try { schemaDone = await env.RATE_LIMIT_KV.get('d1_schema_orders_v2'); } catch (e) {} }
+    else { try { schemaDone = await env.RATE_LIMIT_KV.get('d1_schema_orders_v4'); } catch (e) {} }
     if (schemaDone !== '1') {
     // Auto-create orders table if not exists (handles first run after deploy)
     let bootstrapOk = true;
@@ -400,6 +564,16 @@ async function saveToD1(order, env) {
           webhook_verified INTEGER DEFAULT 0,
           refund_status TEXT DEFAULT '',
           purchase_capi_sent INTEGER DEFAULT 0,
+          advance_amount REAL DEFAULT 0,
+          cod_due REAL DEFAULT 0,
+          online_due_amount REAL DEFAULT 0,
+          online_paid_amount REAL DEFAULT 0,
+          amount_paise INTEGER DEFAULT 0,
+          online_due_paise INTEGER DEFAULT 0,
+          online_paid_paise INTEGER DEFAULT 0,
+          cod_due_paise INTEGER DEFAULT 0,
+          pricing_snapshot TEXT DEFAULT '',
+          config_snapshot TEXT DEFAULT '',
           updated_at TEXT DEFAULT ''
         )`
       ).run();
@@ -433,6 +607,13 @@ async function saveToD1(order, env) {
         await env.DB.prepare(`ALTER TABLE orders ADD COLUMN refund_status TEXT DEFAULT ''`).run();
       } catch (alterErr) { if (String(alterErr.message || alterErr).indexOf('duplicate column name') < 0 && String(alterErr.message || alterErr).indexOf('already exists') < 0) { bootstrapOk = false; console.log("D1_ALTER_COLUMN_FAILED", String(alterErr.message || alterErr).slice(0, 100)); } }
       try {
+        await env.DB.prepare(`ALTER TABLE orders ADD COLUMN advance_amount REAL DEFAULT 0`).run();
+      } catch (alterErr) { if (String(alterErr.message || alterErr).indexOf('duplicate column name') < 0 && String(alterErr.message || alterErr).indexOf('already exists') < 0) { bootstrapOk = false; console.log("D1_ALTER_COLUMN_FAILED", String(alterErr.message || alterErr).slice(0, 100)); } }
+      try {
+        await env.DB.prepare(`ALTER TABLE orders ADD COLUMN cod_due REAL DEFAULT 0`).run();
+      } catch (alterErr) { if (String(alterErr.message || alterErr).indexOf('duplicate column name') < 0 && String(alterErr.message || alterErr).indexOf('already exists') < 0) { bootstrapOk = false; console.log("D1_ALTER_COLUMN_FAILED", String(alterErr.message || alterErr).slice(0, 100)); } }
+      await ensurePaymentColumns(env);
+      try {
         await env.DB.prepare(`ALTER TABLE orders ADD COLUMN purchase_capi_sent INTEGER DEFAULT 0`).run();
       } catch (alterErr) { if (String(alterErr.message || alterErr).indexOf('duplicate column name') < 0 && String(alterErr.message || alterErr).indexOf('already exists') < 0) { bootstrapOk = false; console.log("D1_ALTER_COLUMN_FAILED", String(alterErr.message || alterErr).slice(0, 100)); } }
       try {
@@ -444,7 +625,7 @@ async function saveToD1(order, env) {
     }
     if (bootstrapOk) {
       // Mark schema ready (30-day KV TTL; re-runs once after expiry - cheap and safe)
-      try { await env.RATE_LIMIT_KV.put('d1_schema_orders_v2', '1', { expirationTtl: 86400 * 30 }); } catch (e) {}
+      try { await env.RATE_LIMIT_KV.put('d1_schema_orders_v4', '1', { expirationTtl: 86400 * 30 }); } catch (e) {}
       ordersSchemaBootstrapped = true;
     }
     }
@@ -461,8 +642,13 @@ async function saveToD1(order, env) {
             utm_source, utm_medium, utm_campaign,
             utr, payment_note, fbp, fbc,
             razorpay_order_id, razorpay_payment_id, razorpay_signature,
-            payment_status, payment_captured, webhook_verified, refund_status, updated_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+            payment_status, payment_captured, webhook_verified, refund_status,
+            advance_amount, cod_due,
+            online_due_amount, online_paid_amount,
+            amount_paise, online_due_paise, online_paid_paise, cod_due_paise,
+            pricing_snapshot, config_snapshot,
+            updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
         ).bind(
           order.order_id,
           order.name,
@@ -492,6 +678,16 @@ async function saveToD1(order, env) {
           order.payment_captured || 0,
           order.webhook_verified || 0,
           order.refund_status || '',
+          order.advance_amount || 0,
+          order.cod_due || 0,
+          order.online_due_amount || 0,
+          order.online_paid_amount || 0,
+          order.amount_paise || 0,
+          order.online_due_paise || 0,
+          order.online_paid_paise || 0,
+          order.cod_due_paise || 0,
+          order.pricing_snapshot || '',
+          order.config_snapshot || '',
           order.updated_at || ''
         ).run();
         if (query && query.success) {
@@ -508,12 +704,9 @@ async function saveToD1(order, env) {
             try {
               await env.DB.prepare(
                 `UPDATE orders SET
-                  razorpay_order_id = ?,
-                  razorpay_payment_id = ?,
-                  razorpay_signature = ?,
-                  payment_status = 'paid',
-                  payment_captured = 1,
-                  status = ?,
+                  razorpay_order_id = CASE WHEN razorpay_order_id IS NULL OR razorpay_order_id = '' THEN ? ELSE razorpay_order_id END,
+                  razorpay_payment_id = CASE WHEN razorpay_payment_id IS NULL OR razorpay_payment_id = '' THEN ? ELSE razorpay_payment_id END,
+                  razorpay_signature = CASE WHEN razorpay_signature IS NULL OR razorpay_signature = '' THEN ? ELSE razorpay_signature END,
                   payment_note = ?,
                   updated_at = ?
                 WHERE order_id = ?`
@@ -521,12 +714,11 @@ async function saveToD1(order, env) {
                 order.razorpay_order_id || '',
                 order.razorpay_payment_id || '',
                 order.razorpay_signature || '',
-                order.status || 'paid',
                 order.payment_note || '',
                 new Date().toISOString(),
                 order.order_id
               ).run();
-              console.log("D1_DUPLICATE_ORDER_UPDATED", { order_id: order.order_id });
+              console.log("D1_DUPLICATE_ORDER_PAYMENT_LINKED", { order_id: order.order_id });
               return { ok: true, status: 200, note: "duplicate_order_id_updated" };
             } catch (updErr) {
               console.error("D1_DUPLICATE_UPDATE_FAILED", String(updErr.message || updErr));
@@ -1079,22 +1271,28 @@ console.log('[KV-VERIFY] order write', { key: rateKey, type: 'rate_limit' });
       order.amount = clientAmount;
     }
 
-    // Step 4a-ii: If the client itemised the cart, recompute the total from the
-    // product catalogue. This is the single verified figure the summary, the
-    // Razorpay gateway and this DB write all agree on; a tampered client amount
-    // is ignored. DB prices (admin-managed) win over the bundled fallback.
+    // Step 4a-ii: Recompute the total from the product catalogue. This is the
+    // single verified figure the summary, the Razorpay gateway and this DB
+    // write all agree on; a tampered client amount is ignored. DB prices
+    // (admin-managed) win over the bundled fallback. Legacy callers without
+    // `items` get a synthetic line built from their product label.
+    let verifiedTotals = null;
+    let pricedItems = null;
     try {
-      const kind = order.payment_method.includes("prepaid") ? "prepaid" : "cod";
-      const dbPrices = Array.isArray(body.items) && body.items.length ? await loadProductPrices(env) : null;
-      const verified = priceItems(body.items, kind, dbPrices);
+      const kind = paymentKind(order.payment_method);
+      const items = (Array.isArray(body.items) && body.items.length) ? body.items : syntheticItemsFromBody(body);
+      const dbPrices = items && items.length ? await loadProductPrices(env) : null;
+      const verified = priceItems(items, dbPrices);
       if (verified) {
         const clientAmount = body.amount === undefined || body.amount === null || body.amount === ""
           ? null : Number(body.amount);
-        const verifiedTotal = kind === "prepaid" ? verified.prepaid : verified.cod;
+        const verifiedTotal = totalFor(kind, verified);
         if (Number.isFinite(clientAmount) && Math.abs(clientAmount - verifiedTotal) > 0.5) {
           console.warn("PRICE_MISMATCH", { order_id: order.order_id, client: clientAmount, verified: verifiedTotal });
         }
         order.amount = verifiedTotal;
+        verifiedTotals = verified;
+        pricedItems = Array.isArray(items) ? items : null;
       }
     } catch (itemErr) {
       console.warn("ITEM_PRICING_FAILED", String(itemErr.message || itemErr).slice(0, 100));
@@ -1130,6 +1328,71 @@ console.log('[KV-VERIFY] order write', { key: rateKey, type: 'rate_limit' });
       );
     }
     order.amount = Math.round(amount * 100) / 100;
+
+    // Step 4c: Payment split + initial state, derived ONLY from the saved
+    // admin configuration and the server-verified total.
+    //   COD      -> online due 0, COD due = total, pending_collection
+    //   advance  -> online due = flat advance (never × qty), COD due = rest,
+    //               advance_pending (nothing is marked paid yet)
+    //   prepaid  -> online due = total, COD due 0, payment_pending
+    // The flat booking advance is an order-level value from the admin config —
+    // never multiplied by quantity and never added on top of the total.
+    let payCfg;
+    try {
+      payCfg = await loadPaymentConfig(env);
+    } catch (cfgErr) {
+      payCfg = null;
+    }
+    if (!payCfg) {
+      return new Response(
+        JSON.stringify({ ok: false, error: "Payment configuration unavailable. Please retry." }),
+        { status: 503, headers: jsonHeaders(env) }
+      );
+    }
+
+    const kind = paymentKind(order.payment_method);
+    if (kind === "cod" && !payCfg.cod_enabled) {
+      return new Response(JSON.stringify({ ok: false, error: "Cash on Delivery is currently unavailable." }), { status: 400, headers: jsonHeaders(env) });
+    }
+    if (kind === "advance" && !payCfg.advance_enabled) {
+      return new Response(JSON.stringify({ ok: false, error: "The advance booking option is currently unavailable." }), { status: 400, headers: jsonHeaders(env) });
+    }
+    if (kind === "prepaid" && !payCfg.prepaid_enabled) {
+      return new Response(JSON.stringify({ ok: false, error: "Online prepaid is currently unavailable." }), { status: 400, headers: jsonHeaders(env) });
+    }
+
+    const totalPaise = toPaise(order.amount);
+    const split = splitPaymentPaise(kind, order.amount, payCfg.advance_amount);
+    const state = initialPaymentState(kind);
+    order.payment_method = kind === "prepaid" ? "prepaid" : kind === "advance" ? "advance_cod" : "cod";
+    order.amount = fromPaise(totalPaise);
+    order.amount_paise = totalPaise;
+    // Expected online amount (due, not yet paid) vs verified amount paid.
+    order.online_due_paise = split.payNowPaise;
+    order.online_due_amount = fromPaise(split.payNowPaise);
+    order.online_paid_paise = 0;
+    order.online_paid_amount = 0;
+    order.advance_amount = 0;
+    order.cod_due_paise = split.payLaterPaise;
+    order.cod_due = fromPaise(split.payLaterPaise);
+    order.payment_status = state.paymentStatus;
+    order.status = state.orderStatus;
+    order.payment_captured = 0;
+    order.config_snapshot = JSON.stringify({
+      cod_enabled: payCfg.cod_enabled,
+      advance_enabled: payCfg.advance_enabled,
+      prepaid_enabled: payCfg.prepaid_enabled,
+      default_method: payCfg.default_method,
+      advance_amount: payCfg.advance_amount,
+    });
+    order.pricing_snapshot = JSON.stringify({
+      method: order.payment_method,
+      items: pricedItems || [],
+      totals: verifiedTotals || { cod: order.amount },
+      amount_paise: totalPaise,
+      online_due_paise: split.payNowPaise,
+      cod_due_paise: split.payLaterPaise,
+    });
 
     // Step 5: 🛡️ DUPLICATE DETECTION - Two-layer check
     // Layer 1: Exact order_id match in D1 (handles retries with same ID)
@@ -1174,17 +1437,17 @@ console.log('[KV-VERIFY] order write', { key: rateKey, type: 'rate_limit' });
     // - If payment completed (razorpay ids present), UPDATE the existing order with payment info
     // - Otherwise skip processing entirely (prevents duplicate orders / double FB events)
     if (isDup && existingOrderId) {
-      // EXACT order_id match (Layer 1) + payment completed → link payment to existing order
+      // EXACT order_id match (Layer 1) + payment ids present → link the ids to
+      // the existing row for webhook reconciliation. NEVER mark it paid here:
+      // the browser can POST arbitrary ids. Only the verified PATCH/webhook may
+      // move payment_status forward.
       if (order.razorpay_payment_id && existingOrderId === order.order_id) {
         try {
           await env.DB.prepare(
             `UPDATE orders SET
-              razorpay_order_id = ?,
-              razorpay_payment_id = ?,
-              razorpay_signature = ?,
-              payment_status = 'paid',
-              payment_captured = 1,
-              status = ?,
+              razorpay_order_id = CASE WHEN razorpay_order_id IS NULL OR razorpay_order_id = '' THEN ? ELSE razorpay_order_id END,
+              razorpay_payment_id = CASE WHEN razorpay_payment_id IS NULL OR razorpay_payment_id = '' THEN ? ELSE razorpay_payment_id END,
+              razorpay_signature = CASE WHEN razorpay_signature IS NULL OR razorpay_signature = '' THEN ? ELSE razorpay_signature END,
               payment_note = ?,
               updated_at = ?
             WHERE order_id = ?`
@@ -1192,32 +1455,19 @@ console.log('[KV-VERIFY] order write', { key: rateKey, type: 'rate_limit' });
             order.razorpay_order_id || '',
             order.razorpay_payment_id || '',
             order.razorpay_signature || '',
-            order.status || 'paid',
             order.payment_note || '',
             new Date().toISOString(),
             existingOrderId
           ).run();
-          console.log("DUP_PAYMENT_UPDATED", { existing: existingOrderId, payment_id: order.razorpay_payment_id });
-          // Fire Purchase CAPI now that payment is confirmed (idempotent via purchase_capi_sent)
-          try {
-            const capiCheck = await canSendPurchaseCAPI(existingOrderId, env);
-            if (capiCheck.canSend) {
-              const capiRes = await sendFacebookCAPI(order, env, 'Purchase', request.headers.get('User-Agent') || '');
-              if (capiRes && capiRes.ok) {
-                await markPurchaseCAPISent(existingOrderId, env);
-              }
-            }
-          } catch (capiErr) {
-            console.error("DUP_PURCHASE_CAPI_FAILED", String(capiErr.message || capiErr));
-          }
-    return new Response(
+          console.log("DUP_PAYMENT_LINKED_UNVERIFIED", { existing: existingOrderId, payment_id: order.razorpay_payment_id });
+          return new Response(
             JSON.stringify({
               ok: true,
               orderId: existingOrderId,
               duplicate: true,
               updated: true,
-              message: "Order payment updated",
-              channels: { d1: true, facebook_capi: true },
+              message: "Order exists; payment still awaiting verification",
+              channels: { d1: true, facebook_capi: false },
             }),
             { status: 200, headers: jsonHeaders(env) }
           );
@@ -1272,6 +1522,12 @@ console.log('[KV-VERIFY] order write', { key: rateKey, type: 'rate_limit' });
     // Fire Telegram + Email in background — don't block the response
     wu(sendTelegram(order, env).catch(() => {}));
     wu(sendEmail(order, env).catch(() => {}));
+
+    // COD orders are bookable immediately. Prepaid/advance are triggered after
+    // the server-verified payment in the PATCH handler below.
+    if (d1result.ok && !isDup && order.payment_method === "cod") {
+      wu(triggerEkartBooking(env, order.order_id));
+    }
 
     // Placeholder for Telegram + Email (fire-and-forget)
     const telegram = { ok: null, skipped: null, note: "fire-and-forget" };
@@ -1334,6 +1590,15 @@ console.log('[KV-VERIFY] order write', { key: rateKey, type: 'rate_limit' });
         ok: true,
         orderId: order.order_id,
         duplicate: isDup,
+        // Server-verified money, so the success page never has to trust a URL
+        // amount supplied by the browser.
+        amount: order.amount,
+        amount_paise: order.amount_paise,
+        paymentMethod: order.payment_method,
+        paymentStatus: order.payment_status,
+        onlineDue: order.online_due_amount,
+        onlinePaid: order.online_paid_amount,
+        codDue: order.cod_due,
         channels: {
           d1: d1result.ok || false,
           facebook_capi: facebookCapi.ok || false,
@@ -1355,7 +1620,50 @@ console.log('[KV-VERIFY] order write', { key: rateKey, type: 'rate_limit' });
 // HEALTH CHECK ENDPOINT (GET /api/order)
 // Visit this URL to verify all credentials are set
 // ============================================================
-export async function onRequestGet({ env }) {
+export async function onRequestGet({ request, env }) {
+  // Public order summary for the success page. The full record (address,
+  // phone, notes) is never exposed: order id + matching phone are required so
+  // the page can show the server-verified total, online paid and COD due.
+  try {
+    const url = new URL(request.url);
+    const orderId = String(url.searchParams.get("order_id") || "").trim();
+    if (orderId) {
+      const phone = normalizePhone(url.searchParams.get("phone") || "");
+      if (!/^[6-9]\d{9}$/.test(phone)) {
+        return new Response(JSON.stringify({ ok: false, error: "phone is required" }), { status: 400, headers: jsonHeaders(env) });
+      }
+      if (!env?.DB) {
+        return new Response(JSON.stringify({ ok: false, error: "Order storage unavailable" }), { status: 503, headers: jsonHeaders(env) });
+      }
+      const row = await env.DB.prepare(
+        "SELECT order_id, amount, payment_method, payment_status, status, advance_amount, online_paid_amount, online_due_amount, cod_due, created_at FROM orders WHERE order_id = ? AND phone = ?"
+      ).bind(orderId, phone).first();
+      if (!row) {
+        return new Response(JSON.stringify({ ok: false, error: "Order not found" }), { status: 404, headers: jsonHeaders(env) });
+      }
+      return new Response(
+        JSON.stringify({
+          ok: true,
+          order: {
+            orderId: row.order_id,
+            amount: Number(row.amount) || 0,
+            paymentMethod: row.payment_method || "cod",
+            paymentStatus: row.payment_status || "",
+            status: row.status || "",
+            onlinePaid: Number(row.online_paid_amount || row.advance_amount) || 0,
+            onlineDue: Number(row.online_due_amount) || 0,
+            codDue: Number(row.cod_due) || 0,
+            createdAt: row.created_at || "",
+          },
+        }),
+        { status: 200, headers: jsonHeaders(env) }
+      );
+    }
+  } catch (e) {
+    console.warn("ORDER_SUMMARY_FAILED", String(e.message || e).slice(0, 120));
+    return new Response(JSON.stringify({ ok: false, error: "Order lookup failed" }), { status: 500, headers: jsonHeaders(env) });
+  }
+
   return new Response(
     JSON.stringify({
       ok: true,
@@ -1490,6 +1798,140 @@ export async function onRequestPatch({ request, env, waitUntil }) {
           }
         } catch (e) {}
       }
+    }
+
+    // ============================================================
+    // VERIFIED ONLINE PAYMENT — dedicated, idempotent state machine
+    // ------------------------------------------------------------
+    // Only a server-verified Razorpay payment may reach this branch. The
+    // amount is NEVER taken from the request: it is derived from the stored
+    // order (method + total + expected online due) and the method's state:
+    //   prepaid -> paid, online_paid = total, cod_due = 0
+    //   advance -> partially_paid, online_paid = flat advance, cod_due = rest
+    //   cod     -> rejected (a COD order has no online payment)
+    // ============================================================
+    if (isPaymentConfirm) {
+      if (!env.DB) {
+        return new Response(JSON.stringify({ ok: false, error: "Order storage unavailable" }), { status: 503, headers: jsonH });
+      }
+      const row = await env.DB.prepare("SELECT * FROM orders WHERE order_id = ?").bind(orderId).first();
+      if (!row) {
+        return new Response(JSON.stringify({ ok: false, error: "Order not found. Please retry or contact support.", orderId }), { status: 404, headers: jsonH });
+      }
+      const method = paymentKind(row.payment_method);
+      if (method === "cod") {
+        return new Response(JSON.stringify({ ok: false, error: "A COD order has no online payment to verify." }), { status: 403, headers: jsonH });
+      }
+      if (row.razorpay_order_id && razorpayOrderId && String(row.razorpay_order_id) !== razorpayOrderId) {
+        console.warn("PATCH_ORDER_MISMATCH", { order_id: orderId });
+        return new Response(JSON.stringify({ ok: false, error: "Payment does not belong to this order." }), { status: 409, headers: jsonH });
+      }
+
+      const totalPaise = Number(row.amount_paise) > 0
+        ? Number(row.amount_paise)
+        : toPaise(row.amount);
+      // New rows store the expected online due; legacy rows stored it in
+      // advance_amount for advance_cod orders.
+      const legacyDue = method === "prepaid"
+        ? totalPaise
+        : toPaise(row.advance_amount || DEFAULT_ADVANCE_AMOUNT);
+      const duePaise = Number(row.online_due_paise) > 0 ? Number(row.online_due_paise) : legacyDue;
+      const expectedPaidPaise = method === "prepaid" ? totalPaise : Math.min(duePaise, totalPaise);
+      const state = verifiedPaymentState(method, fromPaise(totalPaise), fromPaise(expectedPaidPaise));
+
+      const samePayment = !!razorpayPaymentId && String(row.razorpay_payment_id || "") === razorpayPaymentId;
+      const alreadyFinal = ["paid", "partially_paid"].includes(String(row.payment_status || ""));
+      if (samePayment && alreadyFinal) {
+        return new Response(
+          JSON.stringify({
+            ok: true, orderId, alreadyVerified: true,
+            order: { amount: fromPaise(totalPaise), paymentStatus: row.payment_status, onlinePaid: fromPaise(Number(row.online_paid_paise) || expectedPaidPaise), codDue: fromPaise(Number(row.cod_due_paise) || state.codDuePaise) },
+          }),
+          { status: 200, headers: jsonH }
+        );
+      }
+      if (alreadyFinal && !samePayment) {
+        return new Response(JSON.stringify({ ok: false, error: "Order already has a verified payment." }), { status: 409, headers: jsonH });
+      }
+
+      const upd = await env.DB.prepare(
+        `UPDATE orders SET
+          razorpay_order_id = ?, razorpay_payment_id = ?, razorpay_signature = ?,
+          payment_status = ?, status = ?, payment_captured = ?, webhook_verified = 1,
+          amount_paise = ?, online_due_paise = ?, online_due_amount = ?,
+          online_paid_paise = ?, online_paid_amount = ?, advance_amount = ?,
+          cod_due_paise = ?, cod_due = ?, payment_note = ?, updated_at = ?
+        WHERE order_id = ?
+          AND (razorpay_payment_id IS NULL OR razorpay_payment_id = '' OR razorpay_payment_id = ?)`
+      ).bind(
+        razorpayOrderId || row.razorpay_order_id || '',
+        razorpayPaymentId,
+        razorpaySignature,
+        state.paymentStatus,
+        state.orderStatus,
+        method === "prepaid" ? 1 : 0,
+        totalPaise,
+        duePaise,
+        fromPaise(duePaise),
+        state.onlinePaidPaise,
+        fromPaise(state.onlinePaidPaise),
+        fromPaise(state.onlinePaidPaise),
+        state.codDuePaise,
+        fromPaise(state.codDuePaise),
+        `Razorpay ${razorpayPaymentId} verified (₹${fromPaise(expectedPaidPaise)} ${method === "advance" ? "advance" : "online"})`,
+        new Date().toISOString(),
+        orderId,
+        razorpayPaymentId
+      ).run();
+
+      const changes = upd && upd.meta && typeof upd.meta.changes === "number"
+        ? upd.meta.changes
+        : (upd && upd.success ? 1 : 0);
+      if (upd && upd.success === false) {
+        return new Response(JSON.stringify({ ok: false, error: "Payment could not be recorded." }), { status: 500, headers: jsonH });
+      }
+      if (changes === 0) {
+        // A concurrent request recorded the same payment first: re-read and
+        // return its state instead of charging/recording twice.
+        const after = await env.DB.prepare("SELECT * FROM orders WHERE order_id = ?").bind(orderId).first();
+        if (after && String(after.razorpay_payment_id || "") === razorpayPaymentId) {
+          return new Response(
+            JSON.stringify({ ok: true, orderId, alreadyVerified: true, order: { amount: Number(after.amount) || 0, paymentStatus: after.payment_status, onlinePaid: Number(after.online_paid_amount) || 0, codDue: Number(after.cod_due) || 0 } }),
+            { status: 200, headers: jsonH }
+          );
+        }
+        return new Response(JSON.stringify({ ok: false, error: "Payment already linked to another order or state." }), { status: 409, headers: jsonH });
+      }
+
+      const dbOrder = await env.DB.prepare("SELECT * FROM orders WHERE order_id = ?").bind(orderId).first();
+      wu(sendTelegram(dbOrder, env).catch(() => {}));
+      wu(sendEmail(dbOrder, env).catch(() => {}));
+      wu(triggerEkartBooking(env, orderId));
+      wu((async () => {
+        try {
+          const capiCheck = await canSendPurchaseCAPI(orderId, env);
+          if (capiCheck.canSend) {
+            const capiResult = await sendFacebookCAPI(dbOrder, env, 'Purchase', request.headers.get('User-Agent') || '');
+            if (capiResult && capiResult.ok) await markPurchaseCAPISent(orderId, env);
+          }
+        } catch (e) { console.warn("CAPI_PATCH_FAILED", String(e.message || e)); }
+      })());
+
+      return new Response(
+        JSON.stringify({
+          ok: true,
+          orderId,
+          message: method === "advance" ? "Advance verified — balance due on delivery" : "Payment verified ✅",
+          order: {
+            amount: fromPaise(totalPaise),
+            paymentMethod: row.payment_method,
+            paymentStatus: state.paymentStatus,
+            onlinePaid: fromPaise(state.onlinePaidPaise),
+            codDue: fromPaise(state.codDuePaise),
+          },
+        }),
+        { status: 200, headers: jsonH }
+      );
     }
 
     // Build ORDER BY UPDATE clause dynamically

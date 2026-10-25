@@ -196,10 +196,12 @@ function trackFbEvent(eventName, params, eventId, userExtra) {
   /* PRICING RULE: COD = MRP, prepaid = MRP - 20%. MRPs only here; both selling
      prices are derived so they can never drift from the admin/DB MRP. */
   var AP_PACKS=[
-  {mrp:349,sku:'AVN-OIL-001'},
+  {mrp:349,explicit:{advance:320,prepaid:299},sku:'AVN-OIL-001'},
   {mrp:698,sku:'AVN-OIL-002'},
   {mrp:1047,sku:'AVN-OIL-003'}];
-  AP_PACKS.forEach(function(p){p.cod=p.mrp;p.pre=Math.round(p.mrp*0.8);});
+  /* COD = MRP • advance-total defaults to COD (explicit ₹320 on the single
+     pack) • prepaid = MRP - 20% (explicit ₹299 on the single pack). */
+  AP_PACKS.forEach(function(p){p.cod=p.mrp;p.pre=(p.explicit&&p.explicit.prepaid)||Math.round(p.mrp*0.8);p.adv=(p.explicit&&p.explicit.advance)||p.mrp;});
   /* A cart checkout prices EVERY line it holds (mixed cart, two packs of the
      same product, or a quantity > 1). A direct Buy Now still prices the pack
      selected on this page. All three read the same P() catalogue as the cart
@@ -209,8 +211,8 @@ function trackFbEvent(eventName, params, eventId, userExtra) {
      (the cart flow carries its own quantities in AVN_CART_STATE). */
   function directQty(){var el=document.getElementById('apQtyVal');var n=el?parseInt(el.textContent,10):1;return (n>=1&&n<=9)?n:1;}
   function directPack(){try{var p=JSON.parse(localStorage.getItem('avn_pack')||'null');if(p&&p.page==='oil'&&p.i>=0&&p.i<=2)return p.i+1;}catch(e){}return 1;}
-  function withQty(q){var n=directQty();if(n===1)return q;return{pre:q.pre*n,cod:q.cod*n,mrp:q.mrp*n,sku:q.sku,id:q.id,name:q.name,variant:q.variant,qty:n,unitPre:q.pre,unitCod:q.cod,unitMrp:q.mrp};}
-  function apPack(){var CS=window.AVN_CART_STATE;if(cartPriced())return{pre:CS.prepaidTotal,cod:CS.codTotal,mrp:CS.mrpTotal,sku:'AVN-CART'};var i=0,q=null;try{var p=JSON.parse(localStorage.getItem('avn_pack')||'null');if(p&&p.page==='oil'&&p.i>=0&&p.i<AP_PACKS.length)i=p.i;}catch(e){}if(window.AVN_CHECKOUT&&window.AVN_CHECKOUT.pack)q=window.AVN_CHECKOUT.pack('oil',i);return withQty(q||AP_PACKS[i]||AP_PACKS[0]);}
+  function withQty(q){var n=directQty();if(n===1)return q;return{pre:q.pre*n,adv:(q.adv||q.cod)*n,cod:q.cod*n,mrp:q.mrp*n,sku:q.sku,id:q.id,name:q.name,variant:q.variant,qty:n,unitPre:q.pre,unitAdv:(q.adv||q.cod),unitCod:q.cod,unitMrp:q.mrp};}
+  function apPack(){var CS=window.AVN_CART_STATE;if(cartPriced())return{pre:CS.prepaidTotal,adv:(CS.advanceTotal||CS.codTotal),cod:CS.codTotal,mrp:CS.mrpTotal,sku:'AVN-CART'};var i=0,q=null;try{var p=JSON.parse(localStorage.getItem('avn_pack')||'null');if(p&&p.page==='oil'&&p.i>=0&&p.i<AP_PACKS.length)i=p.i;}catch(e){}if(window.AVN_CHECKOUT&&window.AVN_CHECKOUT.pack)q=window.AVN_CHECKOUT.pack('oil',i);return withQty(q||AP_PACKS[i]||AP_PACKS[0]);}
   function apPackN(){var CS=window.AVN_CART_STATE;if(cartPriced())return CS.count>1?' ('+CS.count+' items)':'';var extra='';try{var p=JSON.parse(localStorage.getItem('avn_pack')||'null');if(p&&p.page==='oil'&&p.i>0)extra=' (Pack of '+(p.i+1)+')';}catch(e){}if(directQty()>1)extra+=' \u00d7 '+directQty();return extra;}
   function cartItems(){var CS=window.AVN_CART_STATE;return CS&&CS.items?CS.items.map(function(x){return{id:x.id,family:x.family,pack:x.pack,qty:x.qty};}):[];}
   function cartLabel(){var CS=window.AVN_CART_STATE;return CS&&CS.items?CS.items.map(function(x){return x.name+' ('+x.variant+') \u00d7 '+x.qty;}).join('; '):'';}
@@ -221,9 +223,11 @@ function trackFbEvent(eventName, params, eventId, userExtra) {
   function updatePay(){
     var m = getPay();
     var PK = apPack();
-    var amt = m === 'prepaid' ? PK.pre : PK.cod;
-    var rest = PK.cod - 100;
+    var advAmt = (window.AVN_PAY && window.AVN_PAY.get && window.AVN_PAY.get() && window.AVN_PAY.get().advance_amount) || 100;
+    var amt = m === 'prepaid' ? PK.pre : (m === 'advance' ? (PK.adv || PK.cod) : PK.cod);
+    var rest = Math.max(0, amt - advAmt);
     var amtF = '₹'+Number(amt).toLocaleString('en-IN');
+    var advF = '₹'+Number(advAmt).toLocaleString('en-IN');
     var restF = '₹'+Number(rest).toLocaleString('en-IN');
     var __CS = window.AVN_CART_STATE;
     var __mixed = cartPriced();
@@ -238,12 +242,12 @@ function trackFbEvent(eventName, params, eventId, userExtra) {
       if(m === 'prepaid'){
         mainText = '⚡ Order Now - '+amtF;
         subText = '🔒 Secure Online Payment';
-      } else if(CHECKOUT_MODE === 'full_cod'){
+      } else if(m === 'cod'){
         mainText = '⚡ Order Now (COD) - '+amtF;
         subText = '🔒 No advance • Pay '+amtF+' on delivery';
       } else {
-        mainText = '🔖 Book with ₹100 Advance';
-        subText = '🔐 Pay ₹100 via Razorpay • Pay '+restF+' cash on delivery (Total '+amtF+')';
+        mainText = '🔖 Book with '+advF+' Advance';
+        subText = '🔐 Pay '+advF+' via Razorpay • Pay '+restF+' cash on delivery (Total '+amtF+')';
       }
       btn.innerHTML = '<span>'+mainText+'</span><small>'+subText+'</small>';
     }
@@ -251,10 +255,10 @@ function trackFbEvent(eventName, params, eventId, userExtra) {
     if(ct){
       if(m === 'prepaid'){
         ct.textContent = '🔒 Secure Online Payment';
-      } else if(CHECKOUT_MODE === 'full_cod'){
+      } else if(m === 'cod'){
         ct.textContent = '🔐 FULL COD • No advance payment';
       } else {
-        ct.textContent = '🔐 ₹100 Advance • Pay '+restF+' cash on delivery';
+        ct.textContent = '🔐 '+advF+' Advance • Pay '+restF+' cash on delivery';
       }
     }
     var cT = $('#codCardTitle'), cS = $('#codCardSub');
@@ -262,12 +266,12 @@ function trackFbEvent(eventName, params, eventId, userExtra) {
       if(m === 'prepaid'){
         if(cT) cT.textContent = '💵 Cash on Delivery';
         if(cS) cS.textContent = 'Pay on delivery (₹100 advance)';
-      } else if(CHECKOUT_MODE === 'full_cod'){
+      } else if(m === 'cod'){
         if(cT) cT.textContent = '💵 FULL COD';
         if(cS) cS.textContent = 'Pay ₹'+PK.cod+' on delivery • No advance';
       } else {
-        if(cT) cT.textContent = '💰 ₹100 Advance + COD';
-        if(cS) cS.textContent = '₹100 now via Razorpay • Pay '+restF+' cash on delivery';
+        if(cT) cT.textContent = '💰 '+advF+' Advance + COD';
+        if(cS) cS.textContent = advF+' now via Razorpay • Pay '+restF+' cash on delivery';
       }
     }
     // Savings line: measured against MRP for the amount actually payable in
@@ -275,20 +279,13 @@ function trackFbEvent(eventName, params, eventId, userExtra) {
     // difference, so neither number is subtracted twice.
     var sv = $('#sSaveAmt');
     if(sv){
-      var paid = m === 'prepaid' ? PK.pre : PK.cod;
+      var paid = m === 'prepaid' ? PK.pre : (m === 'advance' ? (PK.adv || PK.cod) : PK.cod);
       sv.textContent = '₹' + Number(Math.max(0, PK.mrp - paid)).toLocaleString('en-IN');
     }
     // Pack-aware pay-card prices + summary (matches PDP #apSize selection)
     try{
       var fmt = function(n){return '₹'+Number(n).toLocaleString('en-IN')};
-      var preB = $('.pay-card.recommended .pay-prices b');
-      if(preB) preB.textContent = fmt(PK.pre);
-      var preS = $('.pay-card.recommended .pay-prices small');
-      if(preS) preS.textContent = fmt(PK.cod);
-      var sb = $('.pay-card.recommended .save-badge');
-      if(sb) sb.textContent = 'Save '+fmt(PK.cod-PK.pre);
-      var codB = $('.pay-grid .pay-card:not(.recommended) .pay-top > b');
-      if(codB) codB.textContent = fmt(PK.cod);
+      if(window.AVN_CHECKOUT && window.AVN_CHECKOUT.renderPayUI) window.AVN_CHECKOUT.renderPayUI((window.AVN_PAY && window.AVN_PAY.get && window.AVN_PAY.get()) || null);
       var nm = $('.summary .s-row span');
       if(nm && !__mixed) nm.textContent = 'Avnideep Pain Oil (60ml)'+apPackN()+(directQty()>1?' \u2014 '+fmt(PK.cod/directQty())+' each':'');
       var svB = $('#sSave b');
@@ -332,7 +329,7 @@ function trackFbEvent(eventName, params, eventId, userExtra) {
   function showErr(box, msg){
     box.textContent = msg;
     box.classList.add('show');
-    box.scrollIntoView({behavior:'smooth', block:'center'});
+    if (box && typeof box.scrollIntoView === 'function') box.scrollIntoView({behavior:'smooth', block:'center'});
   }
 
   function showSuccess(method, orderId){
@@ -400,9 +397,9 @@ function trackFbEvent(eventName, params, eventId, userExtra) {
       pincode: $('#cPincode') ? $('#cPincode').value.trim() : '',
       city: $('#cCity') ? $('#cCity').value.trim() : '',
       state: $('#cState') ? $('#cState').value.trim() : '',
-      paymentMethod: m === 'prepaid' ? 'prepaid' : (CHECKOUT_MODE === 'full_cod' ? 'cod' : 'advance_cod'),
+      paymentMethod: m==='prepaid'?'prepaid':(m==='cod'?'cod':'advance_cod'),
 
-      amount: m === 'prepaid' ? apPack().pre : apPack().cod,
+      amount: m==='prepaid'?apPack().pre:(m==='advance'?(apPack().adv||apPack().cod):apPack().cod),
 
       product: cartPriced() ? cartLabel() : 'Avnideep Pain Relief Oil 60ml' + apPackN(),
     items: cartPriced() ? cartItems() : [{family:'oil',pack:directPack(),qty:directQty()}],
@@ -465,7 +462,10 @@ function trackFbEvent(eventName, params, eventId, userExtra) {
 
         var data = await r.json().catch(function(){return {ok:r.ok}});
 
-        if(r.ok && data.ok){
+        if(r.ok && (data.ok || (data.data && data.data.order_id))){
+
+
+          if(!data.ok && data.data) data = Object.assign({ orderId: data.data.order_id, amount: data.data.amount }, data.data, { ok: true });
           return data;
         }
 
@@ -591,7 +591,9 @@ function trackFbEvent(eventName, params, eventId, userExtra) {
 
       var m = getPay();
 
-      var isAdvance = m !== 'prepaid' && CHECKOUT_MODE === 'advance';
+      var advAmt = (window.AVN_PAY && window.AVN_PAY.get && window.AVN_PAY.get() && window.AVN_PAY.get().advance_amount) || 100;
+
+      var isAdvance = m === 'advance';
 
       var payload = build(m === 'prepaid' ? 'payment_pending' : (isAdvance ? 'advance_paid' : 'cod_order'));
 
@@ -606,6 +608,12 @@ function trackFbEvent(eventName, params, eventId, userExtra) {
       var v = validate(payload);
 
       if(v){ showErr(err, v); return; }
+      // Checkout must not run on stale/hardcoded payment options.
+      if(!(window.AVN_PAY && window.AVN_PAY.ready())){
+        try { await window.AVN_PAY.load(true); }
+        catch(cfgErr){ showErr(err, 'Payment options could not be loaded. Please retry.'); return; }
+      }
+      if(!(window.AVN_PAY && window.AVN_PAY.ready())){ showErr(err, 'Payment options could not be loaded. Please retry.'); return; }
 
 
 
@@ -625,30 +633,27 @@ function trackFbEvent(eventName, params, eventId, userExtra) {
 
       if(m === 'prepaid'){
 
-        // Fire-and-forget send to backend so D1 receives an initial record for prepaid orders
-
-        try{
-          fetch('/api/order', {
-
-            method: 'POST',
-
-            headers: {'Content-Type':'application/json'},
-
-            body: JSON.stringify(payload),
-
-            keepalive: true
-
-          }).catch(function(e){ console.warn('background order save failed', e); });
-        }catch(e){ console.warn('background order save error', e); }
-
-
+        // Create the server-priced order first. If this fails we must not
+        // charge the customer: a payment with no order row cannot be verified.
+        var preSave = null;
+        try { preSave = await sendOrder(Object.assign({}, payload, { status: 'payment_pending' }), 0); }
+        catch (preErr) { preSave = { ok: false, error: String(preErr.message || preErr) }; }
+        if(!preSave || preSave.ok === false){
+          showErr(err, (preSave && preSave.error) || 'Order could not be saved. Please retry.');
+          btn.innerHTML = origHTML; btn.disabled = false; submitting = false;
+          return;
+        }
+        var preOrder = preSave.order || {};
+        payload.orderId = preOrder.orderId || preSave.orderId || payload.orderId;
+        var preAmt = Number(preOrder.amount || preSave.amount);
+        if (preAmt > 0) payload.amount = preAmt;
 
         // Open Razorpay checkout directly instead of redirecting to payment.html
 
         try {
           var rzpResult = await openRazorpayCheckout(payload);
           if (rzpResult.success) {
-            window.location.href = '/thank-you.html?order_id=' + encodeURIComponent(rzpResult.orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.product || '') + '&method=prepaid&razorpay_payment_id=' + encodeURIComponent(rzpResult.razorpay_payment_id);
+            window.location.href = '/thank-you.html?order_id=' + encodeURIComponent(rzpResult.orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.product || '') + '&phone=' + encodeURIComponent(payload.phone) + '&method=prepaid&razorpay_payment_id=' + encodeURIComponent(rzpResult.razorpay_payment_id);
           } else {
             showErr(err, rzpResult.error || 'Payment failed. Please try again.');
             btn.innerHTML = origHTML;
@@ -669,53 +674,44 @@ function trackFbEvent(eventName, params, eventId, userExtra) {
 
 
 
-      // ADVANCE (₹100 Razorpay now + ₹149 cash on delivery) flow
-
+      // ADVANCE + COD: one server-priced order, then a Razorpay charge for
+      // exactly the configured booking advance. The balance stays due on
+      // delivery and is never charged twice.
       if(isAdvance){
-        payload.advanceAmount = 100;
-        // Background save: lead admin mein turant dikhe (payment pending)
-        try{
-          var bgPayload = Object.assign({}, payload, { status: 'payment_pending', capiEvent: 'InitiateCheckout' });
-          fetch('/api/order', {
-            method: 'POST',
-            headers: {'Content-Type':'application/json'},
-            body: JSON.stringify(bgPayload),
-            keepalive: true
-          }).catch(function(e){ console.warn('advance background order save failed', e); });
-        }catch(e){ console.warn('advance background order save error', e); }
+        var cfgNow = (window.AVN_PAY && window.AVN_PAY.get && window.AVN_PAY.get()) || {};
+        var advAmt = Number(cfgNow.advance_amount) > 0 ? Number(cfgNow.advance_amount) : 100;
+        var advSave = null;
+        try { advSave = await sendOrder(Object.assign({}, payload, { status: 'advance_pending' }), 0); }
+        catch (advErr) { advSave = { ok: false, error: String(advErr.message || advErr) }; }
+        if(!advSave || advSave.ok === false){
+          showErr(err, (advSave && advSave.error) || 'Order could not be saved. Please retry.');
+          btn.innerHTML = origHTML; btn.disabled = false; submitting = false;
+          return;
+        }
+        var advOrder = advSave.order || {};
+        payload.orderId = advOrder.orderId || advSave.orderId || payload.orderId;
+        var advTotal = Number(advOrder.amount || advSave.amount);
+        if (advTotal > 0) payload.amount = advTotal;
+        payload.advanceAmount = advAmt;
         try {
-          var rzpResult = await openRazorpayCheckout(payload, 100);
+          var rzpResult = await openRazorpayCheckout(payload, advAmt);
           if (rzpResult.success) {
-            payload.paymentMethod = 'advance_cod';
-            payload.paymentNote = '₹100 advance paid via Razorpay (' + (rzpResult.razorpay_payment_id || '') + ') • Pay ₹' + Number(apPack().cod - 100).toLocaleString('en-IN') + ' cash on delivery';
-            try {
-              var advRes = await sendOrder(payload, 0);
-              if (advRes && advRes.ok !== false) {
-                try{ sessionStorage.setItem('avn_last_order', advRes.orderId || payload.orderId); }catch(e){}
-              }
-            } catch(se){ console.warn('advance order save failed', se); }
-            window.location.href = '/thank-you?order_id=' + encodeURIComponent(payload.orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.name) + '&method=advance_cod&razorpay_payment_id=' + encodeURIComponent(rzpResult.razorpay_payment_id || '');
+            payload.paymentNote = '₹' + Number(advAmt).toLocaleString('en-IN') + ' advance paid via Razorpay (' + (rzpResult.razorpay_payment_id || '') + ') • Balance due on delivery';
+            try{ sessionStorage.setItem('avn_last_order', payload.orderId); }catch(e){}
+            window.location.href = '/thank-you?order_id=' + encodeURIComponent(payload.orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.name) + '&phone=' + encodeURIComponent(payload.phone) + '&method=advance_cod&razorpay_payment_id=' + encodeURIComponent(rzpResult.razorpay_payment_id || '');
             return;
           } else {
             showErr(err, rzpResult.error || 'Advance payment failed. Please try again.');
-            btn.innerHTML = origHTML;
-            btn.disabled = false;
-            submitting = false;
+            btn.innerHTML = origHTML; btn.disabled = false; submitting = false;
             return;
           }
         } catch(rzrErr) {
           console.error('RZP_ADV_ERR', rzrErr);
-          showErr(err, rzrErr.message || 'Advance payment failed. Try again or choose prepaid.');
-          btn.innerHTML = origHTML;
-          btn.disabled = false;
-          submitting = false;
+          showErr(err, rzrErr.message || 'Advance payment failed. Try again or choose another option.');
+          btn.innerHTML = origHTML; btn.disabled = false; submitting = false;
           return;
         }
       }
-
-
-
-
 
       // Try backend API next
 
@@ -768,7 +764,7 @@ function trackFbEvent(eventName, params, eventId, userExtra) {
           try {
             var rzpResult = await openRazorpayCheckout(payload);
             if (rzpResult.success) {
-              window.location.href = '/thank-you.html?order_id=' + encodeURIComponent(rzpResult.orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.product || '') + '&method=prepaid&razorpay_payment_id=' + encodeURIComponent(rzpResult.razorpay_payment_id);
+              window.location.href = '/thank-you.html?order_id=' + encodeURIComponent(rzpResult.orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.product || '') + '&phone=' + encodeURIComponent(payload.phone) + '&method=prepaid&razorpay_payment_id=' + encodeURIComponent(rzpResult.razorpay_payment_id);
             } else {
               showErr(err, rzpResult.error || 'Payment failed. Please try again.');
               btn.innerHTML = origHTML;
@@ -814,7 +810,7 @@ function trackFbEvent(eventName, params, eventId, userExtra) {
           var orderId = result.orderId || payload.orderId;
           var isDup = result && result.duplicate === true;
           var dupParam = isDup ? '&duplicate=true' : '';
-          window.location.href = '/thank-you?order_id=' + encodeURIComponent(orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.name) + '&address=' + encodeURIComponent(payload.address||'') + '&pincode=' + encodeURIComponent(payload.pincode||'') + '&city=' + encodeURIComponent(payload.city||'') + '&method=cod' + dupParam;
+          window.location.href = '/thank-you?order_id=' + encodeURIComponent(orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.name) + '&address=' + encodeURIComponent(payload.address||'') + '&pincode=' + encodeURIComponent(payload.pincode||'') + '&city=' + encodeURIComponent(payload.city||'') + '&phone=' + encodeURIComponent(payload.phone) + '&method=cod' + dupParam;
 
         } else {
 
@@ -1034,16 +1030,34 @@ function trackFbEvent(eventName, params, eventId, userExtra) {
   }
   var RZR_API = 'https://avnideep-admin-api.officialavnideepayurveda.workers.dev/api/admin';
   async function getPayConfig() {
+    /* Credentials (razorpay_enabled/key_id) come from the admin worker; the three
+       enable flags + default + flat advance come from the same-origin
+       /api/payment-config (admin writes D1, that endpoint reads it). This keeps
+       the storefront, the admin toggle and the backend in lock-step. */
+    var cfg = { razorpay_enabled: false, cod_enabled: true, advance_enabled: true, prepaid_enabled: true, key_id: '', checkout_mode: CHECKOUT_MODE, advance_amount: 100 };
     try {
       var r = await fetch(RZR_API + '/payment-config');
       var d = await r.json();
-      var cfg = d.ok ? d.data : null;
-      if (cfg && cfg.checkout_mode) {
+      if (d && d.ok && d.data) cfg = Object.assign(cfg, { razorpay_enabled: d.data.razorpay_enabled !== false, key_id: d.data.key_id || '' });
+    } catch(e) {}
+    try {
+      if (!(window.AVN_PAY && window.AVN_PAY.load)) throw new Error('payment config missing');
+      await window.AVN_PAY.load(true);
+      var s = (window.AVN_PAY && window.AVN_PAY.get) ? window.AVN_PAY.get() : null;
+      if (s) {
+        cfg.cod_enabled = s.cod_enabled;
+        cfg.advance_enabled = s.advance_enabled;
+        cfg.prepaid_enabled = s.prepaid_enabled;
+        cfg.advance_amount = s.advance_amount;
+        CHECKOUT_MODE = s.default_method === 'cod' ? 'full_cod' : 'advance';
+        try { window.CHECKOUT_MODE = CHECKOUT_MODE; } catch(e){}
+      } else if (cfg.checkout_mode) {
         CHECKOUT_MODE = cfg.checkout_mode === 'full_cod' ? 'full_cod' : 'advance';
         try { window.CHECKOUT_MODE = CHECKOUT_MODE; } catch(e){}
       }
-      return cfg || { razorpay_enabled: false, cod_enabled: true, key_id: '', checkout_mode: CHECKOUT_MODE };
-    } catch(e) { return { razorpay_enabled: false, cod_enabled: true, key_id: '', checkout_mode: CHECKOUT_MODE }; }
+    } catch(e) { throw new Error('Payment configuration unavailable. Please retry.'); }
+    cfg.checkout_mode = CHECKOUT_MODE;
+    return cfg;
   }
   async function createRzrOrder(amt, curr, receipt, cust) {
     var r = await fetch(RZR_API + '/razorpay/create-order', {
@@ -1071,6 +1085,25 @@ function trackFbEvent(eventName, params, eventId, userExtra) {
     if (!d.ok) throw new Error(d.error || 'Save failed');
     return d.data;
   }
+  async function confirmRzrOrder(od) {
+    var r = await fetchT('/api/order', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        orderId: od.orderId,
+        name: od.name,
+        phone: od.phone,
+        amount: od.amount,
+        autoConfirm: true,
+        razorpay_order_id: od.razorpay_order_id,
+        razorpay_payment_id: od.razorpay_payment_id,
+        razorpay_signature: od.razorpay_signature
+      })
+    }, 15000);
+    var d = await r.json().catch(function(){ return {}; });
+    if (!r.ok || !d.ok) throw new Error(d.error || 'Payment could not be recorded');
+    return d;
+  }
   async function openRazorpayCheckout(payload, chargeAmount) {
     var config = await getPayConfig();
     if (!config.razorpay_enabled) throw new Error('Online payment disabled');
@@ -1095,7 +1128,8 @@ function trackFbEvent(eventName, params, eventId, userExtra) {
               payload.razorpay_payment_id = response.razorpay_payment_id;
               payload.razorpay_signature = response.razorpay_signature;
               try { sessionStorage.setItem('avn_rzp', JSON.stringify({ order_id: payload.orderId, razorpay_order_id: response.razorpay_order_id, razorpay_payment_id: response.razorpay_payment_id, razorpay_signature: response.razorpay_signature })); } catch(e){}
-              if(!payload.advanceAmount){ await saveRzrOrder(payload); }
+              try { await confirmRzrOrder(payload); }
+              catch (confirmErr) { console.error('RZP_CONFIRM_FAILED', confirmErr); }
               resolve({ success: true, orderId: payload.orderId, razorpay_payment_id: payload.razorpay_payment_id || '' });
             } else reject(new Error('Verification failed'));
           } catch(e) { reject(e); }
@@ -1117,6 +1151,8 @@ function trackFbEvent(eventName, params, eventId, userExtra) {
     try{ initPay(); }catch(e){}
     try{ updatePay(); }catch(e){}
     try{ initForm(); }catch(e){}
+    /* Load the admin-driven payment config then repaint the three cards. */
+    try{ getPayConfig().then(function(){ try{ updatePay(); }catch(e){} }).catch(function(){ try{ updatePay(); }catch(e){} }); }catch(e){}
   }
   if(document.readyState === 'loading'){
     document.addEventListener('DOMContentLoaded', init);

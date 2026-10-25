@@ -744,13 +744,13 @@ describe("Order API — itemised cart verification", () => {
       name: "Cart User",
       phone: "9876500001",
       paymentMethod: "cod",
-      amount: 1250, // tampered — the real cart is MRP 5000 + MRP 698
+      amount: 1250, // tampered — the real cart is MRP 2500 + MRP 698
       product: "cart",
       items: [{ family: "shilajit", pack: 2, qty: 1 }, { family: "oil", pack: 2, qty: 1 }],
     });
     expect(status).toBe(200);
     // COD = MRP
-    expect(mockD1._store.get("AVN-items-cod1").amount).toBe(5698);
+    expect(mockD1._store.get("AVN-items-cod1").amount).toBe(3198);
   });
 
   it("charges the prepaid total for an itemised prepaid cart", async () => {
@@ -764,7 +764,7 @@ describe("Order API — itemised cart verification", () => {
       items: [{ family: "shilajit", pack: 2, qty: 1 }, { family: "oil", pack: 2, qty: 1 }],
     });
     expect(status).toBe(200);
-    expect(mockD1._store.get("AVN-items-pre1").amount).toBe(4558); // (5000 + 698) - 20%
+    expect(mockD1._store.get("AVN-items-pre1").amount).toBe(2558); // (2500 + 698) - 20%
   });
 
   it("honours quantity on an itemised line", async () => {
@@ -797,8 +797,8 @@ describe("Order API — itemised cart verification", () => {
       product: "cart",
       items,
     });
-    // The row's MRP wins over its stale price_cod column: 2500 + 998.
-    expect(mockD1._store.get("AVN-items-db-cod").amount).toBe(3498);
+    // Admin-configured selling prices are authoritative: 1300 + 599.
+    expect(mockD1._store.get("AVN-items-db-cod").amount).toBe(1899);
 
     await post({
       orderId: "AVN-items-db-pre",
@@ -809,7 +809,7 @@ describe("Order API — itemised cart verification", () => {
       product: "cart",
       items,
     });
-    expect(mockD1._store.get("AVN-items-db-pre").amount).toBe(2798); // (2500 + 998) - 20%
+    expect(mockD1._store.get("AVN-items-db-pre").amount).toBe(1529); // 1050 + 479
   });
 
   it("falls back to the client amount when no items are supplied (legacy clients)", async () => {

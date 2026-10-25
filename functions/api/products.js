@@ -11,6 +11,7 @@ const PRODUCT_SCHEMA = `
     sku TEXT DEFAULT '',
     price_prepaid INTEGER DEFAULT 0,
     price_cod INTEGER DEFAULT 0,
+    price_advance INTEGER DEFAULT 0,
     mrp INTEGER DEFAULT 0,
     in_stock INTEGER DEFAULT 1,
     stock_qty INTEGER DEFAULT 100,
@@ -68,18 +69,24 @@ export async function onRequestGet({ env }) {
       "SELECT * FROM products WHERE active = 1 ORDER BY sort_order ASC, id ASC"
     ).all();
     const products = (res.results || []).map((r) => {
-      // PRICING RULE: a product's MRP *is* its COD price and prepaid is MRP - 20%.
-      // Derived here (not read from the legacy price_cod / price_prepaid columns)
-      // so every storefront surface gets the same pair for the same MRP.
-      const mrp = Number(r.mrp || 0);
-      const stored = pricesFromMrp(Number(r.price_cod || 0) || Number(r.price_prepaid || 0));
-      const price = mrp > 0 ? pricesFromMrp(mrp) : stored;
+      // PRICING RULE: each product carries an explicit COD / advance-total /
+      // prepaid triple (admin-configured). Fields left 0 fall back to the
+      // default rule (MRP = COD, prepaid = MRP - 20%, advance = COD) through
+      // pricesFromMrp() so every storefront surface gets the same numbers.
+      const explicit = {
+        cod: Number(r.price_cod || 0),
+        prepaid: Number(r.price_prepaid || 0),
+        advance: Number(r.price_advance || 0),
+      };
+      const mrp = Number(r.mrp || 0) || explicit.cod || explicit.prepaid;
+      const price = pricesFromMrp(mrp, explicit);
       return {
       id: r.id,
       name: r.name,
       sku: r.sku || "",
       price_prepaid: price.prepaid,
       price_cod: price.cod,
+      price_advance: price.advance,
       mrp: price.mrp,
       in_stock: Number(r.in_stock ?? 1),
       stock_qty: Number(r.stock_qty ?? 0),

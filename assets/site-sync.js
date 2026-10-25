@@ -49,18 +49,28 @@
       if (!packs || !packs.length) return false;
       var changed = false;
       packs.forEach(function (p) {
-        var o = admin[p.id];
+        // PDP pack arrays carry an SKU (not the admin id), so match the admin
+        // row by SKU. Only single packs exist in the catalogue today; packs 2/3
+        // keep their bundled MRP until the admin adds those rows.
+        var key = p.id;
+        if (!key) {
+          var hit = Object.keys(admin).filter(function (k) { return admin[k] && p.sku && admin[k].sku === p.sku; })[0];
+          if (hit) key = hit;
+        }
+        var o = key ? admin[key] : null;
         if (!o) return;
         if (o.prepaid != null) { p.pre = o.prepaid; changed = true; }
+        if (o.advance != null) { p.adv = o.advance; changed = true; }
         if (o.cod != null) { p.cod = o.cod; changed = true; }
         if (o.mrp != null) { p.mrp = o.mrp; changed = true; }
       });
-      if (changed && typeof window.apSyncPrice === 'function') {
+      // The DB prices above are the source of truth; repaint the PDP preview,
+      // the three payment cards and an already-open order summary so none of
+      // them can keep showing the bundled fallback.
+      if (typeof window.apSyncPrice === 'function') {
         try { window.apSyncPrice(); } catch (e) {}
       }
-      // The DB prices above are the source of truth; repaint an already-open
-      // order popup / summary so it cannot keep showing the bundled fallback.
-      if (changed && typeof window.updatePay === 'function') {
+      if (typeof window.updatePay === 'function') {
         try { window.updatePay(); } catch (e) {}
       }
       return changed;
@@ -95,6 +105,9 @@
   function applyImages(admin) {
     try {
       document.querySelectorAll('img[data-pimg]').forEach(function (img) {
+        // The product gallery owns the main image after an explicit thumbnail,
+        // arrow, swipe or pack change. Never let the async catalogue paint over it.
+        if (img.hasAttribute('data-gallery-locked')) return;
         var o = admin[img.getAttribute('data-pimg')];
         if (!o || !o.img) return;
         var opt = OPT_IMG[o.img];
@@ -186,12 +199,20 @@
           // cached catalog response can never re-introduce a stale
           // price_cod / price_prepaid pair into the storefront.
           var rule = (window.AVN_CHECKOUT && window.AVN_CHECKOUT.fromMrp) || null;
-          var pr = (rule && Number(p.mrp) > 0)
-            ? rule(p.mrp)
-            : { mrp: Number(p.mrp) || 0, cod: Number(p.price_cod) || 0, prepaid: Number(p.price_prepaid) || 0 };
+          // The admin row's explicit COD / advance-total / prepaid prices are
+          // authoritative. Only a zero field falls back to the MRP rule.
+          var explicit = {
+            cod: Number(p.price_cod) || 0,
+            advance: Number(p.price_advance) || 0,
+            prepaid: Number(p.price_prepaid) || 0
+          };
+          var mrp = Number(p.mrp) || explicit.cod || explicit.prepaid || 0;
+          var pr = (rule && mrp > 0)
+            ? rule(mrp, explicit)
+            : { mrp: mrp, cod: explicit.cod, advance: explicit.advance, prepaid: explicit.prepaid };
           admin[p.id] = {
             name: p.name, sku: p.sku,
-            prepaid: pr.prepaid, cod: pr.cod, mrp: pr.mrp,
+            prepaid: pr.prepaid, advance: pr.advance, cod: pr.cod, mrp: pr.mrp,
             img: p.image_url, badge: p.badge
           };
           if (p.out_of_stock) oos[p.id] = true;

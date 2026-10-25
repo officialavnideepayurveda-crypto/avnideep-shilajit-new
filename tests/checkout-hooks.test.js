@@ -47,8 +47,8 @@ describe('checkout hooks stay wired', () => {
   it('pricing rules are consistent (COD = MRP, prepaid = MRP - 20%)', () => {
     expect(PAGES.shilajit).toContain('p.cod=p.mrp');
     expect(PAGES.shilajit).toContain('p.pre=Math.round(p.mrp*0.8)');
-    expect(PAGES.shilajit.includes('2,500')).toBe(true);
-    expect(PAGES.shilajit.includes('2,000')).toBe(true);
+    expect(PAGES.shilajit.includes('1,250')).toBe(true);
+    expect(PAGES.shilajit.includes('1,000')).toBe(true);
     expect(PAGES.shilajit.includes('AVN-6PRO-001')).toBe(true);
     expect(PAGES.shilajit.includes('AVN-OIL-001')).toBe(false);
     expect(PAGES.shilajit.includes('avn_end_v2')).toBe(false);

@@ -70,6 +70,6 @@ describe('image fit: intrinsic width/height attributes never out-rank CSS', () =
       'terms-and-conditions.html', 'pain-oil/index.html', 'shilajit/index.html',
       'hair-oil/index.html', 'herbal-balm/index.html',
     ];
-    pages.forEach((p) => expect(read(p), p).toContain('/assets/renee-theme.css?v=rx29'));
+    pages.forEach((p) => expect(read(p), p).toContain('/assets/renee-theme.css?v=rx30'));
   });
 });

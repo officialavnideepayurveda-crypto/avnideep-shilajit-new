@@ -102,9 +102,9 @@ function openFromCart(w) {
 const SHILAJIT = 'shilajit/index.html';
 const SHILAJIT_APP = 'shilajit/app-shilajit.v3.js';
 // COD / prepaid per unit from assets/cart.js PRODUCTS
-const MIXED = { hair: 1, shilajit: 1 };        // COD = MRP: hair 499 + shilajit 2500
-const MIXED_COD = 499 + 2500;                  // 2999
-const MIXED_PREPAID = 399 + 2000;              // 2399 (20% off)
+const MIXED = { hair: 1, shilajit: 1 };        // COD = MRP: hair 499 + shilajit 1250
+const MIXED_COD = 499 + 1250;                  // 1749
+const MIXED_PREPAID = 399 + 1000;              // 1399 (20% off)
 const SINGLE = { shilajit: 1 };
 
 describe('mixed cart checks out through the order popup (not WhatsApp)', () => {
@@ -123,7 +123,7 @@ describe('mixed cart checks out through the order popup (not WhatsApp)', () => {
     const overlay = w.document.getElementById('orderPopupOverlay');
     expect(overlay.classList.contains('active'), 'order popup is open').toBe(true);
 
-    expect(w.document.getElementById('sTot').textContent).toBe('₹2,999');
+    expect(w.document.getElementById('sTot').textContent).toBe('₹1,749');
     // the customer can see what they are buying
     const lines = w.document.querySelectorAll('.summary .s-row[data-cart-line]');
     expect(lines.length, 'one summary line per cart item').toBe(2);
@@ -141,7 +141,7 @@ describe('mixed cart checks out through the order popup (not WhatsApp)', () => {
     await openFromCart(w);
     await selectPay(w, 'prepaid');
 
-    expect(w.document.getElementById('sTot').textContent).toBe('₹2,399');
+    expect(w.document.getElementById('sTot').textContent).toBe('₹1,399');
 
     await submitOrder(w);
     const order = calls.find((c) => c.url.includes('/api/order') && c.method === 'POST');
@@ -185,13 +185,13 @@ describe('mixed cart checks out through the order popup (not WhatsApp)', () => {
 
     expect(wa.filter((u) => /wa\.me/.test(u))).toEqual([]);
     expect(w.AVN_CART_STATE.mixed, 'cart is not mixed').toBe(false);
-    expect(w.document.getElementById('sTot').textContent).toBe('₹2,500');
+    expect(w.document.getElementById('sTot').textContent).toBe('₹1,250');
     // no per-item rows for a single product
     expect(w.document.querySelectorAll('.summary .s-row[data-cart-line]').length).toBe(0);
 
     await submitOrder(w);
     const order = calls.find((c) => c.url.includes('/api/order') && c.method === 'POST');
-    expect(order.body.amount).toBe(2500);
+    expect(order.body.amount).toBe(1250);
   });
 
   it('a cart that navigated to another PDP (?open=1) still prices from the cart', async () => {
@@ -206,6 +206,6 @@ describe('mixed cart checks out through the order popup (not WhatsApp)', () => {
     expect(wa.filter((u) => /wa\.me/.test(u))).toEqual([]);
     expect(w.document.getElementById('orderPopupOverlay').classList.contains('active')).toBe(true);
     await selectPay(w, 'cod');
-    expect(w.document.getElementById('sTot').textContent).toBe('₹2,999');
+    expect(w.document.getElementById('sTot').textContent).toBe('₹1,749');
   });
 });

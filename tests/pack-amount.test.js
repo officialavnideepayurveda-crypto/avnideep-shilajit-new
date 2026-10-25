@@ -54,9 +54,14 @@ function bootPage(htmlRel, url, { app = false, appRel = null } = {}) {
   });
   const w = dom.window;
   if (app) {
-    const s = w.document.createElement('script');
-    s.textContent = read(appRel);
-    w.document.body.appendChild(s);
+    // Mirror the production load order: the shared cart/payment module is a
+    // deferred external script, then the page bundle runs. The page bundle's
+    // checkout deliberately refuses to price an order without AVN_PAY.
+    for (const rel of ['assets/cart.js', appRel]) {
+      const s = w.document.createElement('script');
+      s.textContent = read(rel);
+      w.document.body.appendChild(s);
+    }
     // the app bundle waits for DOMContentLoaded; the document is already parsed
     w.document.dispatchEvent(new w.Event('DOMContentLoaded', { bubbles: true }));
   }
@@ -92,27 +97,27 @@ describe('payment step shows AND charges the pack the customer selected', () => 
   it('shilajit: opening checkout shows pack 1 / 2 / 3 amounts, prepaid and COD', () => {
     const { w } = bootPage('shilajit/index.html', 'https://avnideepayurveda.in/shilajit/');
 
-    // MRP 2,500 / 5,000 / 7,500 — COD = MRP, prepaid = MRP - 20%
+    // MRP 1,250 / 2,500 / 3,750 — COD = MRP, prepaid = MRP - 20%
     setPack(w, 'shilajit', 0); openCheckout(w, { prepaid: true });
-    expect(txt(w, 'sAmt')).toBe('₹2,000');
-    expect(txt(w, 'sTot')).toBe('₹2,000');
-    expect(txt(w, 'oBtn')).toContain('₹2,000');
+    expect(txt(w, 'sAmt')).toBe('₹1,000');
+    expect(txt(w, 'sTot')).toBe('₹1,000');
+    expect(txt(w, 'oBtn')).toContain('₹1,000');
 
     setPack(w, 'shilajit', 1); openCheckout(w, { prepaid: true });
-    expect(txt(w, 'sAmt')).toBe('₹4,000');
-    expect(txt(w, 'oBtn')).toContain('₹4,000');
+    expect(txt(w, 'sAmt')).toBe('₹2,000');
+    expect(txt(w, 'oBtn')).toContain('₹2,000');
     expect(summary(w)).toContain('(Pack of 2)');
 
     setPack(w, 'shilajit', 2); openCheckout(w, { prepaid: true });
-    expect(txt(w, 'sAmt')).toBe('₹6,000');
-    expect(txt(w, 'sTot')).toBe('₹6,000');
-    expect(txt(w, 'oBtn')).toContain('₹6,000');
+    expect(txt(w, 'sAmt')).toBe('₹3,000');
+    expect(txt(w, 'sTot')).toBe('₹3,000');
+    expect(txt(w, 'oBtn')).toContain('₹3,000');
     expect(summary(w)).toContain('(Pack of 3)');
 
     // COD prices from the same pack (= MRP), after an explicit switch
     setPack(w, 'shilajit', 2); openCheckout(w, { cod: true });
-    expect(txt(w, 'sAmt')).toBe('₹7,500');
-    expect(txt(w, 'oBtn')).toContain('₹7,500');
+    expect(txt(w, 'sAmt')).toBe('₹3,750');
+    expect(txt(w, 'oBtn')).toContain('₹3,750');
   });
 
   it('pain oil: opening checkout shows pack 2 / 3 amounts', () => {
@@ -120,7 +125,7 @@ describe('payment step shows AND charges the pack the customer selected', () => 
 
     // MRP 349 / 698 / 1,047 — COD = MRP, prepaid = MRP - 20%
     setPack(w, 'oil', 0); openCheckout(w, { prepaid: true });
-    expect(txt(w, 'sAmt')).toBe('₹279');
+    expect(txt(w, 'sAmt')).toBe('₹299');
 
     setPack(w, 'oil', 1); openCheckout(w, { prepaid: true });
     expect(txt(w, 'sAmt')).toBe('₹558');
@@ -221,7 +226,7 @@ describe('payment step shows AND charges the pack the customer selected', () => 
     expect(rzp.body.amount).toBe(838);
   });
 
-  it('shilajit prepaid Pack of 3: the money sent to /api/order AND Razorpay is 6000', async () => {
+  it('shilajit prepaid Pack of 3: the money sent to /api/order AND Razorpay is 3000', async () => {
     const { w, calls } = bootPage('shilajit/index.html', 'https://avnideepayurveda.in/shilajit/', {
       app: true, appRel: 'shilajit/app-shilajit.v3.js',
     });
@@ -238,16 +243,16 @@ describe('payment step shows AND charges the pack the customer selected', () => 
 
     const order = calls.find((c) => c.url.includes('/api/order') && c.method === 'POST');
     expect(order, 'order must be saved').toBeTruthy();
-    expect(order.body.amount).toBe(6000);
+    expect(order.body.amount).toBe(3000);
     expect(String(order.body.product)).toContain('(Pack of 3)');
     expect(order.body.phone).toBe('9876543210');
 
     const rzp = calls.find((c) => c.url.includes('/razorpay/create-order'));
     expect(rzp, 'razorpay order must be created').toBeTruthy();
-    expect(rzp.body.amount).toBe(6000);
+    expect(rzp.body.amount).toBe(3000);
   });
 
-  it('shilajit prepaid Pack of 1 still charges 2000 (no global overwrite)', async () => {
+  it('shilajit prepaid Pack of 1 still charges 1000 (no global overwrite)', async () => {
     const { w, calls } = bootPage('shilajit/index.html', 'https://avnideepayurveda.in/shilajit/', {
       app: true, appRel: 'shilajit/app-shilajit.v3.js',
     });
@@ -262,9 +267,9 @@ describe('payment step shows AND charges the pack the customer selected', () => 
     await settle();
 
     const rzp = calls.find((c) => c.url.includes('/razorpay/create-order'));
-    expect(rzp.body.amount).toBe(2000);
+    expect(rzp.body.amount).toBe(1000);
     const order = calls.find((c) => c.url.includes('/api/order') && c.method === 'POST');
-    expect(order.body.amount).toBe(2000);
+    expect(order.body.amount).toBe(1000);
     expect(String(order.body.product)).not.toContain('(Pack of');
   });
 
@@ -380,10 +385,11 @@ describe('no pack-of-1 hard-coding left in the checkout code', () => {
   });
 
   it('app bundles stay pack-aware', () => {
-    expect(read('shilajit/app-shilajit.v3.js')).toContain('apPack().pre : apPack().cod');
-    expect(read('pain-oil/app-oil.v3.js')).toContain('apPack().pre : apPack().cod');
-    expect(read('hair-oil/app-hairoil.v3.js')).toContain('apPack().pre : apPack().cod');
-    expect(read('herbal-balm/app-balm.v3.js')).toContain('apPack().pre : apPack().cod');
+    for (const f of ['shilajit/app-shilajit.v3.js', 'pain-oil/app-oil.v3.js', 'hair-oil/app-hairoil.v3.js', 'herbal-balm/app-balm.v3.js']) {
+      const src = read(f);
+      expect(src, f).toMatch(/apPack\(\)\.pre[\s\S]{0,80}apPack\(\)\.cod/);
+      expect(src, f).toMatch(/m\s*===\s*'advance'/);
+    }
   });
 
   // Regression: the pack selector and the checkout must agree on the
@@ -411,19 +417,19 @@ describe('no pack-of-1 hard-coding left in the checkout code', () => {
   });
 
   it('JS URLs are cache-busted so customers with a stale 1-year-immutable copy re-download', () => {
-    expect(shilajit).toContain('app-shilajit.v3.js?v=20261018summaryfix');
-    expect(shilajit).not.toContain('app-shilajit.v3.js?v=20261018submitfix');
-    expect(oil).toContain('app-oil.v3.js?v=20261018summaryfix');
-    expect(oil).not.toContain('app-oil.v3.js?v=20261018submitfix');
+    expect(shilajit).toContain('app-shilajit.v3.js?v=20261022prepaid');
+    expect(shilajit).not.toContain('app-shilajit.v3.js?v=20261020payfix');
+    expect(oil).toContain('app-oil.v3.js?v=20261022prepaid');
+    expect(oil).not.toContain('app-oil.v3.js?v=20261020payfix');
     // hair-oil/balm app bundles were edited too
-    expect(read('hair-oil/index.html')).toContain('app-hairoil.v3.js?v=20261018summaryfix');
-    expect(read('herbal-balm/index.html')).toContain('app-balm.v3.js?v=20261018summaryfix');
+    expect(read('hair-oil/index.html')).toContain('app-hairoil.v3.js?v=20261022prepaid');
+    expect(read('herbal-balm/index.html')).toContain('app-balm.v3.js?v=20261022prepaid');
     // cart.js changed too -> every page that loads it must use the new URL
     for (const page of ['index.html', 'shilajit/index.html', 'pain-oil/index.html', 'hair-oil/index.html', 'herbal-balm/index.html']) {
-      expect(read(page), page).toContain('/assets/cart.js?v=rx31');
-      expect(read(page), page).not.toContain('/assets/cart.js?v=rx30');
-      expect(read(page), page).toContain('/assets/site-sync.js?v=4');
-      expect(read(page), page).not.toContain('/assets/site-sync.js?v=3"');
+      expect(read(page), page).toContain('/assets/cart.js?v=rx32');
+      expect(read(page), page).not.toContain('/assets/cart.js?v=rx31');
+      expect(read(page), page).toContain('/assets/site-sync.js?v=5');
+      expect(read(page), page).not.toContain('/assets/site-sync.js?v=4"');
     }
   });
 

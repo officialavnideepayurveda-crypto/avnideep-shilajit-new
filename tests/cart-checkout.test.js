@@ -90,9 +90,9 @@ describe('cart checkout button: every cart opens the order popup (WhatsApp is on
     expect(w.openedUrls.length).toBe(0);
     expect(w.AVN_CART_STATE.mixed).toBe(true);
     expect(w.AVN_CART_STATE.items.length).toBe(2);
-    // COD = MRP (oil 349 + shilajit 2,500); prepaid = MRP - 20%
-    expect(w.AVN_CART_STATE.codTotal).toBe(349 + 2500);
-    expect(w.AVN_CART_STATE.prepaidTotal).toBe(279 + 2000);
+    // COD = MRP (oil 349 + shilajit 1,250); prepaid = MRP - 20%
+    expect(w.AVN_CART_STATE.codTotal).toBe(349 + 1250);
+    expect(w.AVN_CART_STATE.prepaidTotal).toBe(299 + 1000);
     expect(w.AVN_CART_STATE.count).toBe(2);
   });
 
@@ -133,21 +133,21 @@ describe('cart drawer total: no shipping fee is ever added', () => {
     click(w, '[data-cart-open]');
   };
 
-  it('a single oil pack shows FREE delivery and the prepaid total (site default)', () => {
+  it('a single oil pack shows FREE delivery and the configured prepaid total', () => {
     const w = bootCart('/pain-oil/');
-    click(w, '[data-cart-add="oil"]'); // MRP 349, prepaid 279 — never the old ₹298/₹499
+    click(w, '[data-cart-add="oil"]'); // MRP 349, configured prepaid 299
     openDrawer(w);
     const dr = w.document.querySelector('.cart-dr');
-    expect(dr.querySelector('[data-cart-total]').textContent).toBe(money(279));
+    expect(dr.querySelector('[data-cart-total]').textContent).toBe(money(299));
     expect(dr.querySelector('.cart-f .cart-row span').textContent).toBe('Subtotal (Prepaid)');
     expect(dr.querySelector('[data-cart-del]').textContent).toBe('FREE');
-    expect(dr.querySelector('[data-cart-checkout]').textContent).toBe('Checkout \u2014 ' + money(279));
+    expect(dr.querySelector('[data-cart-checkout]').textContent).toBe('Checkout \u2014 ' + money(299));
     expect(dr.querySelector('.cart-note').textContent).toContain('Free shipping');
     expect(dr.querySelector('[data-cart-ship]').innerHTML).toContain('FREE delivery');
     // both prices stay visible on the line so COD is never hidden
     const line = dr.querySelector('.cart-it .it-p').textContent;
     expect(line).toContain(money(349));
-    expect(line).toContain(money(279));
+    expect(line).toContain(money(299));
   });
 
   it('a deliberate COD choice quotes ₹349 in the drawer', () => {

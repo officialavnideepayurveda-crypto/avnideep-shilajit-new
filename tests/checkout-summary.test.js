@@ -94,10 +94,10 @@ const advanceRows = (w) => [...w.document.querySelectorAll('.summary .s-row[data
 // On the pain-oil PDP (oil is the last item, so checkout stays on this page).
 const OIL_PAGE = 'pain-oil/index.html';
 const OIL_APP = 'pain-oil/app-oil.v3.js';
-// MRPs: shilajit pack of 2 = 5,000, oil pack of 2 = 698. COD = MRP.
+// MRPs: shilajit pack of 2 = 2,500, oil pack of 2 = 698. COD = MRP.
 const SCREENSHOT_CART = { shilajit2: 1, oil2: 1 };
-const SCREENSHOT_COD = 5000 + 698;                 // 5698
-const SCREENSHOT_PREPAID = 4000 + 558;             // 4558 (20% off)
+const SCREENSHOT_COD = 2500 + 698;                 // 3198
+const SCREENSHOT_PREPAID = 2000 + 558;             // 2558 (20% off)
 
 describe('order summary prices each product, not the grand total', () => {
   it('mixed cart: product row shows the cart subtotal and each item its own price (COD)', async () => {
@@ -112,16 +112,16 @@ describe('order summary prices each product, not the grand total', () => {
 
     // the anchor row is the cart title + subtotal, never a single product's line
     expect(w.document.querySelector('.summary .s-row span').textContent).toContain('Your Cart');
-    expect(txt(w, 'sAmt')).toBe('₹5,698');
-    expect(txt(w, 'sTot')).toBe('₹5,698');
+    expect(txt(w, 'sAmt')).toBe('₹3,198');
+    expect(txt(w, 'sTot')).toBe('₹3,198');
 
     // one row per product, each at its OWN price
     const lines = lineTexts(w);
     expect(lines.length).toBe(2);
-    expect(lines.some((t) => t.includes('₹5,000'))).toBe(true); // shilajit pack of 2 (MRP)
+    expect(lines.some((t) => t.includes('₹2,500'))).toBe(true); // shilajit pack of 2 (MRP)
     expect(lines.some((t) => t.includes('₹698'))).toBe(true);   // oil pack of 2 (MRP)
     // the bug: the oil row used to show the ₹2,799 grand total
-    expect(lines.some((t) => t.includes('₹5,698'))).toBe(false);
+    expect(lines.some((t) => t.includes('₹3,198'))).toBe(false);
     expect(lines.some((t) => t.includes('Pain Relief Oil'))).toBe(true);
     expect(lines.some((t) => t.includes('Shilajit'))).toBe(true);
 
@@ -131,10 +131,11 @@ describe('order summary prices each product, not the grand total', () => {
     expect(discount.hidden).toBe(true);
     expect(discount.style.display).toBe('none');
 
-    // ₹100 advance + remaining COD are spelled out
+    // Full COD has no advance: one row with the full amount due on delivery.
     const adv = advanceRows(w);
-    expect(adv.some((t) => t.includes('₹100'))).toBe(true);
-    expect(adv.some((t) => t.includes('₹5,598'))).toBe(true);
+    expect(adv.length).toBe(1);
+    expect(adv[0]).toContain('₹3,198');
+    expect(adv.some((t) => t.includes('₹100'))).toBe(false);
   });
 
   it('mixed cart prepaid: subtotal stays COD, discount row bridges to the prepaid total', async () => {
@@ -144,17 +145,17 @@ describe('order summary prices each product, not the grand total', () => {
     await openFromCart(w);
     await selectPay(w, 'prepaid');
 
-    expect(txt(w, 'sAmt')).toBe('₹5,698');            // subtotal (COD = MRP), not the prepaid total
-    expect(txt(w, 'sTot')).toBe('₹4,558');            // 4000 + 798
+    expect(txt(w, 'sAmt')).toBe('₹3,198');            // subtotal (COD = MRP), not the prepaid total
+    expect(txt(w, 'sTot')).toBe('₹2,558');            // 4000 + 798
     const save = w.document.getElementById('sSave');
     expect(save.hidden).toBe(false);
     expect(save.style.display).not.toBe('none');
-    expect(save.textContent).toContain('₹1,140');     // 5698 - 4558 = 20%
+    expect(save.textContent).toContain('₹640');     // 5698 - 4558 = 20%
 
     // per-item rows still show their own COD price
     const lines = lineTexts(w);
     expect(lines.some((t) => t.includes('₹698'))).toBe(true);
-    expect(lines.some((t) => t.includes('₹5,000'))).toBe(true);
+    expect(lines.some((t) => t.includes('₹2,500'))).toBe(true);
 
     // no advance/COD split when the whole order is prepaid
     expect(advanceRows(w).length).toBe(0);
@@ -197,12 +198,9 @@ describe('order summary prices each product, not the grand total', () => {
     expect(Array.isArray(order.body.items)).toBe(true);
     expect(order.body.items.length).toBe(2);
 
-    const rzp = calls.find((c) => c.url.includes('/razorpay/create-order'));
-    expect(rzp, 'razorpay order must be created').toBeTruthy();
-    // COD advance flow: only the ₹100 advance is charged online now…
-    expect(rzp.body.amount).toBe(100);
-    expect(rzp.body.advanceAmount == null || rzp.body.advanceAmount === 100).toBe(true);
-    // …while the saved order carries the full verified cart total.
+    // Full COD never starts an online payment; the saved order carries the
+    // full verified total as the amount due on delivery.
+    expect(calls.some((c) => c.url.includes('/razorpay/create-order'))).toBe(false);
     expect(order.body.amount).toBe(SCREENSHOT_COD);
   });
 });
@@ -223,14 +221,16 @@ describe('every cart line is priced from its own unit price and quantity', () =>
     expect(lines.some((t) => t.includes('₹698'))).toBe(true);
     expect(lines.some((t) => t.includes('₹1,047'))).toBe(false);
 
+    // Full COD is one row: the whole ₹1,047 is due on delivery.
     const adv = advanceRows(w);
-    expect(adv.some((t) => t.includes('₹100'))).toBe(true);
-    expect(adv.some((t) => t.includes('₹947'))).toBe(true);
+    expect(adv.length).toBe(1);
+    expect(adv[0]).toContain('₹1,047');
+    expect(adv.some((t) => t.includes('₹100'))).toBe(false);
 
     await selectPay(w, 'prepaid');
-    expect(txt(w, 'sTot')).toBe('₹837'); // 399 + 798
-    expect(w.document.getElementById('sSave').textContent).toContain('₹210'); // 1047 - 837
-    expect(txt(w, 'sSaveAmt')).toBe('₹210'); // MRP 1,047 - 837 (the same 20%, not twice)
+    expect(txt(w, 'sTot')).toBe('₹857'); // configured 299 + pack-of-2 558
+    expect(w.document.getElementById('sSave').textContent).toContain('₹190'); // 1047 - 857
+    expect(txt(w, 'sSaveAmt')).toBe('₹190'); // MRP 1,047 - 857
   });
 
   it('quantity > 1 multiplies the unit price, for the summary and the order', async () => {
@@ -244,7 +244,7 @@ describe('every cart line is priced from its own unit price and quantity', () =>
     expect(txt(w, 'sAmt')).toBe('₹698'); // 349 MRP x 2
     expect(txt(w, 'sTot')).toBe('₹698');
     expect(w.document.querySelectorAll('.summary .s-row[data-cart-line]').length).toBe(0);
-    expect(advanceRows(w).some((t) => t.includes('₹598'))).toBe(true); // 998 - 100
+    expect(advanceRows(w)).toEqual([expect.stringContaining('₹698')]); // full COD, no split
 
     const fill = (id, v) => { w.document.getElementById(id).value = v; };
     fill('cName', 'Test Buyer');
@@ -258,8 +258,8 @@ describe('every cart line is priced from its own unit price and quantity', () =>
     const order = calls.find((c) => c.url.includes('/api/order') && c.method === 'POST');
     expect(order.body.amount).toBe(698);
     expect(order.body.items).toEqual([{ id: 'oil', family: 'oil', pack: 1, qty: 2 }]);
-    const rzp = calls.find((c) => c.url.includes('/razorpay/create-order'));
-    expect(rzp.body.amount).toBe(100);
+    // Full COD never starts an online payment.
+    expect(calls.some((c) => c.url.includes('/razorpay/create-order'))).toBe(false);
   });
 
   it('a direct Buy Now order uses the PDP quantity, not one pack', async () => {
@@ -301,16 +301,15 @@ describe('every cart line is priced from its own unit price and quantity', () =>
     await openFromCart(w);
     await selectPay(w, 'cod');
 
-    // The override supplies an MRP; COD = MRP and prepaid = MRP - 20% win over
-    // the stale cod/prepaid columns in the same override object.
-    expect(txt(w, 'sAmt')).toBe('₹3,300'); // 2500 + 800
+    // The admin/DB row's explicit COD / prepaid prices are authoritative.
+    expect(txt(w, 'sAmt')).toBe('₹1,899'); // 1300 + 599
     const lines = lineTexts(w);
-    expect(lines.some((t) => t.includes('₹2,500'))).toBe(true);
-    expect(lines.some((t) => t.includes('₹800'))).toBe(true);
+    expect(lines.some((t) => t.includes('₹1,300'))).toBe(true);
+    expect(lines.some((t) => t.includes('₹599'))).toBe(true);
 
     await selectPay(w, 'prepaid');
-    expect(txt(w, 'sTot')).toBe('₹2,640'); // 2000 + 640
-    expect(w.document.getElementById('sSave').textContent).toContain('₹660'); // 3300 - 2640
+    expect(txt(w, 'sTot')).toBe('₹1,529'); // 1050 + 479
+    expect(w.document.getElementById('sSave').textContent).toContain('₹370'); // 1899 - 1529
   });
 });
 
@@ -320,6 +319,6 @@ describe('no pack-of-1 hard-coding left in the homepage checkout', () => {
     expect(bundle).not.toMatch(/m === 'prepaid' \? 999 : 1250/);
     expect(bundle).not.toContain("mainText = '⚡ Order Now - ₹999'");
     expect(bundle).toContain('function rootPack()');
-    expect(bundle).toContain("amount: m === 'prepaid' ? rootPack().pre : rootPack().cod");
+    expect(bundle).toContain("amount: m === 'prepaid' ? rootPack().pre : (m === 'advance'");
   });
 });

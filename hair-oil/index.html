@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="hi">
 <head>
 <meta charset="UTF-8">
@@ -50,8 +50,8 @@
 .form-field input:focus,.form-field textarea:focus{outline:none;border-color:#ffd54f;box-shadow:0 0 0 3px rgba(255,213,79,.2);background:#0a0606}
 .form-field input::placeholder,.form-field textarea::placeholder{color:#888888}
 .phone-input-wrap{position:relative;display:flex;align-items:center}
-.phone-prefix{position:absolute;left:16px;top:7%;transform:translateY(-7%);color:#ffd54f;font-weight:800;font-size:16px;pointer-events:none;z-index:1;user-select:none;-webkit-user-select:none;background:transparent}
-#tcPhoneInput{padding-left:56px!important}
+.phone-prefix{color:#ffd54f;font-weight:800;font-size:16px;pointer-events:none;z-index:1;user-select:none;-webkit-user-select:none;background:transparent}
+#tcPhoneInput{padding-left:14px!important}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .pay-grid{display:flex;flex-direction:column;gap:10px;margin:16px 0}
 .pay-card{position:relative;padding:14px 16px;border:2px solid #333333;border-radius:14px;background:#1a1a1a;cursor:pointer;transition:all .2s}
@@ -562,6 +562,7 @@ try {
 <img class="main" id="mainImg" src="gallery/g1.webp" alt="Avnideep Herbal Hair Oil 100ml" data-pimg="hair">
 <div class="thumbs" id="thumbs"><img class="on" src="gallery/g1.webp" alt="Avnideep Herbal Hair Oil bottle"><img src="gallery/g2.webp" alt="Hair oil pack"><img src="gallery/g3.webp" alt="How to use hair oil"><img src="gallery/g4.webp" alt="Hair oil benefits"><img src="gallery/g5.webp" alt="Hair oil massage routine"><img src="gallery/g6.webp" alt="Hair oil results"></div>
 </div>
+<script src="/assets/product-gallery.js?v=1"></script>
 <div>
 <div class="ap-brand">Avnideep Ayurveda &bull; Wellness</div>
 <h1 class="ap-h1">Herbal Hair Oil — Lambe, Majboot Baalon Ka Ayurvedic Tarika</h1>
@@ -573,9 +574,9 @@ try {
 <div><svg viewBox="0 0 24 24"><path d="M3 7v6h6M21 12a9 9 0 1 1-3-6.7L15 8"/></svg><span>7-Day Returns</span></div></div>
 <div class="ap-sizelabel">Pack Size — bada pack, zyada bachat</div>
 <div class="ap-sizegrid" id="apSize">
-<button type="button" class="ap-size on" data-pack="0"><span class="ap-size-top"><span class="ap-size-off">COD</span><span class="ap-size-name">Single</span></span><img src="gallery/g1.webp" alt="Herbal Hair Oil single pack"><span class="ap-size-bar">₹499</span></button>
-<button type="button" class="ap-size" data-pack="1"><span class="ap-size-ribbon">MOST POPULAR</span><span class="ap-size-top"><span class="ap-size-off">COD</span><span class="ap-size-name">Pack 2</span></span><img src="gallery/g1.webp" alt="Herbal Hair Oil pack of 2"><span class="ap-size-bar">₹998</span></button>
-<button type="button" class="ap-size" data-pack="2"><span class="ap-size-ribbon best">BEST VALUE</span><span class="ap-size-top"><span class="ap-size-off">COD</span><span class="ap-size-name">Pack 3</span></span><img src="gallery/g1.webp" alt="Herbal Hair Oil pack of 3"><span class="ap-size-bar">₹1,497</span></button>
+<button type="button" class="ap-size on" data-pack="0"><span class="ap-size-top"><span class="ap-size-off">Prepaid</span><span class="ap-size-name">Single</span></span><img src="gallery/g1.webp" alt="Herbal Hair Oil single pack"><span class="ap-size-bar"><b>₹399</b><s>₹499</s></span></button>
+<button type="button" class="ap-size" data-pack="1"><span class="ap-size-ribbon">MOST POPULAR</span><span class="ap-size-top"><span class="ap-size-off">Prepaid</span><span class="ap-size-name">Pack 2</span></span><img src="gallery/g1.webp" alt="Herbal Hair Oil pack of 2"><span class="ap-size-bar"><b>₹798</b><s>₹998</s></span></button>
+<button type="button" class="ap-size" data-pack="2"><span class="ap-size-ribbon best">BEST VALUE</span><span class="ap-size-top"><span class="ap-size-off">Prepaid</span><span class="ap-size-name">Pack 3</span></span><img src="gallery/g1.webp" alt="Herbal Hair Oil pack of 3"><span class="ap-size-bar"><b>₹1,198</b><s>₹1,497</s></span></button>
 </div>
 <div class="ap-packlabel">Apna option chunein</div>
 <div class="ap-packs"><div class="ap-pack" data-pay="C" role="button" tabindex="0"><span class="pct">MRP</span><span class="tag">COD</span><b style="margin-top:8px">Cash on Delivery</b><div class="p1">&#8377;499</div><span style="font-size:11px;color:var(--ap-mut)">Pehle product, phir paise</span></div>
@@ -707,7 +708,7 @@ try {
 
 <div class="combo">
 <h2>Energy Bhi Chahiye? 6Pro Shilajit Try Karein</h2>
-<p>Andar se taakat ke liye — Pure Himalayan Shilajit + 14 herbs • Prepaid ₹2,000 • COD available</p>
+<p>Andar se taakat ke liye — Pure Himalayan Shilajit + 14 herbs • Prepaid ₹1,000 • COD available</p>
 <a href="/shilajit/">View 6Pro Shilajit →</a>
 </div>
 
@@ -803,7 +804,7 @@ try {
 <li><a href="/contact-us">Contact us</a></li>
 <li><a href="/shipping-policy">Shipping &amp; delivery</a></li>
 <li><a href="/refund-policy">Returns &amp; refunds</a></li>
-<li><a href="https://wa.me/917060101043">Track your order</a></li>
+ <li><a href="/track-order">Track your order</a></li>
 <li><a href="https://partners.avnideepayurveda.in/" target="_blank" rel="noopener">Become a Partner 🤝</a></li>
 </ul>
 </nav>
@@ -859,13 +860,22 @@ var AP_PACKS=[
 AP_PACKS.forEach(function(p){p.cod=p.mrp;p.pre=Math.round(p.mrp*0.8);});
 function apPackIdx(){try{var p=JSON.parse(localStorage.getItem('avn_pack')||'null');if(p&&p.page==='hair'&&p.i>=0&&p.i<AP_PACKS.length)return p.i;}catch(e){}return 0;}
 function apInr(n){return '₹'+n.toLocaleString('en-IN');}
-function apPayMethod(){var s=document.querySelector('.ap-pack[data-pay].on');return s?s.getAttribute('data-pay'):'C';}
+function apPayMethod(){var s=document.querySelector('.ap-pack[data-pay].on');return s?s.getAttribute('data-pay'):'P';}
 /* Single source of truth: every price surface follows pack + payment selection */
 function apSyncPrice(){
 var i=apPackIdx();var P=AP_PACKS[i]||AP_PACKS[0];
 var pay=apPayMethod();
 var eff=pay==='P'?P.pre:P.cod;
 var pr=document.querySelector('.ap-price');
+/* Pack-size cards lead with the Prepaid price; COD stays visible as the
+   secondary (struck-through) price on every pack. */
+document.querySelectorAll('#apSize .ap-size').forEach(function(b,k){
+var pk=AP_PACKS[k];if(!pk)return;
+var bar=b.querySelector('.ap-size-bar');
+if(bar)bar.innerHTML='<b>'+apInr(pk.pre)+'</b><s>'+apInr(pk.cod)+'</s>';
+var off=b.querySelector('.ap-size-off');
+if(off)off.textContent='Prepaid';
+});
 if(pr){pr.innerHTML='<b>'+apInr(eff)+'</b>'+(P.mrp>eff?'<s>'+apInr(P.mrp)+'</s>':'')+'<span class="off">'+(pay==='P'?'20% OFF':'COD')+'</span><span class="sale">'+(pay==='P'?'Prepaid':'MRP')+'</span>';}
 var off=document.querySelector('.ap-gal .ap-off');
 if(off)off.innerHTML=Math.round((P.mrp-eff)/P.mrp*100)+'%<br>OFF';
@@ -882,7 +892,7 @@ var P=AP_PACKS[i];
 try{localStorage.setItem('avn_pack',JSON.stringify({page:'hair',i:i}));}catch(e){}
 document.querySelectorAll('#apSize .ap-size').forEach(function(b,k){b.classList.toggle('on',k===i);});
 var mi=document.getElementById('mainImg');
-if(mi){mi.src=P.img;mi.alt='Avnideep '+P.name;}
+if(mi){var pa='Avnideep '+P.name;if(window.AVN_GALLERY&&window.AVN_GALLERY.setSource){window.AVN_GALLERY.setSource(P.img,pa,{external:true});}else{mi.src=P.img;mi.alt=pa;mi.setAttribute('data-gallery-requested-src',P.img);}}
 document.querySelectorAll('[data-cart-add]').forEach(function(a){a.setAttribute('data-cart-add',P.id);});
 apSyncPrice();
 var codBox=document.querySelector('.ap-pack[data-pay="C"] .p1');
@@ -905,12 +915,9 @@ pay = (pay==='C') ? 'C' : 'P';
 document.querySelectorAll('.ap-pack[data-pay]').forEach(function(x){
 x.classList.toggle('on', x.getAttribute('data-pay')===pay);
 });
-var want = (pay==='C') ? 'cod' : 'prepaid';
-document.querySelectorAll('input[name="paymentMethod"]').forEach(function(i){ i.checked = (i.value===want); });
-document.querySelectorAll('.pay-card').forEach(function(c){
-var i=c.querySelector('input[name="paymentMethod"]');
-c.classList.toggle('selected', !!(i && i.checked));
-});
+/* The PDP price selector is a price preview only. The checkout's three
+   payment cards are selected from the admin default (or the customer's
+   explicit choice) by assets/cart.js, never overwritten here. */
 try{ localStorage.setItem('avn_pay_pref', pay); }catch(e){}
 try{ apSyncPrice(); }catch(e){}
 if(!(opts && opts.silent) && typeof window.updatePay==='function'){ try{ window.updatePay(); }catch(e){} }
@@ -950,6 +957,7 @@ p.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.prev
 document.addEventListener('change',function(e){
 var t=e.target;
 if(!t||t.name!=='paymentMethod'||!t.checked)return;
+if(t.value!=='cod'&&t.value!=='prepaid')return;
 var card=document.querySelector('.ap-pack[data-pay="'+(t.value==='cod'?'C':'P')+'"]');
 if(card&&!card.classList.contains('on')){card.click();}
 });
@@ -968,8 +976,6 @@ tabs.forEach(function(a){a.addEventListener('click',function(){tabs.forEach(func
 
 <script>
 /* ViewContent fired in head (fbq+CAPI dedup, same as Shilajit) */
-var main=document.getElementById('mainImg');
-document.getElementById('thumbs').addEventListener('click',function(e){if(e.target.tagName==='IMG'){main.src=e.target.src;var all=this.querySelectorAll('img');for(var i=0;i<all.length;i++)all[i].classList.remove('on');e.target.classList.add('on');}});
 window.addEventListener('scroll',function(){document.getElementById('sticky').classList.toggle('show',window.scrollY>450);},{passive:true});
 document.querySelectorAll('.offers code').forEach(function(c){c.style.cursor='pointer';c.title='Tap to copy';c.addEventListener('click',function(){var t=c.textContent.trim();function done(){var o=c.getAttribute('data-code')||t;c.textContent='Copied ✓';setTimeout(function(){c.textContent=o;},1200);}c.setAttribute('data-code',t);if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done).catch(done);}else{var i=document.createElement('input');i.value=t;document.body.appendChild(i);i.select();try{document.execCommand('copy');}catch(e){}document.body.removeChild(i);done();}});});
 var _pb=document.getElementById('pinBtn'); if(_pb) _pb.addEventListener('click',async function(){
@@ -1152,7 +1158,7 @@ var CO_PACKS = [
   {mrp:1497}
 ];
 /* PRICING RULE: COD = MRP, prepaid = MRP - 20%. */
-CO_PACKS.forEach(function(p){p.cod=p.mrp;p.pre=Math.round(p.mrp*0.8);});
+CO_PACKS.forEach(function(p){p.cod=p.mrp;p.pre=Math.round(p.mrp*0.8);p.adv=p.mrp;});
 function coPackIdx(){
   try{
     var p = JSON.parse(localStorage.getItem('avn_pack') || 'null');
@@ -1163,7 +1169,7 @@ function coPackIdx(){
 function cartPriced(){ var CS=window.AVN_CART_STATE; return !!(CS && CS.items && CS.items.length && (CS.mixed || CS.fromCart)); }
 function coPack(){
   var CS=window.AVN_CART_STATE;
-  if(cartPriced()) return {pre:CS.prepaidTotal, cod:CS.codTotal, mrp:CS.mrpTotal, sku:'AVN-CART'};
+  if(cartPriced()) return {pre:CS.prepaidTotal, adv:(CS.advanceTotal||CS.codTotal), cod:CS.codTotal, mrp:CS.mrpTotal, sku:'AVN-CART'};
   var i=coPackIdx();
   /* Same catalogue the cart uses (PRODUCTS + admin/DB overrides). */
   if(window.AVN_CHECKOUT && window.AVN_CHECKOUT.pack){
@@ -1227,9 +1233,11 @@ function updatePay(){
   }
   var m = getPay();
   var PK = coPack();
-  var amt = m === 'prepaid' ? PK.pre : PK.cod;
+  var amt = m === 'prepaid' ? PK.pre : (m === 'advance' ? (PK.adv || PK.cod) : PK.cod);
   var amtF = '₹' + Number(amt).toLocaleString('en-IN');
-  var restF = '₹' + Number(PK.cod - 100).toLocaleString('en-IN');
+  var advNow = (window.AVN_PAY && window.AVN_PAY.get && window.AVN_PAY.get() && window.AVN_PAY.get().advance_amount) || 100;
+  var advLabel = '₹' + Number(advNow).toLocaleString('en-IN');
+  var restF = '₹' + Number(Math.max(0, amt - advNow)).toLocaleString('en-IN');
   var __CS = window.AVN_CART_STATE;
   var __mixed = cartPriced();
   if (!__mixed) $('#sAmt').textContent = amtF; /* mixed: anchor is the cart subtotal, painted by renderCartLines */
@@ -1243,12 +1251,12 @@ function updatePay(){
     if(m === 'prepaid'){
       mainText = 'Order now — ' + amtF;
       subText = 'Secure online payment';
-    } else if(typeof CHECKOUT_MODE !== 'undefined' && CHECKOUT_MODE === 'full_cod'){
+    } else if(m === 'cod'){
       mainText = 'Order now (COD) — ' + amtF;
       subText = 'No advance • Pay ' + amtF + ' on delivery';
     } else {
-      mainText = 'Book with ₹100 advance';
-      subText = 'Pay ₹100 via Razorpay • Pay ' + restF + ' cash on delivery (Total ' + amtF + ')';
+      mainText = 'Book with ' + advLabel + ' advance';
+      subText = 'Pay ' + advLabel + ' via Razorpay • ' + restF + ' cash on delivery (Total ' + amtF + ')';
     }
     btn.innerHTML = '<span>' + mainText + '</span><small>' + subText + '</small>';
   }
@@ -1256,15 +1264,15 @@ function updatePay(){
   if(ct2){
     if(m === 'prepaid'){
       ct2.textContent = 'Secure online payment';
-    } else if(typeof CHECKOUT_MODE !== 'undefined' && CHECKOUT_MODE === 'full_cod'){
+    } else if(m === 'cod'){
       ct2.textContent = 'FULL COD • No advance payment';
     } else {
-      ct2.textContent = '₹100 advance • Pay ' + restF + ' cash on delivery';
+      ct2.textContent = advLabel + ' advance • Pay ' + restF + ' cash on delivery';
     }
   }
   var sv = $('#sSaveAmt');
   if(sv){
-    var paidNow = m === 'prepaid' ? PK.pre : PK.cod;
+    var paidNow = m === 'prepaid' ? PK.pre : (m === 'advance' ? (PK.adv || PK.cod) : PK.cod);
     sv.textContent = '₹' + Number(Math.max(0, PK.mrp - paidNow)).toLocaleString('en-IN');
   }
   var svb = $('#sSave b');
@@ -2094,7 +2102,7 @@ function initSocialProof(){
 <script>
 (function(){try{var g=document.querySelector('.gallery'),img=document.getElementById('mainImg');if(!g||!img)return;if(window.matchMedia&&matchMedia('(hover: none)').matches)return;g.addEventListener('pointermove',function(e){try{var b=g.getBoundingClientRect(),x=(e.clientX-b.left)/b.width-.5,y=(e.clientY-b.top)/b.height-.5;img.style.transform='rotateY('+(x*10).toFixed(2)+'deg) rotateX('+(-y*10).toFixed(2)+'deg)';}catch(_){}});g.addEventListener('pointerleave',function(){img.style.transform='';});}catch(_){}})();
 </script>
-<script src="app-hairoil.v3.js?v=20261018summaryfix"></script>
+<script src="app-hairoil.v3.js?v=20261022prepaid"></script>
 <div class="sp-notif" id="spNotif" role="status" aria-live="polite">
 <button class="sp-notif-close" id="spClose" aria-label="Close">×</button>
 <img class="sp-notif-img" id="spImg" src="gallery/g1.webp" width="36" height="36" alt="" loading="lazy" decoding="async">
@@ -2182,38 +2190,45 @@ function initSocialProof(){
   </div>
   <div class="form-step" data-step="3">
 <div class="pay-label">Choose payment method</div>
-        <div class="pay-grid" role="radiogroup" aria-label="Payment method">
-          <label class="pay-card recommended selected">
-            <input type="radio" name="paymentMethod" value="prepaid" checked>
-            <div class="pay-top">
-              <div>
-                <strong>Prepaid online <span class="save-badge">Save ₹100</span></strong>
-                <small>UPI / Card / NetBanking • Fast Delivery</small>
-              </div>
-              <div class="pay-prices">
-                <b>₹399</b>
-                <small style="text-decoration:line-through;color:#888888">₹499</small>
-              </div>
-            </div>
-          </label>
-          <label class="pay-card">
+                <div class="pay-grid" role="radiogroup" aria-label="Payment method">
+          <label class="pay-card" data-pay-card="cod">
             <input type="radio" name="paymentMethod" value="cod">
-            <div class="pay-top">
-              <div>
-                <strong id='codCardTitle'>₹100 advance + COD</strong>
-                <small id='codCardSub'>₹100 now via Razorpay • Pay ₹365 cash on delivery</small>
-              </div>
-              <b>₹499</b>
-            </div>
+            <span class="pay-radio" aria-hidden="true"></span>
+            <span class="pay-body">
+              <span class="pay-title-row"><strong class="pay-title">Pay on Delivery</strong><span class="pay-badge">Pay on delivery</span></span>
+              <small class="pay-sub">Pay the full amount when your order arrives.</small>
+              <em class="pay-save" hidden></em>
+            </span>
+            <b class="pay-amt">—</b>
+          </label>
+          <label class="pay-card" data-pay-card="advance">
+            <input type="radio" name="paymentMethod" value="advance">
+            <span class="pay-radio" aria-hidden="true"></span>
+            <span class="pay-body">
+              <span class="pay-title-row"><strong class="pay-title">Book with ₹100</strong></span>
+              <small class="pay-sub">Pay ₹100 now + the rest on delivery.</small>
+              <em class="pay-save" hidden></em>
+            </span>
+            <b class="pay-amt">—</b>
+          </label>
+          <label class="pay-card" data-pay-card="prepaid">
+            <input type="radio" name="paymentMethod" value="prepaid" checked>
+            <span class="pay-radio" aria-hidden="true"></span>
+            <span class="pay-body">
+              <span class="pay-title-row"><strong class="pay-title">Pay Online &amp; Save</strong><span class="pay-badge">Lowest Price</span></span>
+              <small class="pay-sub">Pay securely online. No payment due on delivery.</small>
+              <em class="pay-save" hidden></em>
+            </span>
+            <b class="pay-amt">—</b>
           </label>
         </div>
         <div class="summary">
-          <div class="s-row"><span>Avnideep Hair Oil (100ml)</span><b id="sAmt">₹499</b></div>
+          <div class="s-row"><span>Avnideep Hair Oil (100ml)</span><b id="sAmt">—</b></div>
           <div class="s-row"><span>Delivery</span><b class="green">Free</b></div>
           <div class="s-row"><span>Doctor consultation</span><b class="green">Free</b></div>
           <div class="s-row" id="sSave" hidden><span>Prepaid discount</span><b class="green">- ₹100</b></div>
-          <div class="s-row s-total"><span>Total Amount</span><b id="sTot">₹499</b></div>
-          <div class="s-savings" style="display:none">You're saving: <strong id="sSaveAmt">₹0</strong> + ₹650 bonuses</div>
+          <div class="s-row s-total"><span>Total Amount</span><b id="sTot">—</b></div>
+          <div class="s-savings" style="display:none">You save <strong id="sSaveAmt">₹0</strong> with this option.</div>
         </div>
         <button class="cta-order ayur-cta" id="oBtn" type="submit">
           <span>Book with ₹100 advance</span>
@@ -2518,10 +2533,10 @@ footer.site-foot .wrap{padding:0 16px;font-size:13.5px}
   else boot();
 })();
 </script>
-<link rel="stylesheet" href="/assets/renee-theme.css?v=rx29">
-<script src="/assets/cart.js?v=rx31" defer></script>
+<link rel="stylesheet" href="/assets/renee-theme.css?v=rx30">
+<script src="/assets/cart.js?v=rx32" defer></script>
 <script src="/assets/auth.js?v=1" defer></script>
-<script src="/assets/site-sync.js?v=4" defer></script>
+<script src="/assets/site-sync.js?v=5" defer></script>
 <script>
 /* YouTube click-to-play facade — Error-153 safe, faster page load */
 function vfacPlay(btn){

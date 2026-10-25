@@ -23,9 +23,10 @@ const EXT_SCRIPT = /<script\b[^>]*\bsrc="[^"]*"[^>]*>\s*<\/script>/g;
 
 // Configured pack MRPs from the Pain Oil PDP pack selector.
 const PACKS = [
-  { mrp: 349, cod: 349, pre: 279 },  // Single
-  { mrp: 698, cod: 698, pre: 558 },  // Pack of 2
-  { mrp: 1047, cod: 1047, pre: 838 } // Pack of 3
+  // Single pack carries the configured advance TOTAL ₹320 and prepaid ₹299.
+  { mrp: 349, cod: 349, adv: 320, pre: 299 },
+  { mrp: 698, cod: 698, adv: 698, pre: 558 },
+  { mrp: 1047, cod: 1047, adv: 1047, pre: 838 }
 ];
 
 function bootPage({ cart } = {}) {
@@ -47,7 +48,7 @@ function bootPage({ cart } = {}) {
           return Promise.resolve({ ok: true, status: 200, json: async () => ({ ok: true, data: { id: 'order_T', amount: (body && body.amount) || 0, currency: 'INR', key_id: 'rzp_test_x' } }) });
         }
         if (target.includes('payment-config')) {
-          return Promise.resolve({ ok: true, status: 200, json: async () => ({ ok: true, data: { razorpay_enabled: true, key_id: 'rzp_test_x', cod_enabled: true, checkout_mode: 'advance' } }) });
+          return Promise.resolve({ ok: true, status: 200, json: async () => ({ ok: true, data: { razorpay_enabled: true, key_id: 'rzp_test_x', cod_enabled: true, default_method: 'prepaid', checkout_mode: 'prepaid' } }) });
         }
         return Promise.resolve({ ok: true, status: 200, json: async () => ({ ok: true, data: { order_id: 'AVN-TEST' } }) });
       };
@@ -107,15 +108,16 @@ async function submit(w, calls) {
   };
 }
 
-describe('Pain Oil pricing: COD = MRP, prepaid = MRP - 20%', () => {
-  it('Single Pack: MRP ₹349, COD ₹349, prepaid ₹279 (20% off, rounded)', () => {
+describe('Pain Oil pricing: COD ₹349 / advance ₹320 / prepaid ₹299', () => {
+  it('Single Pack: MRP ₹349, COD ₹349, advance TOTAL ₹320, prepaid ₹299', () => {
     const { w } = bootPage();
     const single = w.AVN_CHECKOUT.pack('oil', 0);
     expect(single.mrp).toBe(349);
     expect(single.cod).toBe(349);
-    expect(single.pre).toBe(279);
-    // 349 * 0.8 = 279.20 → the project's Math.round gives 279, applied once
-    expect(pricesFromMrp(349)).toEqual({ mrp: 349, cod: 349, prepaid: 279 });
+    expect(single.adv).toBe(320);
+    expect(single.pre).toBe(299);
+    // The default rule still derives MRP - 20% when no admin override exists.
+    expect(pricesFromMrp(349)).toEqual({ mrp: 349, cod: 349, prepaid: 279, advance: 349 });
     expect(w.AVN_CHECKOUT.fromMrp(349).prepaid).toBe(279);
   });
 
@@ -126,77 +128,61 @@ describe('Pain Oil pricing: COD = MRP, prepaid = MRP - 20%', () => {
     PACKS.forEach((p, i) => expect(w.AVN_CHECKOUT.pack('oil', i)).toMatchObject(p));
   });
 
-  it('the PDP opens on Prepaid: header, selector, cards and summary quote ₹279 (COD ₹349)', async () => {
+  it('the PDP and checkout both open on Prepaid ₹299', async () => {
     const { w } = bootPage();
     await settle(300);
-    // Prepaid (UPI/Card) is selected before the customer touches anything
+    // The top selector is a price preview (Prepaid by default).
     expect(w.document.querySelector('.ap-pack[data-pay].on').getAttribute('data-pay')).toBe('P');
-    expect(w.document.querySelector('input[name="paymentMethod"]:checked').value).toBe('prepaid');
-    // primary price = 20% off ₹349 = ₹279, MRP struck through
-    expect(w.document.querySelector('.ap-price b').textContent).toBe('₹279');
+    expect(w.document.querySelector('.ap-price b').textContent).toBe('₹299');
     expect(w.document.querySelector('.ap-price s').textContent).toBe('₹349');
-    expect(w.document.querySelector('.ap-price .off').textContent).toBe('20% OFF');
-    expect(w.document.querySelector('.rx-cta').textContent).toBe('Order ₹279');
-    expect(w.document.querySelector('#sticky .si .p').textContent).toContain('₹279');
-    expect(w.document.querySelector('.ap-sub').textContent).toContain('COD ₹349');
-    expect(w.document.querySelector('.ap-sub').textContent).toContain('Prepaid ₹279');
-    // the pack selector still labels packs by MRP, not by the stale 499
-    expect(w.document.querySelector('#apSize .ap-size.on .ap-size-bar').textContent).toBe('₹349');
-    const bars = [...w.document.querySelectorAll('#apSize .ap-size-bar')].map((b) => b.textContent.trim());
-    expect(bars).toEqual(['₹349', '₹698', '₹1,047']);
-    // payment cards: prepaid ₹279 (strike ₹349), COD still visible at ₹349
-    expect(w.document.querySelector('.pay-card.recommended .pay-prices b').textContent).toBe('₹279');
-    expect(w.document.querySelector('.pay-card.recommended .pay-prices small').textContent).toBe('₹349');
-    expect(w.document.querySelector('.pay-grid .pay-card:not(.recommended) .pay-top > b').textContent).toBe('₹349');
-    // checkout summary defaults to the same prepaid figure
-    expect(txt(w, 'sAmt')).toBe('₹279');
-    expect(txt(w, 'sTot')).toBe('₹279');
-
-    // opening the checkout keeps that selection (no form.reset() snap-back)
-    w.openOrderPopup();
-    await settle(200);
+    expect(w.document.querySelector('.ap-sub').textContent).toContain('Prepaid ₹299');
+    // The checkout opens on the prepaid default: ₹299, nothing due on delivery.
     expect(w.document.querySelector('input[name="paymentMethod"]:checked').value).toBe('prepaid');
-    expect(txt(w, 'sTot')).toBe('₹279');
-    expect(txt(w, 'oBtn')).toContain('₹279');
+    expect(w.document.querySelector('.pay-card[data-pay-card="cod"] .pay-amt').textContent).toBe('₹349');
+    expect(w.document.querySelector('.pay-card[data-pay-card="advance"] .pay-amt').textContent).toBe('₹320');
+    expect(w.document.querySelector('.pay-card[data-pay-card="prepaid"] .pay-amt').textContent).toBe('₹299');
+    expect(txt(w, 'sTot')).toBe('₹299');
+    expect(txt(w, 'oBtn')).toContain('₹299');
   });
 
-  it('switching to COD repaints every surface with ₹349, and back to ₹279', async () => {
+  it('the three checkout options repaint the summary and split (COD 349 / advance 320 / prepaid 299)', async () => {
     const { w } = bootPage();
     await settle(300);
 
-    w.document.querySelector('.ap-pack[data-pay="C"]').click();
-    await settle(150);
-    expect(w.document.querySelector('.ap-pack[data-pay="C"]').classList.contains('on')).toBe(true);
+    await selectPay(w, 'cod');
     expect(w.document.querySelector('input[name="paymentMethod"]:checked').value).toBe('cod');
-    expect(w.document.querySelector('.ap-price b').textContent).toBe('₹349');
-    expect(w.document.querySelector('.ap-price s')).toBeNull();
-    expect(w.document.querySelector('.ap-price .off').textContent).toBe('COD');
-    expect(w.document.querySelector('.rx-cta').textContent).toBe('Order ₹349');
-    expect(w.document.querySelector('#sticky .si .p').textContent.trim()).toBe('₹349');
     expect(txt(w, 'sAmt')).toBe('₹349');
     expect(txt(w, 'sTot')).toBe('₹349');
+    expect(advanceRows(w).length).toBe(1); // one "Pay on delivery" row
     expect(txt(w, 'oBtn')).toContain('₹349');
 
-    w.document.querySelector('.ap-pack[data-pay="P"]').click();
-    await settle(150);
-    expect(w.document.querySelector('.ap-price b').textContent).toBe('₹279');
-    expect(w.document.querySelector('.ap-price s').textContent).toBe('₹349');
-    expect(txt(w, 'sTot')).toBe('₹279');
+    await selectPay(w, 'advance');
+    expect(txt(w, 'sTot')).toBe('₹320');
+    const adv = advanceRows(w);
+    expect(adv.some((t) => t.includes('₹100'))).toBe(true);
+    expect(adv.some((t) => t.includes('₹220'))).toBe(true);
+    expect(txt(w, 'oBtn')).toContain('₹100');
+
+    await selectPay(w, 'prepaid');
+    expect(txt(w, 'sTot')).toBe('₹299');
+    expect(advanceRows(w).length).toBe(0);
+    expect(txt(w, 'oBtn')).toContain('₹299');
   });
 
-  it('single-pack checkout at default (Prepaid): total ₹279, no advance row, order saved 279', async () => {
+  it('single-pack default (Prepaid): total ₹299, full ₹299 online, order saved 299', async () => {
     const { w, calls } = bootPage({ cart: { oil: 1 } });
     await openFromCart(w);
     expect(w.document.querySelector('input[name="paymentMethod"]:checked').value).toBe('prepaid');
-    expect(txt(w, 'sTot')).toBe('₹279');
+    expect(txt(w, 'sTot')).toBe('₹299');
     expect(advanceRows(w).length).toBe(0);
 
     const { order, rzp } = await submit(w, calls);
-    expect(order.body.amount).toBe(279);
-    expect(rzp.body.amount).toBe(279);
+    expect(order, 'order must be saved').toBeTruthy();
+    expect(order.body.amount).toBe(299);
+    expect(rzp.body.amount).toBe(299);
   });
 
-  it('single-pack COD checkout: total ₹349, ₹100 advance + ₹249 balance, order saved 349', async () => {
+  it('single-pack Full COD: total ₹349, NO online charge, ₹349 due on delivery', async () => {
     const { w, calls } = bootPage({ cart: { oil: 1 } });
     await openFromCart(w);
     await selectPay(w, 'cod');
@@ -204,32 +190,32 @@ describe('Pain Oil pricing: COD = MRP, prepaid = MRP - 20%', () => {
     expect(txt(w, 'sAmt')).toBe('₹349');
     expect(txt(w, 'sTot')).toBe('₹349');
     const adv = advanceRows(w);
-    expect(adv.some((t) => t.includes('₹100'))).toBe(true);
-    expect(adv.some((t) => t.includes('₹249'))).toBe(true);
-    expect(adv.some((t) => t.includes('₹598'))).toBe(false);
+    expect(adv.length).toBe(1);
+    expect(adv[0]).toContain('₹349');
+    expect(adv.some((t) => t.includes('₹100'))).toBe(false);
 
     const { order, rzp } = await submit(w, calls);
     expect(order, 'order must be saved').toBeTruthy();
     expect(order.body.amount).toBe(349);
-    // only the ₹100 advance goes through the gateway; it is not added twice
-    expect(rzp.body.amount).toBe(100);
+    // Full COD starts no gateway payment at all.
+    expect(rzp).toBeUndefined();
   });
 
-  it('single-pack prepaid checkout: total ₹279, discount applied exactly once', async () => {
+  it('single-pack prepaid checkout: total ₹299, discount applied exactly once', async () => {
     const { w, calls } = bootPage({ cart: { oil: 1 } });
     await openFromCart(w);
     await selectPay(w, 'prepaid');
 
-    expect(txt(w, 'sTot')).toBe('₹279');
+    expect(txt(w, 'sTot')).toBe('₹299');
     expect(advanceRows(w).length).toBe(0);
-    // savings vs MRP = 349 - 279 = ₹70 (the same 20%, never counted twice)
-    expect(txt(w, 'sSaveAmt')).toBe('₹70');
+    // savings vs MRP = 349 - 299 = ₹50 (never counted twice)
+    expect(txt(w, 'sSaveAmt')).toBe('₹50');
     const svBox = w.document.querySelector('.s-savings');
     expect(svBox.style.display).not.toBe('none');
 
     const { order, rzp } = await submit(w, calls);
-    expect(order.body.amount).toBe(279);
-    expect(rzp.body.amount).toBe(279);
+    expect(order.body.amount).toBe(299);
+    expect(rzp.body.amount).toBe(299);
   });
 
   it('COD savings block is hidden (COD is priced at MRP, no phantom discount)', async () => {
@@ -269,17 +255,20 @@ describe('Pain Oil pricing: COD = MRP, prepaid = MRP - 20%', () => {
     expect(lines.some((t) => t.includes('₹698'))).toBe(true);
     expect(lines.some((t) => t.includes('₹1,047'))).toBe(false); // grand total ≠ a line
 
+    // Full COD has no split row, so switch to advance for the ₹100 split.
+    await selectPay(w, 'advance');
+    expect(txt(w, 'sTot')).toBe('₹1,018');    // 320 + 698
     const adv = advanceRows(w);
     expect(adv.some((t) => t.includes('₹100'))).toBe(true);
-    expect(adv.some((t) => t.includes('₹947'))).toBe(true);
+    expect(adv.some((t) => t.includes('₹918'))).toBe(true);
 
     await selectPay(w, 'prepaid');
-    expect(txt(w, 'sTot')).toBe('₹837');      // 279 + 558
-    expect(w.document.getElementById('sSave').textContent).toContain('₹210'); // 1047 - 837
-    expect(txt(w, 'sSaveAmt')).toBe('₹210');  // 1047 - 837 (the same 20%)
+    expect(txt(w, 'sTot')).toBe('₹857');      // 299 + 558
+    expect(w.document.getElementById('sSave').textContent).toContain('₹190'); // 1047 - 857
+    expect(txt(w, 'sSaveAmt')).toBe('₹190');
 
     const { order } = await submit(w, calls);
-    expect(order.body.amount).toBe(837);
+    expect(order.body.amount).toBe(857);
     expect(order.body.items.length).toBe(2);
   });
 
@@ -310,7 +299,7 @@ describe('Pain Oil pricing: COD = MRP, prepaid = MRP - 20%', () => {
     }
     // configured MRPs are present
     expect(read('pain-oil/index.html')).toContain("mrp:349");
-    expect(read('pain-oil/app-oil.v3.js')).toContain('{mrp:349,sku:');
+    expect(read('pain-oil/app-oil.v3.js')).toContain("{mrp:349,explicit:{advance:320,prepaid:299}");
     expect(read('functions/api/order.js')).toContain('oil:      [349, 698, 1047]');
   });
 });

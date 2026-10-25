@@ -613,9 +613,9 @@ var CHECKOUT_MODE = 'advance';
 /* Homepage checkout prices the pack/cart the customer actually has (same
    catalogue as assets/cart.js + the PDP CO_PACKS) — never hard-coded 999/1250. */
 var ROOT_PACKS = [
+  {mrp:1250},
   {mrp:2500},
-  {mrp:5000},
-  {mrp:7500}
+  {mrp:3750}
 ];
 ROOT_PACKS.forEach(function(p){p.cod=p.mrp;p.pre=Math.round(p.mrp*0.8);});
 function rootPackIdx(){
@@ -631,13 +631,14 @@ function rootCartPriced(){
 }
 function rootPack(){
   var CS = window.AVN_CART_STATE;
-  if(rootCartPriced()) return {pre:CS.prepaidTotal, cod:CS.codTotal, mrp:CS.mrpTotal, sku:'AVN-CART'};
+  if(rootCartPriced()) return {pre:CS.prepaidTotal, adv:(CS.advanceTotal||CS.codTotal), cod:CS.codTotal, mrp:CS.mrpTotal, sku:'AVN-CART'};
   var i = rootPackIdx();
   if(window.AVN_CHECKOUT && window.AVN_CHECKOUT.pack){
     var q = window.AVN_CHECKOUT.pack('shilajit', i);
     if(q) return q;
   }
-  return ROOT_PACKS[i] || ROOT_PACKS[0];
+  var p = ROOT_PACKS[i] || ROOT_PACKS[0];
+  return {pre:p.pre, adv:(p.adv||p.cod), cod:p.cod, mrp:p.mrp};
 }
 function rootPackLabel(){ var i = rootPackIdx(); return i > 0 ? ' (Pack of ' + (i + 1) + ')' : ''; }
 function rootOrderItems(){
@@ -649,16 +650,22 @@ function rootOrderItems(){
 }
 function getPay(){
   var c = $('input[name="paymentMethod"]:checked');
-  return c ? c.value : 'advance';
+  return c ? c.value : 'prepaid';
 }
+function payCfgNow(){ try{ return (window.AVN_PAY && window.AVN_PAY.get && window.AVN_PAY.get()) || null; }catch(e){ return null; } }
 function updatePay(){
   var m = getPay();
   var PK = rootPack();
-  var amt = m === 'prepaid' ? PK.pre : PK.cod;
+  var cfg = payCfgNow() || {};
+  var advAmt = Number(cfg.advance_amount) > 0 ? Number(cfg.advance_amount) : 100;
+  var advTotal = Number(PK.adv || PK.cod) || PK.cod;
+  var amt = m === 'prepaid' ? PK.pre : (m === 'advance' ? advTotal : PK.cod);
   var amtF = '₹'+Number(amt).toLocaleString('en-IN');
-  var restF = '₹'+Number(PK.cod - 100).toLocaleString('en-IN');
+  var advF = '₹'+Number(advAmt).toLocaleString('en-IN');
+  var restF = '₹'+Number(Math.max(0, amt - advAmt)).toLocaleString('en-IN');
+  if(window.AVN_CHECKOUT && window.AVN_CHECKOUT.renderPayUI){ try{ window.AVN_CHECKOUT.renderPayUI(cfg); }catch(e){} }
   if(window.AVN_CHECKOUT && window.AVN_CHECKOUT.renderSummary){
-    window.AVN_CHECKOUT.renderSummary({ method:m, checkoutMode:CHECKOUT_MODE, pack:PK, singleLabel:'Avnideep 6Pro Shilajit (30 capsules)'+rootPackLabel() });
+    window.AVN_CHECKOUT.renderSummary({ method:m, checkoutMode:(cfg.default_method === 'cod' ? 'full_cod' : 'advance'), pack:PK, singleLabel:'Avnideep 6Pro Shilajit (30 capsules)'+rootPackLabel() });
   } else {
     $('#sAmt').textContent = amtF;
     $('#sTot').textContent = amtF;
@@ -668,87 +675,39 @@ function updatePay(){
   if(btn){
     var mainText, subText;
     if(m === 'prepaid'){
-      mainText = '⚡ Order Now - '+amtF;
-      subText = '🔒 Secure Online Payment';
-    } else if(CHECKOUT_MODE === 'full_cod'){
-      mainText = '⚡ Order Now (FULL COD) - '+amtF;
-      subText = '🔒 No advance • Pay '+amtF+' on delivery';
+      mainText = 'Pay securely — '+amtF;
+      subText = 'No payment due on delivery';
+    } else if(m === 'advance'){
+      mainText = 'Book for '+advF+' — total '+amtF;
+      subText = advF+' now via Razorpay • '+restF+' on delivery';
     } else {
-      mainText = '🔖 Book with ₹100 Advance';
-      subText = '🔐 Pay ₹100 via Razorpay • Pay '+restF+' cash on delivery';
+      mainText = 'Place COD order — '+amtF;
+      subText = 'Pay '+amtF+' when your order arrives';
     }
     btn.innerHTML = '<span>'+mainText+'</span><small>'+subText+'</small>';
   }
   var ct = $('#ctaSub');
   if(ct){
-    if(m === 'prepaid'){
-      ct.textContent = '🔒 Secure Online Payment';
-    } else if(CHECKOUT_MODE === 'full_cod'){
-      ct.textContent = '🔐 FULL COD • No advance payment';
-    } else {
-      ct.textContent = '🔐 ₹100 Advance • Pay '+restF+' cash on delivery';
-    }
+    if(m === 'prepaid') ct.textContent = 'Secure online payment • Nothing due on delivery';
+    else if(m === 'advance') ct.textContent = advF+' advance • '+restF+' cash on delivery';
+    else ct.textContent = 'Full COD • No advance payment';
   }
-  var cT = $('#codCardTitle'), cS = $('#codCardSub');
-  if(cT || cS){
-    if(m === 'prepaid'){
-      if(cT) cT.textContent = '💵 Cash on Delivery';
-      if(cS) cS.textContent = 'Pay on delivery (₹100 advance)';
-    } else if(CHECKOUT_MODE === 'full_cod'){
-      if(cT) cT.textContent = '💵 FULL COD';
-      if(cS) cS.textContent = 'Pay '+amtF+' on delivery • No advance';
-    } else {
-      if(cT) cT.textContent = '💰 ₹100 Advance + COD';
-      if(cS) cS.textContent = '₹100 now via Razorpay • Pay '+restF+' cash on delivery';
-    }
-  }
-  // Savings line
-  if(!(window.AVN_CHECKOUT && window.AVN_CHECKOUT.renderSummary)){
-    var sv = $('#sSaveAmt');
-    if(sv) sv.textContent = '₹' + (PK.cod - PK.pre);
+  var sv = $('#sSaveAmt');
+  if(sv && !(window.AVN_CHECKOUT && window.AVN_CHECKOUT.renderSummary)){
+    var paid = m === 'prepaid' ? PK.pre : (m === 'advance' ? advTotal : PK.cod);
+    sv.textContent = '₹' + Number(Math.max(0, PK.mrp - paid)).toLocaleString('en-IN');
   }
   $$('.pay-card').forEach(function(c){
     var i = $('input[name="paymentMethod"]', c);
     c.classList.toggle('selected', !!(i && i.checked));
   });
-  // The amounts PRINTED ON THE CARDS follow the pack on screen too, so the
-  // home checkout can never show a stale hard-coded ₹1,125 / ₹1,250. Each
-  // card keeps its own price (prepaid ₹X, strike ₹Y / COD ₹Y) regardless of
-  // which one is selected.
-  var codF = '₹'+Number(PK.cod).toLocaleString('en-IN');
-  var preF = '₹'+Number(PK.pre).toLocaleString('en-IN');
-  var saveF = 'SAVE ₹'+Number(Math.max(0, PK.cod - PK.pre)).toLocaleString('en-IN');
-  $$('.pay-card').forEach(function(c){
-    var i = $('input[name="paymentMethod"]', c);
-    var v = i ? i.value : '';
-    if(v === 'prepaid'){
-      var pb = $('.pay-prices b', c), ps = $('.pay-prices small', c), chip = $('.save-badge', c);
-      if(pb) pb.textContent = preF;
-      if(ps) ps.textContent = codF;
-      if(chip) chip.textContent = saveF;
-    } else if(v === 'cod'){
-      var cb = $('.pay-top > b', c);
-      if(cb) cb.textContent = codF;
-    }
-  });
-  // Remember the customer's explicit choice so the next checkout opens with it
-  // (a fresh visit still defaults to Prepaid from the markup).
-  try{ localStorage.setItem('avn_pay_pref', m === 'prepaid' ? 'P' : 'C'); }catch(e){}
+  try{ localStorage.setItem('avn_pay_pref', m === 'prepaid' ? 'P' : (m === 'advance' ? 'A' : 'C')); }catch(e){}
 }
 try{ window.updatePay = updatePay; }catch(e){}
 
 
 function initPay(){
   if(window.__payInit) return; window.__payInit = true;
-
-
-  // Restore the method the customer picked on a product page (Prepaid by default).
-  try{
-    if(localStorage.getItem('avn_pay_pref') === 'C'){
-      var codRadio = $('input[name="paymentMethod"][value="cod"]');
-      if(codRadio) codRadio.checked = true;
-    }
-  }catch(e){}
 
 
   $$('input[name="paymentMethod"]').forEach(function(i){i.addEventListener('change', updatePay)});
@@ -784,10 +743,7 @@ function showErr(box, msg){
   box.textContent = msg;
 
 
-  box.classList.add('show');
-
-
-  box.scrollIntoView({behavior:'smooth', block:'center'});
+  box.classList.add('show');    if (box && typeof box.scrollIntoView === 'function') box.scrollIntoView({behavior:'smooth', block:'center'});
 
 
 }
@@ -940,10 +896,10 @@ function build(status){
     state: $('#cState') ? $('#cState').value.trim() : '',
 
 
-    paymentMethod: m === 'prepaid' ? 'prepaid' : (CHECKOUT_MODE === 'full_cod' ? 'cod' : 'advance_cod'),
+    paymentMethod: m === 'prepaid' ? 'prepaid' : (m === 'advance' ? 'advance_cod' : 'cod'),
 
 
-    amount: m === 'prepaid' ? rootPack().pre : rootPack().cod,
+    amount: m === 'prepaid' ? rootPack().pre : (m === 'advance' ? (rootPack().adv || rootPack().cod) : rootPack().cod),
 
 
     product: 'Avnideep 6Pro Vitality Shilajit Capsules',
@@ -1082,7 +1038,14 @@ async function sendOrder(payload, retries){
 
 
 
-      if(r.ok && data.ok){
+      if(r.ok && (data.ok || (data.data && data.data.order_id))){
+
+
+
+
+
+
+        if(!data.ok && data.data) data = Object.assign({ orderId: data.data.order_id, amount: data.data.amount }, data.data, { ok: true });
 
 
         return data;
@@ -1346,7 +1309,7 @@ function initForm(){
     var m = getPay();
 
 
-    var isAdvance = m !== 'prepaid' && CHECKOUT_MODE === 'advance';
+    var isAdvance = m === 'advance';
 
 
     var payload = build(m === 'prepaid' ? 'payment_pending' : (isAdvance ? 'advance_paid' : 'cod_order'));
@@ -1368,6 +1331,12 @@ function initForm(){
 
 
     if(v){ showErr(err, v); return; }
+    // Never start checkout with stale/unverified payment configuration.
+    if(!(window.AVN_PAY && window.AVN_PAY.ready())){
+      try { await window.AVN_PAY.load(true); }
+      catch(cfgErr){ showErr(err, 'Payment options could not be loaded. Please retry.'); return; }
+    }
+    if(!(window.AVN_PAY && window.AVN_PAY.ready())){ showErr(err, 'Payment options could not be loaded. Please retry.'); return; }
 
 
 
@@ -1399,41 +1368,26 @@ function initForm(){
     if(m === 'prepaid'){
 
 
-      // Fire-and-forget send to backend so D1 receives an initial record for prepaid orders
-
-
-      try{
-
-
-        fetch('/api/order', {
-
-
-          method: 'POST',
-
-
-          headers: {'Content-Type':'application/json'},
-
-
-          body: JSON.stringify(payload),
-
-
-          keepalive: true
-
-
-        }).catch(function(e){ console.warn('background order save failed', e); });
-
-
-      }catch(e){ console.warn('background order save error', e); }
-
-
-
-
+      // Create the order first (server prices it) so a successful payment can
+      // always be verified against a real row. Do not charge if this fails.
+      var preSave = null;
+      try { preSave = await sendOrder(Object.assign({}, payload, { status: 'payment_pending' }), 0); }
+      catch (preErr) { preSave = { ok: false, error: String(preErr.message || preErr) }; }
+      if(!preSave || preSave.ok === false){
+        showErr(err, (preSave && preSave.error) || 'Order could not be saved. Please retry.');
+        btn.innerHTML = origHTML; btn.disabled = false; submitting = false;
+        return;
+      }
+      var preOrder = preSave.order || {};
+      payload.orderId = preOrder.orderId || preSave.orderId || payload.orderId;
+      var preAmt = Number(preOrder.amount || preSave.amount);
+      if (preAmt > 0) payload.amount = preAmt;
 
       // Open Razorpay checkout directly instead of redirecting to payment.html
       try {
         var rzpResult = await openRazorpayCheckout(payload);
         if (rzpResult.success) {
-          window.location.href = '/thank-you.html?order_id=' + encodeURIComponent(rzpResult.orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.product || '') + '&method=prepaid&razorpay_payment_id=' + encodeURIComponent(rzpResult.razorpay_payment_id);
+          window.location.href = '/thank-you.html?order_id=' + encodeURIComponent(rzpResult.orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.product || '') + '&phone=' + encodeURIComponent(payload.phone) + '&method=prepaid&razorpay_payment_id=' + encodeURIComponent(rzpResult.razorpay_payment_id);
         } else {
           showErr(err, rzpResult.error || 'Payment failed. Please try again.');
           btn.innerHTML = origHTML;
@@ -1458,49 +1412,44 @@ function initForm(){
 
 
 
-    // ADVANCE (₹100 Razorpay now + ₹1,150 cash on delivery) flow
+    // ADVANCE + COD: one server-priced order, then a Razorpay charge for
+    // exactly the configured booking advance. The balance stays due on delivery.
     if(isAdvance){
-      payload.advanceAmount = 100;
-      // Background save: lead admin mein turant dikhe (payment pending)
-      try{
-        var bgPayload = Object.assign({}, payload, { status: 'payment_pending', capiEvent: 'InitiateCheckout' });
-        fetch('/api/order', {
-          method: 'POST',
-          headers: {'Content-Type':'application/json'},
-          body: JSON.stringify(bgPayload),
-          keepalive: true
-        }).catch(function(e){ console.warn('advance background order save failed', e); });
-      }catch(e){ console.warn('advance background order save error', e); }
+      var cfgNow = (window.AVN_PAY && window.AVN_PAY.get && window.AVN_PAY.get()) || {};
+      var advAmt = Number(cfgNow.advance_amount) > 0 ? Number(cfgNow.advance_amount) : 100;
+      var advSave = null;
+      try { advSave = await sendOrder(Object.assign({}, payload, { status: 'advance_pending' }), 0); }
+      catch (advErr) { advSave = { ok: false, error: String(advErr.message || advErr) }; }
+      if(!advSave || advSave.ok === false){
+        showErr(err, (advSave && advSave.error) || 'Order could not be saved. Please retry.');
+        btn.innerHTML = origHTML; btn.disabled = false; submitting = false;
+        return;
+      }
+      var advOrder = advSave.order || {};
+      payload.orderId = advOrder.orderId || advSave.orderId || payload.orderId;
+      var advTotal = Number(advOrder.amount || advSave.amount);
+      if (advTotal > 0) payload.amount = advTotal;
+      payload.advanceAmount = advAmt;
       try {
-        var rzpResult = await openRazorpayCheckout(payload, 100);
+        var rzpResult = await openRazorpayCheckout(payload, advAmt);
         if (rzpResult.success) {
           payload.paymentMethod = 'advance_cod';
-          payload.paymentNote = '₹100 advance paid via Razorpay (' + (rzpResult.razorpay_payment_id || '') + ') • Pay ₹1,150 cash on delivery';
-          try {
-            var advRes = await sendOrder(payload, 0);
-            if (advRes && advRes.ok !== false) {
-              try{ sessionStorage.setItem('avn_last_order', advRes.orderId || payload.orderId); }catch(e){}
-            }
-          } catch(se){ console.warn('advance order save failed', se); }
-          window.location.href = '/thank-you?order_id=' + encodeURIComponent(payload.orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.name) + '&method=advance_cod&razorpay_payment_id=' + encodeURIComponent(rzpResult.razorpay_payment_id || '');
+          try{ sessionStorage.setItem('avn_last_order', payload.orderId); }catch(e){}
+          var bal = Math.max(0, Number(payload.amount) - advAmt);
+          window.location.href = '/thank-you?order_id=' + encodeURIComponent(payload.orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.name) + '&phone=' + encodeURIComponent(payload.phone) + '&method=advance_cod&razorpay_payment_id=' + encodeURIComponent(rzpResult.razorpay_payment_id || '');
           return;
         } else {
           showErr(err, rzpResult.error || 'Advance payment failed. Please try again.');
-          btn.innerHTML = origHTML;
-          btn.disabled = false;
-          submitting = false;
+          btn.innerHTML = origHTML; btn.disabled = false; submitting = false;
           return;
         }
       } catch(rzrErr) {
         console.error('RZP_ADV_ERR', rzrErr);
-        showErr(err, rzrErr.message || 'Advance payment failed. Try again or choose prepaid.');
-        btn.innerHTML = origHTML;
-        btn.disabled = false;
-        submitting = false;
+        showErr(err, rzrErr.message || 'Advance payment failed. Try again or choose another option.');
+        btn.innerHTML = origHTML; btn.disabled = false; submitting = false;
         return;
       }
     }
-
 
     // Try backend API next
 
@@ -1574,7 +1523,7 @@ function initForm(){
         try {
           var rzpResult = await openRazorpayCheckout(payload);
           if (rzpResult.success) {
-            window.location.href = '/thank-you.html?order_id=' + encodeURIComponent(rzpResult.orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.product || '') + '&method=prepaid&razorpay_payment_id=' + encodeURIComponent(rzpResult.razorpay_payment_id);
+            window.location.href = '/thank-you.html?order_id=' + encodeURIComponent(rzpResult.orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.product || '') + '&phone=' + encodeURIComponent(payload.phone) + '&method=prepaid&razorpay_payment_id=' + encodeURIComponent(rzpResult.razorpay_payment_id);
           } else {
             showErr(err, rzpResult.error || 'Payment failed. Please try again.');
             btn.innerHTML = origHTML;
@@ -1639,7 +1588,7 @@ function initForm(){
         var orderId = result.orderId || payload.orderId;
         var isDup = result && result.duplicate === true;
         var dupParam = isDup ? '&duplicate=true' : '';
-        window.location.href = '/thank-you?order_id=' + encodeURIComponent(orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.name) + '&address=' + encodeURIComponent(payload.address||'') + '&pincode=' + encodeURIComponent(payload.pincode||'') + '&city=' + encodeURIComponent(payload.city||'') + '&method=cod' + dupParam;
+        window.location.href = '/thank-you?order_id=' + encodeURIComponent(orderId) + '&amount=' + encodeURIComponent(payload.amount) + '&name=' + encodeURIComponent(payload.name) + '&phone=' + encodeURIComponent(payload.phone) + '&address=' + encodeURIComponent(payload.address||'') + '&pincode=' + encodeURIComponent(payload.pincode||'') + '&city=' + encodeURIComponent(payload.city||'') + '&phone=' + encodeURIComponent(payload.phone) + '&method=cod' + dupParam;
 
 
       } else {
@@ -2101,15 +2050,19 @@ function setupVisibility(){
 // never activated. This shadows the global within the IIFE and drives
 // the local CHECKOUT_MODE + local updatePay().
 function loadCheckoutMode(){
+  // Single source of truth: same-origin /api/payment-config reads the D1
+  // settings the admin panel writes. Never paint a hardcoded default first.
   try {
-    fetch('https://avnideep-admin-api.officialavnideepayurveda.workers.dev/api/admin/payment-config').then(function(r){ return r.json(); }).then(function(d){
-      if (d && d.ok && d.data && d.data.checkout_mode) {
-        CHECKOUT_MODE = d.data.checkout_mode === 'full_cod' ? 'full_cod' : 'advance';
-        try { window.CHECKOUT_MODE = CHECKOUT_MODE; } catch(e){}
-        try { window.CHECKOUT_MODE = CHECKOUT_MODE; } catch(e){}
-      }
+    if (!(window.AVN_PAY && window.AVN_PAY.load)) { updatePay(); return; }
+    window.AVN_PAY.load(true).then(function(cfg){
+      CHECKOUT_MODE = cfg && cfg.default_method === 'cod' ? 'full_cod' : 'advance';
+      try { window.CHECKOUT_MODE = CHECKOUT_MODE; } catch(e){}
       updatePay();
-    }).catch(function(){});
+    }).catch(function(){
+      // Config unavailable: renderPayUI already locked the options + showed
+      // retry. Repaint the CTA so it does not claim a stale price.
+      updatePay();
+    });
   } catch(e){}
 }
 
@@ -3525,16 +3478,28 @@ function loadRazorpaySDK() {
 }
 var RZR_API = 'https://avnideep-admin-api.officialavnideepayurveda.workers.dev/api/admin';
 async function getPayConfig() {
+  // D1-backed same-origin config is authoritative for the three methods and
+  // the default. The admin worker is only needed for gateway credentials.
+  var cfg = null;
+  try {
+    if (window.AVN_PAY && window.AVN_PAY.load) cfg = await window.AVN_PAY.load(true);
+  } catch (e) {
+    // Propagate: charging without a verified config is not allowed.
+    throw new Error('Payment configuration unavailable. Please retry.');
+  }
   try {
     var r = await fetch(RZR_API + '/payment-config');
     var d = await r.json();
-    var cfg = d.ok ? d.data : null;
-    if (cfg && cfg.checkout_mode) {
-      CHECKOUT_MODE = cfg.checkout_mode === 'full_cod' ? 'full_cod' : 'advance';
-      try { window.CHECKOUT_MODE = CHECKOUT_MODE; } catch(e){}
+    if (d && d.ok && d.data) {
+      cfg = Object.assign({}, cfg || {}, {
+        razorpay_enabled: d.data.razorpay_enabled !== false,
+        key_id: d.data.key_id || ''
+      });
     }
-    return cfg || { razorpay_enabled: false, cod_enabled: true, key_id: '', checkout_mode: CHECKOUT_MODE };
-  } catch(e) { return { razorpay_enabled: false, cod_enabled: true, key_id: '', checkout_mode: CHECKOUT_MODE }; }
+  } catch(e) {}
+  CHECKOUT_MODE = cfg && cfg.default_method === 'cod' ? 'full_cod' : 'advance';
+  try { window.CHECKOUT_MODE = CHECKOUT_MODE; } catch(e){}
+  return Object.assign({ razorpay_enabled: false, cod_enabled: true, advance_enabled: true, prepaid_enabled: true, key_id: '', advance_amount: 100 }, cfg || {}, { checkout_mode: CHECKOUT_MODE });
 }
 async function createRzrOrder(amt, curr, receipt, cust) {
   var r = await fetch(RZR_API + '/razorpay/create-order', {
@@ -3562,6 +3527,25 @@ async function saveRzrOrder(od) {
   if (!d.ok) throw new Error(d.error || 'Save failed');
   return d.data;
 }
+async function confirmRzrOrder(od) {
+  var r = await fetchT('/api/order', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      orderId: od.orderId,
+      name: od.name,
+      phone: od.phone,
+      amount: od.amount,
+      autoConfirm: true,
+      razorpay_order_id: od.razorpay_order_id,
+      razorpay_payment_id: od.razorpay_payment_id,
+      razorpay_signature: od.razorpay_signature
+    })
+  }, 15000);
+  var d = await r.json().catch(function(){ return {}; });
+  if (!r.ok || !d.ok) throw new Error(d.error || 'Payment could not be recorded');
+  return d;
+}
 async function openRazorpayCheckout(payload, chargeAmount) {
   var config = await getPayConfig();
   if (!config.razorpay_enabled) throw new Error('Online payment disabled');
@@ -3586,7 +3570,8 @@ async function openRazorpayCheckout(payload, chargeAmount) {
             payload.razorpay_payment_id = response.razorpay_payment_id;
             payload.razorpay_signature = response.razorpay_signature;
             try { sessionStorage.setItem('avn_rzp', JSON.stringify({ order_id: payload.orderId, razorpay_order_id: response.razorpay_order_id, razorpay_payment_id: response.razorpay_payment_id, razorpay_signature: response.razorpay_signature })); } catch(e){}
-            if(!payload.advanceAmount){ await saveRzrOrder(payload); }
+            try { await confirmRzrOrder(payload); }
+            catch (confirmErr) { console.error('RZP_CONFIRM_FAILED', confirmErr); }
             resolve({ success: true, orderId: payload.orderId, razorpay_payment_id: payload.razorpay_payment_id || '' });
           } else reject(new Error('Verification failed'));
         } catch(e) { reject(e); }

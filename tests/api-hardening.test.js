@@ -87,6 +87,21 @@ const emptyDb = () => new DatabaseSync(':memory:');
 const provisionedDb = () => {
   const db = new DatabaseSync(':memory:');
   db.exec(BOOTSTRAP_SQL);
+  // The runtime also guarantees these payment columns on legacy orders tables
+  // (they predate 0006); mirror that here so the fixture is a real production
+  // database shape, not a truncated one.
+  for (const ddl of [
+    `ALTER TABLE orders ADD COLUMN advance_amount REAL DEFAULT 0`,
+    `ALTER TABLE orders ADD COLUMN cod_due REAL DEFAULT 0`,
+    `ALTER TABLE orders ADD COLUMN online_due_amount REAL DEFAULT 0`,
+    `ALTER TABLE orders ADD COLUMN online_paid_amount REAL DEFAULT 0`,
+    `ALTER TABLE orders ADD COLUMN amount_paise INTEGER DEFAULT 0`,
+    `ALTER TABLE orders ADD COLUMN online_due_paise INTEGER DEFAULT 0`,
+    `ALTER TABLE orders ADD COLUMN online_paid_paise INTEGER DEFAULT 0`,
+    `ALTER TABLE orders ADD COLUMN cod_due_paise INTEGER DEFAULT 0`,
+    `ALTER TABLE orders ADD COLUMN pricing_snapshot TEXT DEFAULT ''`,
+    `ALTER TABLE orders ADD COLUMN config_snapshot TEXT DEFAULT ''`,
+  ]) db.exec(ddl);
   return db;
 };
 
@@ -199,14 +214,14 @@ describe('/api/order prices the pack server-side when amount is omitted', () => 
 
   it.each([
     // PRICING RULE: COD = MRP, prepaid = MRP - 20%.
-    // oil MRP 349 / 698 / 1047 · shilajit 2500 / 5000 / 7500 ·
+    // oil MRP 349 / 698 / 1047 · shilajit 1250 / 2500 / 3750 ·
     // balm 349 / 698 / 1047 · hair 499 / 998 / 1497
     ['Avnideep Pain Relief Oil 60ml', 'cod', 349],
-    ['Avnideep Pain Relief Oil 60ml', 'prepaid', 279],
+    ['Avnideep Pain Relief Oil 60ml', 'prepaid', 299],
     ['Avnideep Pain Relief Oil 60ml (Pack of 3)', 'cod', 1047],
     ['Avnideep Pain Relief Oil 60ml (Pack of 2)', 'prepaid', 558],
-    ['Avnideep 6Pro Shilajit Capsules (Pack of 3)', 'prepaid', 6000],
-    ['Avnideep 6Pro Shilajit Capsules (Pack of 2)', 'prepaid', 4000],
+    ['Avnideep 6Pro Shilajit Capsules (Pack of 3)', 'prepaid', 3000],
+    ['Avnideep 6Pro Shilajit Capsules (Pack of 2)', 'prepaid', 2000],
     ['Avnideep Herbal Balm 10g (Pack of 2)', 'cod', 698],
     ['Avnideep Herbal Hair Oil 100ml (Pack of 3)', 'cod', 1497],
   ])('%s / %s -> Rs.%i', async (product, paymentMethod, expected) => {
