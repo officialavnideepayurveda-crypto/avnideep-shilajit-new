@@ -1,5 +1,7 @@
 /*.webp
   Cache-Control: public, immutable, max-age=2592000
+/*.avif
+  Cache-Control: public, immutable, max-age=2592000
 /*.jpg
   Cache-Control: public, immutable, max-age=2592000
 /*.png

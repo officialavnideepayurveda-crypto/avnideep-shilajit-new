@@ -28,3 +28,17 @@ home/assets/shilajit pack/
 home/assets/From Tired to Energized.png
 home/assets/6pro-white-bg.png
 home/assets/shilajit-new.png
+
+# Local perf experiments, preview logs and one-off backups. These are not part
+# of the site, and `wrangler pages deploy .` uploads everything git does not
+# ignore - so keeping them here would publish duplicate copies of the homepage.
+perf-*.html
+*.perf-backup-*
+_preview*.log
+.lh/
+psi-mobile.json
+admin_headers.txt
+api-prod.json
+pain oil zip/
+*.before-story-rebuild
+

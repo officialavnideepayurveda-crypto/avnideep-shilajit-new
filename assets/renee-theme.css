@@ -146,7 +146,9 @@ body{background:var(--rx-bg)}
 .rx-hero{padding:10px 0 0}
 .rx-hero .rx-frames{max-width:520px;margin-left:auto;margin-right:auto;background:#0d2b20}
 }
-@keyframes rxHeroIn{from{opacity:0;transform:translateX(56px)}to{opacity:1;transform:translateX(0)}}
+/* Transform-only: the old opacity:0 → 1 fade delayed the hero image's LCP
+   paint by the full 550ms animation. The slide still glides in. */
+@keyframes rxHeroIn{from{transform:translateX(56px)}to{transform:translateX(0)}}
 .rx-hero-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:3;width:42px;height:42px;border-radius:50%;border:0;background:rgba(255,255,255,.92);color:var(--rx-brand);font-size:22px;font-weight:700;cursor:pointer;box-shadow:0 8px 20px rgba(0,0,0,.18);display:grid;place-items:center;transition:background .2s;line-height:1}
 .rx-hero-nav:hover{background:#fff}
 .rx-hero-prev{left:14px}.rx-hero-next{right:14px}

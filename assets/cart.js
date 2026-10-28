@@ -924,7 +924,7 @@
       dr.className = 'rx-mnav'; dr.setAttribute('role', 'dialog'); dr.setAttribute('aria-label', 'Site menu');
       dr.innerHTML =
         '<div class="rx-mnav-h"><span style="display:flex;align-items:center;gap:10px">' +
-          '<img src="https://cdn.avnideepayurveda.in/product-images/logoyes.png" alt="Avnideep">' +
+          '<img src="/assets/logo-240.webp" alt="Avnideep" width="120" height="74">' +
           '<b>Menu</b></span>' +
           '<button type="button" class="rx-mnav-x" data-mnav-close aria-label="Close menu">&times;</button></div>' +
         '<nav class="rx-mnav-links">' +

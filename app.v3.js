@@ -439,7 +439,8 @@ function initSticky(){
   }
 
 
-  upd();
+  /* Defer the initial measurement so it cannot force a layout before paint. */
+  requestAnimationFrame(upd);
 
 
   window.addEventListener('scroll', function(){
@@ -2067,141 +2068,67 @@ function loadCheckoutMode(){
 }
 
 function init(){
-
-
-  if (!document.querySelector('.checkout-section')) { setupVisibility(); }
-
-
-  // Critical (immediate)
-
-
-  initScroll();
-
-
-  // Check if new 3-step checkout is present - skip old form handlers
-
-
-  var isNewCheckout = document.querySelector(".checkout-section") !== null;
-
-
-  if (!isNewCheckout) {
-
-
-    initPay();
-
-
-    updatePay();
-
-
-    initForm();
-
-
-    loadCheckoutMode();
-
-
-    initSticky();
-
-
-  } else {
-
-
-    initFaq();
-
-
-  }
-
-
-  initReviews();
-
-
-  initSuccessModal();
-
-
-
-
-
-  // Above-fold visible (immediate but defer-friendly)
-
-
-  initTimer();
-
-
-  initSticky();
-
-
-  initVideo();
-
-
-
-
-
-  // Use requestIdleCallback for non-critical features (saves CPU on load)
-
-
+  // Every setup step below runs in its own idle callback. They used to run as
+  // one task, which on a throttled phone became a 150-200 ms block right after
+  // first paint - roughly half of the homepage's total blocking time - because
+  // all the style/layout work those steps trigger landed in a single frame.
+  // Same calls in the same order, just spread across separate tasks so the
+  // browser can render between them.
   var idle = window.requestIdleCallback || function(fn){ return setTimeout(fn, 1) };
 
+  var steps = [
+    function(){
+      if (!document.querySelector('.checkout-section')) { setupVisibility(); }
+    },
+    initScroll,
+    function(){
+      // Check if new 3-step checkout is present - skip old form handlers
+      var isNewCheckout = document.querySelector(".checkout-section") !== null;
+      if (!isNewCheckout) {
+        initPay();
+        updatePay();
+        initForm();
+        loadCheckoutMode();
+      } else {
+        initFaq();
+      }
+    },
+    initReviews,
+    initSuccessModal,
+    initTimer,
+    initSticky,
+    initVideo,
+    function(){ idle(function(){ initCheckoutTimer(); }); }
+  ];
 
-
-
-
-  idle(function(){
-
-
-  
-
-
-    initCheckoutTimer();
-
-
-  });
-
-
-
-
-
-  idle(function(){
-
-
-  
-
-
-  }, { timeout: 2000 });
-
-
-
-
-
-  // Delayed non-essential
-
-
-
-
-
-
-
-
-  setTimeout(initLightbox, 3000);
-
-
+  (function next(i){
+    if (i >= steps.length) {
+      setTimeout(initLightbox, 3000);
+      return;
+    }
+    idle(function(){
+      steps[i]();
+      next(i + 1);
+    }, { timeout: 900 });
+  })(0);
 }
 
 
 
 
 
-if(document.readyState === 'loading'){
-
-
-  document.addEventListener('DOMContentLoaded', init);
-
-
-} else {
-
-
-  init();
-
-
+/* Run setup after the first paint. initSticky() reads a getBoundingClientRect,
+   so running this during DOMContentLoaded forced a full-page layout before the
+   hero could paint (the main cause of the 600ms+ long task). */
+function scheduleInit(){
+  var run = function(){
+    if('requestIdleCallback' in window){ requestIdleCallback(init, {timeout:1200}); }
+    else { setTimeout(init, 250); }
+  };
+  if(document.readyState === 'complete'){ run(); }
+  else { window.addEventListener('load', function(){ setTimeout(run, 80); }, {once:true}); }
 }
+scheduleInit();
 
 
 

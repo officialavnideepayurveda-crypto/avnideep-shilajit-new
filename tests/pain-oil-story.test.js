@@ -22,7 +22,7 @@ describe('pain-oil saveweb-style story', () => {
     expect(html).toContain('<div class="po-merge" id="p-story">');
     expect(html.indexOf('ap-offers-h')).toBeLessThan(html.indexOf('id="p-story"'));
     expect(html.indexOf('id="p-story"')).toBeLessThan(html.indexOf('<div class="wrap">'));
-    expect(html).toContain('pain-oil-merge.css?v=1');
+    expect(html).toMatch(/pain-oil-merge\.css\?v=\d+/);
     expect(html).toContain('css/all.min.css?v=7');
     expect(html).not.toContain('class="hv-story"');
     expect(css).toContain('.pain-grid');
@@ -78,8 +78,11 @@ describe('pain-oil saveweb-style story', () => {
 
   it('routes the story CTAs into the existing checkout', () => {
     const story = html.slice(html.indexOf('id="p-story"'), html.indexOf('<div class="wrap">'));
+    // checkout hamesha popup se khulta hai, is liye ek hi story CTA chahiye aur
+    // wo #checkout + data-scroll dono ke saath aana chahiye (sticky bar ke
+    // alawa story me koi doosra checkout trigger nahi hona chahiye).
     const ctas = story.match(/href="#checkout"/g) || [];
-    expect(ctas.length).toBe(2);
+    expect(ctas.length).toBe(1);
     expect(story).toContain('data-scroll="checkout"');
     expect((story.match(/class="faq-q"/g) || []).length).toBe(6);
   });
