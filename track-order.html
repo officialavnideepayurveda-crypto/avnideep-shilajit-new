@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Track Your Order | Avnideep Ayurveda</title>
 <meta name="robots" content="index, follow">
-<meta name="description" content="Track your Avnideep Ayurveda order with your order ID or Ekart AWB and the phone number used at checkout.">
+<meta name="description" content="Track your Avnideep Ayurveda order with the mobile number used at checkout and see the latest courier updates.">
 <link rel="canonical" href="https://avnideepayurveda.in/track-order">
 <meta name="theme-color" content="#123B2C">
 <link rel="icon" type="image/webp" href="https://cdn.avnideepayurveda.in/Avnideep-shilajit/shilajit%20for%20web.jpg" sizes="any">
@@ -50,8 +50,21 @@
   .trk-timeline span { display: block; color: var(--rx-muted); font-size: 11.5px; line-height: 1.45; }
   .trk-help { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--rx-line); font-size: 12.5px; color: var(--rx-muted); line-height: 1.6; }
   .trk-help a { color: var(--rx-brand); font-weight: 700; }
+  .trk-list { display: grid; gap: 14px; }
+  .trk-order { border: 1px solid var(--rx-line); border-radius: 14px; padding: 16px; background: var(--rx-bg); }
+  .trk-order-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 12px; }
+  .trk-order-top h3 { font-size: 14px; margin: 0 0 3px; color: var(--rx-ink); word-break: break-word; }
+  .trk-order-top p { margin: 0; font-size: 11.5px; color: var(--rx-muted); }
+  .trk-order .trk-meta { margin-bottom: 12px; }
+  .trk-order .trk-timeline { padding-left: 16px; }
+  .trk-order .trk-timeline li { padding: 0 0 14px 6px; }
+  .trk-order .trk-timeline li::before { left: -23px; }
+  .trk-order-note { font-size: 12px; color: var(--rx-muted); line-height: 1.55; }
+  .trk-details { margin-top: 10px; border-top: 1px dashed var(--rx-line); padding-top: 12px; }
+  .trk-details summary { cursor: pointer; font-size: 12px; font-weight: 700; color: var(--rx-brand); }
+  .trk-details[open] summary { margin-bottom: 10px; }
   @media (max-width: 860px) { .trk-grid { grid-template-columns: 1fr; } .trk-panel { padding: 20px; } }
-  @media (max-width: 460px) { .trk-row { grid-template-columns: 1fr; } .trk-meta { grid-template-columns: 1fr; } }
+  @media (max-width: 460px) { .trk-meta { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -84,9 +97,15 @@
     <section class="trk-panel">
       <span class="trk-kicker">Order tracking</span>
       <h1>Where is my order?</h1>
-      <p class="lead">Enter your order ID or Ekart AWB together with the phone number used while placing the order. We will show the latest despatch updates.</p>
+      <p class="lead">Enter the mobile number you used at checkout. We will show every order placed with that number and the latest despatch updates. Order ID or AWB is optional.</p>
       <form id="trackForm" autocomplete="on">
-        <div class="trk-row">
+        <div class="trk-field">
+          <label for="phone">Mobile number used at checkout</label>
+          <input id="phone" name="phone" type="tel" inputmode="numeric" placeholder="10-digit mobile number" maxlength="15" autocomplete="tel" pattern="[0-9 +-]{10,15}" required>
+          <div class="hint">We match the last 10 digits, so +91 or spaces are fine.</div>
+        </div>
+        <details class="trk-details" id="optionalFields">
+          <summary>Have your order ID or AWB? (optional)</summary>
           <div class="trk-field">
             <label for="orderId">Order ID</label>
             <input id="orderId" name="order_id" type="text" placeholder="AVN..." maxlength="80" autocomplete="off">
@@ -95,14 +114,9 @@
           <div class="trk-field">
             <label for="awb">AWB / Tracking ID</label>
             <input id="awb" name="awb" type="text" placeholder="Ekart AWB" maxlength="40" autocomplete="off">
-            <div class="hint">Optional if you have your order ID.</div>
+            <div class="hint">Only needed if you want one specific shipment.</div>
           </div>
-        </div>
-        <div class="trk-field">
-          <label for="phone">Phone number used at checkout</label>
-          <input id="phone" name="phone" type="tel" inputmode="numeric" placeholder="10-digit mobile number" maxlength="15" autocomplete="tel" required>
-          <div class="hint">For your privacy, the phone number must match the order.</div>
-        </div>
+        </details>
         <button class="trk-btn" id="trackBtn" type="submit">Track my order</button>
       </form>
       <p class="trk-note">Tracking updates are refreshed automatically. Newly confirmed orders can take a little time to appear after despatch. Need help? <a href="https://wa.me/917060101043" target="_blank" rel="noopener">Message us on WhatsApp</a>.</p>
@@ -110,7 +124,7 @@
 
     <section class="trk-panel trk-result" id="trackResult" aria-live="polite">
       <div class="trk-empty" id="trackEmpty">
-        Your order status and courier timeline will appear here. We never show your full address or phone number on this page.
+        Enter your mobile number to see your orders, their status and the courier timeline here. We never show your full address or phone number on this page.
       </div>
     </section>
   </div>
@@ -152,22 +166,36 @@
   const orderInput = document.getElementById('orderId');
   const awbInput = document.getElementById('awb');
   const phoneInput = document.getElementById('phone');
+  const optionalFields = document.getElementById('optionalFields');
   const params = new URLSearchParams(window.location.search);
   if (params.get('order')) orderInput.value = params.get('order');
   if (params.get('awb')) awbInput.value = params.get('awb');
+  if (params.get('phone')) phoneInput.value = params.get('phone');
+  if (orderInput.value || awbInput.value) optionalFields.open = true;
 
   const LABELS = {
+    cod_order: 'Order placed (COD)',
+    pending_collection: 'Order placed',
+    advance_pending: 'Advance payment pending',
+    payment_pending: 'Payment pending',
+    partially_paid: 'Advance paid',
+    paid: 'Payment received',
+    payment_received: 'Payment received',
     pending: 'Order received',
     confirmed: 'Order confirmed',
     processing: 'Processing',
+    packed: 'Packed',
+    shipped: 'Shipped',
     booked: 'Shipment booked',
+    manifested: 'Picked up by courier',
     in_transit: 'In transit',
     out_for_delivery: 'Out for delivery',
     delivered: 'Delivered',
     exception: 'Delivery exception',
     rto: 'Returning to origin',
     cancelled: 'Cancelled',
-    returned: 'Returned'
+    returned: 'Returned',
+    refunded: 'Refunded'
   };
 
   function label(status) {
@@ -182,6 +210,12 @@
     return d.toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
   }
 
+  function fmtMoney(value) {
+    const n = Number(value);
+    if (!isFinite(n) || n <= 0) return '—';
+    return '\u20B9' + n.toLocaleString('en-IN');
+  }
+
   function el(tag, className, text) {
     const node = document.createElement(tag);
     if (className) node.className = className;
@@ -189,62 +223,107 @@
     return node;
   }
 
+  function fact(labelText, valueText) {
+    const box = el('div');
+    box.appendChild(el('small', null, labelText));
+    box.appendChild(el('b', null, valueText || '—'));
+    return box;
+  }
+
   function showError(message) {
     result.replaceChildren();
     result.appendChild(el('div', 'trk-error', message));
   }
 
+  function timelineNodes(events) {
+    const list = el('ul', 'trk-timeline');
+    events.forEach(function (event) {
+      const item = el('li');
+      item.appendChild(el('strong', null, event.label || label(event.status)));
+      item.appendChild(el('span', null, [fmtDate(event.at), event.location].filter(Boolean).join(' \u00B7 ')));
+      list.appendChild(item);
+    });
+    return list;
+  }
+
+  function orderCard(order) {
+    const card = el('div', 'trk-order');
+
+    const top = el('div', 'trk-order-top');
+    const title = el('div');
+    title.appendChild(el('h3', null, 'Order ' + order.order_id));
+    const ship = order.shipment;
+    title.appendChild(el('p', null, 'Placed ' + (fmtDate(order.created_at) || 'recently')));
+    top.appendChild(title);
+    top.appendChild(el('span', 'trk-badge', ship ? label(ship.status) : (order.status_label || label(order.status))));
+    card.appendChild(top);
+
+    const meta = el('div', 'trk-meta');
+    meta.appendChild(fact('Amount', fmtMoney(order.amount)));
+    if (ship) {
+      meta.appendChild(fact('AWB / Tracking ID', ship.awb));
+      meta.appendChild(fact('Expected delivery', ship.expected_delivery_date ? fmtDate(ship.expected_delivery_date).split(',')[0] : 'Updating'));
+      meta.appendChild(fact('Payment', String(order.payment_method || '').toUpperCase() || '—'));
+    } else {
+      meta.appendChild(fact('Payment', String(order.payment_method || '').toUpperCase() || '—'));
+      meta.appendChild(fact('Store status', order.status_label || label(order.status)));
+    }
+    card.appendChild(meta);
+
+    if (order.product) card.appendChild(el('div', 'trk-order-note', order.product));
+
+    if (ship && ship.timeline && ship.timeline.length) {
+      card.appendChild(timelineNodes(ship.timeline));
+    } else {
+      card.appendChild(el('div', 'trk-order-note', order.message || (ship ? 'The shipment is booked. Courier scan updates will appear here.' : 'Your order is confirmed. Tracking will appear after despatch.')));
+    }
+
+    if (ship) {
+      card.appendChild(el('div', 'trk-order-note', 'Last updated ' + (fmtDate(ship.updated_at) || 'just now') + '.'));
+    }
+    return card;
+  }
+
   function render(data) {
     result.replaceChildren();
-    const head = el('div', 'trk-head');
-    const headText = el('div');
-    headText.appendChild(el('h2', null, 'Order ' + data.order.order_id));
-    headText.appendChild(el('p', null, 'Placed ' + (fmtDate(data.order.created_at) || 'recently')));
-    head.appendChild(headText);
-    head.appendChild(el('span', 'trk-badge', data.shipment ? label(data.shipment.status) : data.order.order_status_label));
-    result.appendChild(head);
+    const orders = (data.orders && data.orders.length)
+      ? data.orders
+      : (data.order ? [{
+        order_id: data.order.order_id,
+        created_at: data.order.created_at,
+        status: data.order.order_status,
+        status_label: data.order.order_status_label,
+        payment_method: data.order.payment_method,
+        shipment: data.shipment,
+        message: data.message
+      }] : []);
 
-    if (!data.shipment) {
-      result.appendChild(el('div', 'trk-empty', data.message || 'Your order is confirmed. Tracking will appear after despatch.'));
-      const help = el('div', 'trk-help');
-      help.innerHTML = 'Need an update now? <a href="https://wa.me/917060101043" target="_blank" rel="noopener">Contact support on WhatsApp</a>.';
-      result.appendChild(help);
+    if (!orders.length) {
+      showError('No order found for this mobile number.');
       return;
     }
 
-    const meta = el('div', 'trk-meta');
-    const awbBox = el('div');
-    awbBox.appendChild(el('small', null, 'AWB / Tracking ID'));
-    awbBox.appendChild(el('b', null, data.shipment.awb || '—'));
-    meta.appendChild(awbBox);
-    const eddBox = el('div');
-    eddBox.appendChild(el('small', null, 'Expected delivery'));
-    eddBox.appendChild(el('b', null, data.shipment.expected_delivery_date ? fmtDate(data.shipment.expected_delivery_date).split(',')[0] : 'Updating'));
-    meta.appendChild(eddBox);
-    result.appendChild(meta);
+    const head = el('div', 'trk-head');
+    const headText = el('div');
+    headText.appendChild(el('h2', null, orders.length === 1 ? '1 order found' : orders.length + ' orders found'));
+    headText.appendChild(el('p', null, 'Matched to the mobile number you entered.'));
+    head.appendChild(headText);
+    head.appendChild(el('span', 'trk-badge', orders.length === 1 ? 'Latest update' : 'Latest first'));
+    result.appendChild(head);
 
-    if (data.shipment.timeline && data.shipment.timeline.length) {
-      const list = el('ul', 'trk-timeline');
-      data.shipment.timeline.forEach(function (event) {
-        const item = el('li');
-        item.appendChild(el('strong', null, event.label || label(event.status)));
-        item.appendChild(el('span', null, [fmtDate(event.at), event.location].filter(Boolean).join(' · ')));
-        list.appendChild(item);
-      });
-      result.appendChild(list);
-    } else {
-      result.appendChild(el('div', 'trk-empty', 'The shipment is booked. Courier scan updates will appear here.'));
-    }
+    const list = el('div', 'trk-list');
+    orders.forEach(function (order) { list.appendChild(orderCard(order)); });
+    result.appendChild(list);
 
-    const upd = el('div', 'trk-help');
-    upd.textContent = 'Last updated ' + (fmtDate(data.shipment.updated_at) || 'just now') + '. For delivery help, ';
-    const link = el('a', null, 'contact support');
+    const help = el('div', 'trk-help');
+    help.textContent = 'Wrong order showing, or need delivery help? ';
+    const link = el('a', null, 'Message us on WhatsApp');
     link.href = 'https://wa.me/917060101043';
     link.target = '_blank';
     link.rel = 'noopener';
-    upd.appendChild(link);
-    upd.appendChild(document.createTextNode('.'));
-    result.appendChild(upd);
+    help.appendChild(link);
+    help.appendChild(document.createTextNode('.'));
+    result.appendChild(help);
   }
 
   form.addEventListener('submit', async function (event) {
@@ -252,15 +331,14 @@
     const orderId = orderInput.value.trim();
     const awb = awbInput.value.trim().toUpperCase();
     const phone = phoneInput.value.replace(/\D/g, '').slice(-10);
-    if (!orderId && !awb) { showError('Enter your order ID or AWB.'); return; }
-    if (!/^[6-9]\d{9}$/.test(phone)) { showError('Enter the valid 10-digit phone number used at checkout.'); return; }
+    if (!/^[6-9]\d{9}$/.test(phone)) { showError('Enter the valid 10-digit mobile number used at checkout.'); return; }
     btn.disabled = true;
     btn.textContent = 'Checking...';
     try {
       const res = await fetch('/api/track-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ order_id: orderId, awb: awb, phone: phone })
+        body: JSON.stringify({ phone: phone, order_id: orderId, awb: awb })
       });
       let data = null;
       try { data = await res.json(); } catch (e) {}
