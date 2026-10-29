@@ -787,16 +787,19 @@
 
   // A tap on the product page's COD / Prepaid box must move the checkout card
   // too, otherwise the summary keeps quoting the other method's price.
+  // Capture phase: the product page's own handler on the price box can stop
+  // propagation (and the box sits inside a scroll container), so a bubbled
+  // listener silently misses real taps.
   document.addEventListener('click', function (e) {
     // The page mirrors checkout changes onto the price box itself; those
     // programmatic clicks must not be mistaken for a fresh customer choice.
     if (window.__AVN_MIRROR_PAY) return;
     var el = e && e.target && e.target.closest ? e.target.closest('.ap-pack[data-pay]') : null;
     if (!el) return;
-    try { localStorage.setItem(CHOICE_KEY, el.getAttribute('data-pay') === 'C' ? 'C' : 'P'); } catch (err) {}
-    var kind = el.getAttribute('data-pay') === 'C' ? 'cod' : 'prepaid';
-    try { selectPayKind(kind); } catch (err) {}
-  }, false);
+    var pay = el.getAttribute('data-pay') === 'C' ? 'C' : 'P';
+    try { localStorage.setItem(CHOICE_KEY, pay); } catch (err) {}
+    try { selectPayKind(pay === 'C' ? 'cod' : 'prepaid'); } catch (err) {}
+  }, true);
 
   function selectPayKind(kind) {
     var cards = document.querySelectorAll('#oForm .pay-card');
