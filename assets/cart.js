@@ -195,7 +195,7 @@
         '<div class="cart-row cart-shipline"><span>Delivery</span><b data-cart-del>—</b></div>' +
         '<button type="button" class="cart-btn" data-cart-checkout>Checkout — COD / Prepaid</button>' +
         '<button type="button" class="cart-btn2" data-cart-wa>Order on WhatsApp</button>' +
-        '<p class="cart-note">7-day easy returns • Lab tested • Free shipping</p>' +
+        '<p class="cart-note">10-day easy returns • Lab tested • Free shipping</p>' +
       '</div>';
     document.body.appendChild(ov);
     document.body.appendChild(dr);

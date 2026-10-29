@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Avnideep — Play Store feature graphic</title>
+<style>
+  /* Play Store feature graphic: exactly 1024x500, no transparency, no rounded corners. */
+  html, body { margin: 0; padding: 0; }
+  .fg {
+    position: relative; width: 1024px; height: 500px; overflow: hidden;
+    background:
+      radial-gradient(520px 300px at 12% 110%, rgba(138,109,0,.35), transparent 70%),
+      radial-gradient(420px 260px at 88% 8%, rgba(37,120,90,.55), transparent 70%),
+      linear-gradient(125deg, #08231c 0%, #0E3B2E 58%, #123f30 100%);
+    font-family: "Segoe UI", Arial, Helvetica, sans-serif; color: #fff;
+  }
+  .grain { position: absolute; inset: 0; opacity: .16;
+    background-image: radial-gradient(rgba(255,255,255,.22) 1px, transparent 1px);
+    background-size: 7px 7px; }
+  .copy { position: absolute; left: 56px; top: 74px; width: 560px; }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .leaf { width: 30px; height: 30px; }
+  .brand span { font-size: 20px; font-weight: 700; letter-spacing: 3.6px; color: #E9D9A0; }
+  h1 { margin: 22px 0 0; font-size: 53px; line-height: 1.08; font-weight: 800; letter-spacing: -.8px; }
+  h1 em { font-style: normal; color: #C9A227; }
+  p.sub { margin: 16px 0 0; font-size: 21px; font-weight: 500; color: rgba(255,255,255,.86); letter-spacing: .2px; }
+  .pills { display: flex; gap: 10px; margin-top: 26px; }
+  .pill { font-size: 15px; font-weight: 700; padding: 9px 16px; border-radius: 999px;
+    background: rgba(255,255,255,.1); border: 1px solid rgba(233,217,160,.38); color: #F3EEDD; }
+  .pill.gold { background: #C9A227; border-color: #C9A227; color: #201a00; }
+  .shot { position: absolute; right: 46px; top: 40px; width: 350px; height: 420px; }
+  .ring { position: absolute; inset: -14px; border-radius: 30px; border: 1.5px solid rgba(201,162,39,.5); }
+  .card { position: relative; width: 350px; height: 420px; border-radius: 22px; overflow: hidden;
+    box-shadow: 0 26px 60px rgba(0,0,0,.55); background: #0b2a22; }
+  .card img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 42%; }
+  .tag { position: absolute; left: 16px; bottom: 16px; font-size: 13px; font-weight: 800;
+    letter-spacing: .6px; padding: 7px 12px; border-radius: 8px;
+    background: rgba(8,35,28,.82); border: 1px solid rgba(201,162,39,.55); color: #E9D9A0; }
+</style>
+</head>
+<body>
+<div class="fg">
+  <div class="grain"></div>
+
+  <div class="copy">
+    <div class="brand">
+      <svg class="leaf" viewBox="0 0 24 24" fill="none" stroke="#C9A227" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 21V9"/><path d="M12 12c0-3.3 2.7-6 6-6 0 3.3-2.7 6-6 6Z"/>
+        <path d="M12 15c0-2.8-2.2-5-5-5 0 2.8 2.2 5 5 5Z"/>
+      </svg>
+      <span>AVNIDEEP AYURVEDA</span>
+    </div>
+    <h1>Ayurvedic wellness,<br><em>ghar tak delivered</em></h1>
+    <p class="sub">Shilajit &bull; Pain Relief Oil &bull; Hair Oil &bull; Herbal Balm</p>
+    <div class="pills">
+      <div class="pill gold">COD Available</div>
+      <div class="pill">Free Delivery</div>
+      <div class="pill">10-Day Returns</div>
+    </div>
+  </div>
+
+  <div class="shot">
+    <div class="ring"></div>
+    <div class="card">
+      <img src="../shilajit/gallery/g1.webp" alt="">
+      <div class="tag">AVNIDEEP 6PRO</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

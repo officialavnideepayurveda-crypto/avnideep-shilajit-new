@@ -201,6 +201,8 @@
 
   </style>
 
+<script src="/assets/gcr-optin.js?v=1" defer></script>
+
 </head>
 
 <body>
@@ -809,6 +811,41 @@
     }
 
     confirmAndShow();
+
+    // ===== Google Customer Reviews opt-in (survey after delivery) =====
+    // Runs only for a real, non-duplicate order whose customer left an email at
+    // checkout. Google's platform.js is fetched after the page is idle so it
+    // never competes with the confirmation page's own render.
+    (function(){
+      function idle(cb){
+        if (typeof requestIdleCallback === 'function') requestIdleCallback(cb, { timeout: 3000 });
+        else setTimeout(cb, 1500);
+      }
+      function arm(){
+        var cfg = null;
+        try {
+          var email = '';
+          try { email = sessionStorage.getItem('avn_gcr_email') || ''; } catch(e){}
+          var productText = (verifiedOrder && (verifiedOrder.product || verifiedOrder.productName)) || name || '';
+          if (window.AVN_GCR) {
+            cfg = window.AVN_GCR.build({
+              orderId: orderId,
+              email: email,
+              country: 'IN',
+              eta: window.AVN_GCR.etaDate(6),
+              skus: window.AVN_GCR.skusFromText(productText)
+            });
+          }
+        } catch(e) { cfg = null; }
+        if (!cfg) return;                         // no email / no order id -> no survey
+        if (isDuplicate) return;                  // duplicates are not new orders
+        if (method === 'cod_whatsapp' && !verifiedOrder) return;  // unconfirmed WhatsApp fallback
+        window.__AVN_GCR_OPTS = cfg;              // introspection for support + tests
+        window.AVN_GCR.render(cfg);
+      }
+      if (document.readyState === 'complete') idle(arm);
+      else window.addEventListener('load', function(){ idle(arm); }, { once: true });
+    })();
 
   })();
 

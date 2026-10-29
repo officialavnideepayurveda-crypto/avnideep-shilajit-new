@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Avnideep Ayurveda — Google Merchant Center product feed
+  Fetch URL: https://avnideepayurveda.in/merchant-feed.xml
+
+  Rules this file follows (so Merchant Center approvals don't break):
+    * One item per landing page — multi-pack prices live on the SAME URL,
+      so packs are deliberately NOT submitted here (they would trigger
+      "price mismatch" / "duplicate product"). Base packs only.
+    * price = the price shown on the landing page (prepaid price).
+      COD price is higher and is explained on the page, not in the feed.
+    * ids match the existing Merchant Center items (avn-6pro-001, ...),
+      so adding this feed UPDATES those items instead of duplicating them.
+    * No GTIN exists for these products, so identifier_exists = no and
+      brand + mpn (= our SKU) are provided.
+    * Images are the same files used on the product pages (all 200 OK).
+
+  IMPORTANT: if an admin changes a price in the panel, update the matching
+  <g:price> here too and redeploy, otherwise Merchant Center will flag
+  "price mismatch" and stop showing the item.
+-->
+<rss version="2.0" xmlns:g="http://base.google.com/ns/1.0">
+  <channel>
+    <title>Avnideep Ayurveda</title>
+    <link>https://avnideepayurveda.in/</link>
+    <description>Ayurvedic supplements and personal care from Avnideep Ayurveda, made in an AYUSH &amp; GMP certified facility.</description>
+
+    <item>
+      <g:id>avn-6pro-001</g:id>
+      <g:title>Avnideep 6Pro Shilajit Capsules – Shilajit + 14 Ayurvedic Herbs | 30 Capsules | Energy &amp; Stamina</g:title>
+      <g:description>Avnideep 6Pro Shilajit Capsules: 30 capsules of Himalayan Shilajit blended with 14 Ayurvedic herbs including Ashwagandha, Safed Musli, Gokshura and Kaunch. Traditionally used in Ayurveda to support daily energy, stamina and recovery. Made in an AYUSH-certified and GMP-certified facility, and every batch is third-party lab tested for purity and heavy metals. Suggested use: 1 capsule daily after breakfast with warm water or milk, or as directed by a physician. Suitable for adults. Free delivery across India, cash on delivery available. This is an Ayurvedic proprietary food supplement, not a medicine: it is not intended to diagnose, treat, cure or prevent any disease. Consult a qualified healthcare professional before use if you are pregnant, nursing or taking medication.</g:description>
+      <g:link>https://avnideepayurveda.in/shilajit/</g:link>
+      <g:image_link>https://avnideepayurveda.in/home/assets/shilajit-1.png</g:image_link>
+      <g:additional_image_link>https://avnideepayurveda.in/home/assets/shilajit-2.png</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:price>1000.00 INR</g:price>
+      <g:brand>Avnideep Ayurveda</g:brand>
+      <g:mpn>AVN-6PRO-001</g:mpn>
+      <g:identifier_exists>no</g:identifier_exists>
+      <g:condition>new</g:condition>
+      <g:product_type>Health &amp; Beauty &gt; Health Care &gt; Vitamins &amp; Supplements</g:product_type>
+      <g:google_product_category>Health &amp; Beauty &gt; Health Care &gt; Fitness &amp; Nutrition &gt; Vitamins &amp; Supplements</g:google_product_category>
+      <g:shipping>
+        <g:country>IN</g:country>
+        <g:service>Standard Delivery</g:service>
+        <g:price>0.00 INR</g:price>
+        <g:min_handling_time>1</g:min_handling_time>
+        <g:max_handling_time>2</g:max_handling_time>
+        <g:min_transit_time>3</g:min_transit_time>
+        <g:max_transit_time>7</g:max_transit_time>
+      </g:shipping>
+      <g:custom_label_0>bestseller</g:custom_label_0>
+    </item>
+
+    <item>
+      <g:id>avn-oil-001</g:id>
+      <g:title>Avnideep Pain Relief Oil 60ml – Nirgundi, Gandhapura &amp; Kapoor for Knee, Back &amp; Joint Pain</g:title>
+      <g:description>Avnideep Ayurvedic Pain Relief Oil, 60ml. A warming massage oil made with Nirgundi, Gandhapura and Kapoor that is traditionally used for knee, back, shoulder and joint discomfort. Non-greasy, quick absorbing and easy to massage into the skin; for external use only. Regular massage helps loosen stiff muscles after a long day, travel or physical work. Made in an AYUSH-certified and GMP-certified facility with batch-wise lab testing for purity. How to use: apply a small quantity on the affected area and massage gently for 5-10 minutes, two to three times a day. Do not apply on broken skin or near the eyes; keep away from children. Free delivery across India, cash on delivery available. This is an Ayurvedic proprietary product, not a medicine: consult a qualified healthcare professional for persistent or severe pain.</g:description>
+      <g:link>https://avnideepayurveda.in/pain-oil/</g:link>
+      <g:image_link>https://avnideepayurveda.in/pain-oil/oil-1.png</g:image_link>
+      <g:additional_image_link>https://avnideepayurveda.in/pain-oil/gallery/g1.webp</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:price>299.00 INR</g:price>
+      <g:brand>Avnideep Ayurveda</g:brand>
+      <g:mpn>AVN-OIL-001</g:mpn>
+      <g:identifier_exists>no</g:identifier_exists>
+      <g:condition>new</g:condition>
+      <g:product_type>Health &amp; Beauty &gt; Health Care &gt; Pain Relief</g:product_type>
+      <g:shipping>
+        <g:country>IN</g:country>
+        <g:service>Standard Delivery</g:service>
+        <g:price>0.00 INR</g:price>
+        <g:min_handling_time>1</g:min_handling_time>
+        <g:max_handling_time>2</g:max_handling_time>
+        <g:min_transit_time>3</g:min_transit_time>
+        <g:max_transit_time>7</g:max_transit_time>
+      </g:shipping>
+    </item>
+
+    <item>
+      <g:id>avn-hair-001</g:id>
+      <g:title>Avnideep Herbal Hair Oil 100ml – Bhringraj, Amla, Brahmi &amp; Neem for Strong, Shiny Hair</g:title>
+      <g:description>Avnideep Ayurvedic Herbal Hair Oil, 100ml. A light, non-sticky hair oil made with Bhringraj, Amla, Brahmi and Neem that is traditionally used to support a healthy scalp, reduce dryness and keep hair looking naturally lustrous. Suitable for all hair types, for women and men. How to use: massage a small quantity into the scalp and hair, leave for at least an hour or overnight, then wash with a mild shampoo; use two to three times a week for best results. Made in an AYUSH-certified and GMP-certified facility with batch-wise lab testing. For external use only; do a patch test first and stop if irritation occurs. Free delivery across India, cash on delivery available. Cosmetic preparation: this product does not treat hair loss or any medical condition.</g:description>
+      <g:link>https://avnideepayurveda.in/hair-oil/</g:link>
+      <g:image_link>https://avnideepayurveda.in/hair-oil/gallery/g1.webp</g:image_link>
+      <g:additional_image_link>https://avnideepayurveda.in/hair-oil/gallery/g2.webp</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:price>399.00 INR</g:price>
+      <g:brand>Avnideep Ayurveda</g:brand>
+      <g:mpn>AVN-HAIR-001</g:mpn>
+      <g:identifier_exists>no</g:identifier_exists>
+      <g:condition>new</g:condition>
+      <g:product_type>Health &amp; Beauty &gt; Personal Care &gt; Hair Care &gt; Hair Oil</g:product_type>
+      <g:shipping>
+        <g:country>IN</g:country>
+        <g:service>Standard Delivery</g:service>
+        <g:price>0.00 INR</g:price>
+        <g:min_handling_time>1</g:min_handling_time>
+        <g:max_handling_time>2</g:max_handling_time>
+        <g:min_transit_time>3</g:min_transit_time>
+        <g:max_transit_time>7</g:max_transit_time>
+      </g:shipping>
+    </item>
+
+    <item>
+      <g:id>avn-balm-001</g:id>
+      <g:title>Avnideep Herbal Balm 10g (Pack of 5) – Pudina, Camphor &amp; Nilgiri Cooling Head &amp; Body Balm</g:title>
+      <g:description>Avnideep Ayurvedic Herbal Balm, pack of 5 tins of 10g each. A cooling balm made with Pudina Satva, Camphor and Nilgiri oil, traditionally used for a refreshing head and body massage, for travel and for relaxing tired muscles. Small tin that fits in a pocket or bag. How to use: take a little balm on your fingertip and gently massage on the forehead, temples or the affected body area; avoid the eyes and broken skin. For external use only; keep away from children and store in a cool, dry place. Made in an AYUSH-certified and GMP-certified facility with batch-wise lab testing. Free delivery across India, cash on delivery available. Cosmetic preparation: this balm does not treat or cure any medical condition.</g:description>
+      <g:link>https://avnideepayurveda.in/herbal-balm/</g:link>
+      <g:image_link>https://avnideepayurveda.in/herbal-balm/gallery/g1.webp</g:image_link>
+      <g:additional_image_link>https://avnideepayurveda.in/herbal-balm/gallery/g2.webp</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:price>279.00 INR</g:price>
+      <g:brand>Avnideep Ayurveda</g:brand>
+      <g:mpn>AVN-BALM-001</g:mpn>
+      <g:identifier_exists>no</g:identifier_exists>
+      <g:condition>new</g:condition>
+      <g:multipack>5</g:multipack>
+      <g:product_type>Health &amp; Beauty &gt; Personal Care &gt; Cosmetics &gt; Body Care</g:product_type>
+      <g:shipping>
+        <g:country>IN</g:country>
+        <g:service>Standard Delivery</g:service>
+        <g:price>0.00 INR</g:price>
+        <g:min_handling_time>1</g:min_handling_time>
+        <g:max_handling_time>2</g:max_handling_time>
+        <g:min_transit_time>3</g:min_transit_time>
+        <g:max_transit_time>7</g:max_transit_time>
+      </g:shipping>
+    </item>
+
+  </channel>
+</rss>
