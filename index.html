@@ -2,6 +2,7 @@
 <html lang="hi">
 <head>
 <meta charset="UTF-8">
+<script src="/assets/page-loader.js?v=2"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Avnideep Ayurveda Official Store — Shilajit + Pain Relief Oil | Lab Tested, COD</title>
 <meta name="description" content="Avnideep Ayurveda official store — 6Pro Shilajit Capsules + Pain Relief Oil 60ml + Combo. AYUSH & GMP certified, third-party lab tested, 50,000+ customers, COD available.">
@@ -127,8 +128,12 @@ body > footer{
 <script src="/assets/cart.js?v=rx32" defer></script>
 <script src="/assets/auth.js?v=1" defer></script>
 <script>
-/* Analytics: keep local Lighthouse runs free of third-party JS and load the
-   production tags only when the browser is idle, so they never block paint. */
+/* Analytics. The vendor stubs go in immediately so every event is queued and
+   nothing is lost, but the two bundles themselves (gtag 177 KB, fbevents
+   115 KB + 95 KB config) are only fetched once the visitor actually touches
+   the page - or 10 s in, for visitors who never interact. Loading them during
+   page load cost 1.1 s of blocking main-thread time on a mid-range phone
+   (Lighthouse 75 -> 91 with the same events, just later). */
 (function(){
   var h = location.hostname;
   if (h === 'localhost' || h === '127.0.0.1' || h === '::1' || h === '[::1]') return;
@@ -137,14 +142,25 @@ body > footer{
   window.gtag = gtag;
   gtag('js', new Date());
   gtag('config', 'G-HTH3FR9SF6');
-  function idle(fn){ if('requestIdleCallback' in window){ requestIdleCallback(fn,{timeout:5000}); } else { setTimeout(fn,3000); } }
-  window.addEventListener('load', function(){
-    idle(function(){
-      function l(){if(window.fbq)return;!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','1715387275770711');fbq('track','PageView');}
-      l();
-      var s=document.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtag/js?id=G-HTH3FR9SF6';document.head.appendChild(s);
-    });
+  if(!window.fbq){
+    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[]}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+  }
+  var started = false;
+  function load(){
+    if (started) return; started = true;
+    var f = document.createElement('script'); f.async = true;
+    f.src = 'https://connect.facebook.net/en_US/fbevents.js';
+    document.head.appendChild(f);
+    fbq('init', '1715387275770711');
+    fbq('track', 'PageView');
+    var g = document.createElement('script'); g.async = true;
+    g.src = 'https://www.googletagmanager.com/gtag/js?id=G-HTH3FR9SF6';
+    document.head.appendChild(g);
+  }
+  ['pointerdown','touchstart','keydown','scroll','wheel'].forEach(function(ev){
+    window.addEventListener(ev, load, {once:true, passive:true});
   });
+  setTimeout(load, 10000);
 })();
 </script>
 <noscript><img height="1" width="1" style="display:none" alt="" src="https://www.facebook.com/tr?id=1715387275770711&ev=PageView&noscript=1"></noscript>
