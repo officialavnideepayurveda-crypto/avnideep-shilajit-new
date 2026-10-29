@@ -1201,7 +1201,7 @@ try{ window.AP_PACKS=AP_PACKS; window.apSyncPrice=apSyncPrice; window.apSelectPa
 try{
 var __handoff=/[?&]open=1/.test(location.search)||location.hash==='#buynow';
 var __pref=null; try{ __pref=localStorage.getItem('avn_pay_pref'); }catch(e){}
-apApplyPay((__handoff && __pref==='C') ? 'C' : 'P', {silent:true});
+apApplyPay((__pref==='C'||__pref==='P') ? __pref : 'P', {silent:true});
 }catch(e){}
 
 document.querySelectorAll('#apSize .ap-size').forEach(function(b){
@@ -1226,8 +1226,8 @@ p.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.prev
 document.addEventListener('change',function(e){
 var t=e.target;
 if(!t||t.name!=='paymentMethod'||!t.checked)return;
-var card=document.querySelector('.ap-pack[data-pay="'+(t.value==='cod'?'C':'P')+'"]');
-if(card&&!card.classList.contains('on')){card.click();}
+var card=document.querySelector('.ap-pack[data-pay="'+(t.value==='prepaid'?'P':'C')+'"]');
+if(card&&!card.classList.contains('on')){try{window.__AVN_MIRROR_PAY=1;}catch(_e){}card.click();try{window.__AVN_MIRROR_PAY=0;}catch(_e){}}
 });
 var m=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 function fd(d){return d.getDate()+' '+m[d.getMonth()];}

@@ -421,6 +421,15 @@
     if (m === 'advance' || m === 'advance_cod' || m === 'booking') return 'advance';
     return 'cod';
   }
+  // A deliberate tap on the product page's COD / Prepaid box. Written only by
+  // that tap, so the admin default still decides the first-ever checkout.
+  var CHOICE_KEY = 'avn_pay_choice';
+  function explicitPayKind() {
+    var pick = '';
+    try { pick = localStorage.getItem(CHOICE_KEY) || ''; } catch (e) {}
+    return pick === 'C' ? 'cod' : (pick === 'P' ? 'prepaid' : '');
+  }
+
   // payNow (online) + payLater (on delivery) === total, for every method.
   function splitPay(kind, total, advAmt) {
     var t = Math.max(0, Math.round(Number(total) || 0));
@@ -747,8 +756,12 @@
           }
         });
 
-        // Selection: first paint follows the admin default; after the customer
-        // has chosen, keep their choice as long as it is still enabled.
+        // Selection: a tap on the product page's COD / Prepaid box wins (a
+        // customer who chose COD at ₹349 must not be charged the prepaid
+        // price), otherwise the admin default decides. After the customer has
+        // chosen in the checkout, keep their choice while it is enabled.
+        var picked = explicitPayKind();
+        if (picked && kindOn(picked)) def = picked;
         var checked = grid.querySelector('input[name="paymentMethod"]:checked');
         if (!checked || checked.disabled || !PAY_USER_CHOSE) {
           var want = grid.querySelector('input[value="' + def + '"]');
@@ -771,6 +784,33 @@
   document.addEventListener('change', function (e) {
     if (e && e.target && e.target.name === 'paymentMethod' && e.target.checked) PAY_USER_CHOSE = true;
   }, true);
+
+  // A tap on the product page's COD / Prepaid box must move the checkout card
+  // too, otherwise the summary keeps quoting the other method's price.
+  document.addEventListener('click', function (e) {
+    // The page mirrors checkout changes onto the price box itself; those
+    // programmatic clicks must not be mistaken for a fresh customer choice.
+    if (window.__AVN_MIRROR_PAY) return;
+    var el = e && e.target && e.target.closest ? e.target.closest('.ap-pack[data-pay]') : null;
+    if (!el) return;
+    try { localStorage.setItem(CHOICE_KEY, el.getAttribute('data-pay') === 'C' ? 'C' : 'P'); } catch (err) {}
+    var kind = el.getAttribute('data-pay') === 'C' ? 'cod' : 'prepaid';
+    try { selectPayKind(kind); } catch (err) {}
+  }, false);
+
+  function selectPayKind(kind) {
+    var cards = document.querySelectorAll('#oForm .pay-card');
+    for (var i = 0; i < cards.length; i++) {
+      var input = cards[i].querySelector('input[name="paymentMethod"]');
+      var cardKind = cards[i].getAttribute('data-pay-card') || (input ? input.value : '');
+      if (!input || cardKind !== kind || input.disabled || input.checked) continue;
+      input.checked = true;
+      try { input.dispatchEvent(new Event('change', { bubbles: true })); } catch (err) {}
+      cards[i].classList.add('selected');
+      return true;
+    }
+    return false;
+  }
 
   try {
     window.AVN_CHECKOUT = {
