@@ -1,0 +1,44 @@
+/* Avnideep health guides — shared styles (loaded only on /blog/ pages) */
+.rx-art{max-width:860px}
+.art-crumb{font-size:12.5px;color:var(--rx-mut);margin:0 0 14px}
+.art-crumb a{color:var(--rx-brand);text-decoration:none;font-weight:600}
+.art-hero{max-width:420px;margin:18px auto 24px;border-radius:var(--rx-radius);overflow:hidden;background:var(--rx-cream);border:1px solid var(--rx-line)}
+.art-hero img{display:block;width:100%;height:auto}
+.art-lead{font-size:16px!important;color:var(--rx-ink)!important;line-height:1.7!important;background:var(--rx-soft);border-left:4px solid var(--rx-brand);padding:14px 16px;border-radius:0 12px 12px 0;margin:0 0 22px}
+.art-toc{background:#fff;border:1px solid var(--rx-line);border-radius:var(--rx-radius-sm);padding:16px 18px;margin:0 0 26px}
+.art-toc b{display:block;font-size:12.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--rx-mut);margin-bottom:8px}
+.art-toc ol{margin:0;padding-left:18px;display:grid;gap:4px}
+.art-toc a{font-size:14px;text-decoration:none}
+.art-cta{background:linear-gradient(135deg,var(--rx-brand),#1b5a43);color:#fff;border-radius:var(--rx-radius);padding:20px 22px;margin:28px 0;display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.art-cta b{font-family:var(--rx-font-d);font-size:20px;display:block;margin-bottom:4px}
+.art-cta p{color:rgba(255,255,255,.88);margin:0;font-size:14px}
+.art-cta .rx-btn{background:#fff;color:var(--rx-brand);padding:13px 22px;flex:0 0 auto}
+.art-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:18px 0}
+.art-card{border:1px solid var(--rx-line);border-radius:var(--rx-radius-sm);padding:16px;background:#fff}
+.art-card h3{font-family:var(--rx-font-b);font-size:15px;margin:0 0 6px;color:var(--rx-brand)}
+.art-card p{margin:0;font-size:13.5px;line-height:1.65}
+.art-note{font-size:13px;color:var(--rx-mut);border-top:1px dashed var(--rx-line);padding-top:14px;margin-top:26px}
+.faq{margin:10px 0 0;display:grid;gap:10px}
+.faq details{border:1px solid var(--rx-line);border-radius:12px;background:#fff;padding:0}
+.faq summary{cursor:pointer;list-style:none;padding:14px 16px;font-weight:700;font-size:14.5px;color:var(--rx-ink);display:flex;justify-content:space-between;gap:12px}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";color:var(--rx-brand);font-weight:800}
+.faq details[open] summary::after{content:"\2013"}
+.faq .a{padding:0 16px 14px;font-size:14px;color:#52453C;line-height:1.7}
+.art-related{display:grid;gap:10px;margin-top:10px}
+.art-related a{display:block;padding:12px 14px;border:1px solid var(--rx-line);border-radius:10px;text-decoration:none;font-size:14px;background:#fff}
+.art-related a:hover{border-color:var(--rx-brand)}
+.art-compare{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+.art-compare th,.art-compare td{border:1px solid var(--rx-line);padding:10px 12px;text-align:left;vertical-align:top}
+.art-compare th{background:var(--rx-cream);color:var(--rx-brand);font-weight:700}
+.art-compare td:first-child{font-weight:600;color:var(--rx-ink)}
+@media(max-width:560px){.art-cta{padding:18px}.art-hero img{max-height:240px}.art-compare{font-size:13px}.art-compare th,.art-compare td{padding:8px 9px}}
+
+/* ---------- Blog hub (Guides index) ---------- */
+.blog-list{display:grid;gap:16px;margin:20px 0 8px}
+.blog-item{border:1px solid #EADFD3;border-radius:16px;padding:18px 20px;background:#fff}
+.blog-item h2{margin:0 0 6px;font-size:20px;line-height:1.35}
+.blog-item h2 a{color:inherit;text-decoration:none}
+.blog-item h2 a:hover{color:var(--rx-brand)}
+.blog-item p{margin:0 0 10px;color:var(--rx-mut,#6B6257)}
+.blog-item .more{font-weight:600;color:var(--rx-brand);text-decoration:none}
