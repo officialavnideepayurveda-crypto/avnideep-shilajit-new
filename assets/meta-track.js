@@ -20,7 +20,7 @@
 
   var cfg = window.AVN_META_CFG || {};
   var PIXEL = String(cfg.pixel || '1715387275770711');
-  var LOAD_DELAY = typeof cfg.loadDelay === 'number' ? cfg.loadDelay : 1200;
+  var LOAD_DELAY = typeof cfg.loadDelay === 'number' ? cfg.loadDelay : 1200; // kept for API compatibility
   var HOST = (location.hostname || '').toLowerCase();
   var DISABLED = HOST === 'localhost' || HOST === '127.0.0.1' || HOST === '::1' || HOST === '[::1]';
 
@@ -71,36 +71,28 @@
   }
 
   /* ------------------------------------------------------- fbq bootstrap */
-  if (!window.fbq) {
-    var stub = function () {
-      /* Push into stub.queue itself — fbevents.js reassigns fbq.queue when it
-         takes over, so a private closure array would swallow every event fired
-         after load (AddToCart, InitiateCheckout, Purchase...). */
-      if (stub.callMethod) stub.callMethod.apply(stub, arguments);
-      else stub.queue.push(arguments);
-    };
-    stub.queue = [];
-    stub.push = stub;
-    /* fbevents.js only takes the queue over when the stub reports itself as
-       installed (the official snippet sets this to true). With false here the
-       bundle loads but never replaces the stub, so Pixel events stay queued
-       forever and nothing reaches Meta. */
-    stub.loaded = true;
-    stub.version = '2.0';
-    window.fbq = stub;
-    window._fbq = stub;
-  }
-
-  var pixelRequested = false;
-  function loadPixel() {
-    if (pixelRequested) return;
-    pixelRequested = true;
-    try {
-      var s = document.createElement('script');
-      s.async = true;
-      s.src = 'https://connect.facebook.net/en_US/fbevents.js';
-      (document.head || document.documentElement).appendChild(s);
-    } catch (e) {}
+  /* Meta's own bootstrap, kept verbatim: fbevents.js expects the queue to live
+     on the fbq function itself and takes the bundle over only when the stub is
+     marked loaded. A bespoke stub (private queue, delayed bundle) sent events
+     fired before takeover but silently dropped everything after it, which is
+     why AddToCart / InitiateCheckout / Purchase never reached Meta. */
+  if (!DISABLED && !window.fbq) {
+    (function (f, b, e, v, n, t, s) {
+      if (f.fbq) return;
+      n = f.fbq = function () {
+        n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments);
+      };
+      if (!f._fbq) f._fbq = n;
+      n.push = n;
+      n.loaded = true;
+      n.version = '2.0';
+      n.queue = [];
+      t = b.createElement(e);
+      t.async = true;
+      t.src = v;
+      s = b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t, s);
+    })(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
   }
 
   /* Queue init + PageView right away so they are never dropped. Only the
@@ -115,21 +107,6 @@
     sendCapi('PageView', pvId, {}, location.href.split('#')[0]);
   }
 
-  if (DISABLED) {
-    /* Local dev: keep the API but never hit Meta. */
-  } else if (document.readyState === 'complete') {
-    setTimeout(loadPixel, 0);
-  } else if ('requestIdleCallback' in window) {
-    requestIdleCallback(loadPixel, { timeout: LOAD_DELAY });
-    ['pointerdown', 'touchstart', 'keydown', 'scroll', 'wheel'].forEach(function (ev) {
-      window.addEventListener(ev, loadPixel, { once: true, passive: true });
-    });
-  } else {
-    setTimeout(loadPixel, LOAD_DELAY);
-    ['pointerdown', 'touchstart', 'keydown', 'scroll', 'wheel'].forEach(function (ev) {
-      window.addEventListener(ev, loadPixel, { once: true, passive: true });
-    });
-  }
 
   function normalize(data) {
     var d = {};
