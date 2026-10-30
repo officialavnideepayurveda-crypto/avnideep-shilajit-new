@@ -69,31 +69,14 @@
 
 
 
-  <!-- Meta Pixel Code -->
+  <!-- Meta Pixel + CAPI (shared tracker) -->
 
-  <script>
+  <script>window.AVN_META_CFG={pixel:'1715387275770711'};</script>
 
-  !function(f,b,e,v,n,t,s)
+  <script data-cfasync="false" src="/assets/meta-track.js?v=2"></script>
+<script data-cfasync="false">if(!window.AVN_META){(function(){var id=(window.AVN_META_CFG||{}).pixel||"1715387275770711";if(!window.fbq){var q=[];var f=function(){f.callMethod?f.callMethod.apply(f,arguments):q.push(arguments);};f.queue=q;f.push=f;f.loaded=true;f.version="2.0";window.fbq=f;window._fbq=f;}var s=document.createElement("script");s.async=true;s.src="https://connect.facebook.net/en_US/fbevents.js";(document.head||document.documentElement).appendChild(s);try{window.fbq("init",id);window.fbq("track","PageView");}catch(e){}})();}</script>
 
-  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-
-  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-
-  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-
-  n.queue=[];t=b.createElement(e);t.async=!0;
-
-  t.src=v;s=b.getElementsByTagName(e)[0];
-
-  s.parentNode.insertBefore(t,s)}(window, document,'script',
-
-  'https://connect.facebook.net/en_US/fbevents.js');
-
-  fbq('init', '1715387275770711');
-
-  fbq('track', 'PageView');
-
-  </script>
+  <noscript><img height="1" width="1" style="display:none" alt="" src="https://www.facebook.com/tr?id=1715387275770711&ev=PageView&noscript=1"></noscript>
 
   <!-- End Meta Pixel Code -->
 
@@ -430,7 +413,9 @@
 
 
 
-    var isConfirmedCod = (method === 'cod' || method === 'cod_whatsapp') && !!orderId;
+    // cod_whatsapp means the order was NEVER saved on the backend (API failed
+    // and we hand the cart to WhatsApp), so it must never count as a Purchase.
+    var isConfirmedCod = method === 'cod' && !!orderId;
 
 
 
@@ -494,6 +479,15 @@
 
 
 
+    // Give the shared tracker the buyer identity so the server can hash it into
+    // the Purchase CAPI payload (better ad matching). It never goes to the
+    // browser Pixel unhashed.
+    try {
+      if (window.AVN_META && window.AVN_META.identify) {
+        window.AVN_META.identify({ name: name, phone: storedPhone || phoneParam });
+      }
+    } catch (e) {}
+
     // Skip if already fired by index.html
 
     var shouldTrackPurchase = (isRazorpaySuccess || isConfirmedCod) && !alreadyFired && !isDuplicate;
@@ -520,69 +514,51 @@
 
       var eventId = orderId || razorpayPaymentId || genEventId('purch_thanks');
 
-      var eventParams = {
-
+      // Route through the shared tracker so the Pixel and CAPI share ONE
+      // event_id (purchase dedup) and eventID is passed in fbq's 4th arg.
+      var purchaseData = {
         value: amount,
-
         currency: 'INR',
-
         content_type: 'product',
-
-        order_id: orderId,
-
-        eventID: eventId
-
+        content_name: 'Avnideep 6Pro Shilajit Capsules',
+        content_ids: ['AVN-6PRO-001'],
+        order_id: orderId
       };
 
-
-
-      // 1) Client-side Pixel
-
-      try {
-
-        if (typeof fbq === 'function') {
-
-          fbq('track', 'Purchase', eventParams);
-
-        }
-
-      } catch (e) {
-
-        console.warn('FB Pixel error:', e);
-
-      }
-
-
-
-
-
-
-
-      // 2) Server-side CAPI for COD orders - Purchase fires here on the thank-you
-      //    page (order confirmed), NOT at form submit. Same event_id as the pixel
-      //    so Meta dedups them into a single Purchase. Prepaid/advance use the
-      //    PATCH /api/order flow below (isRazorpaySuccess path).
-      if (isConfirmedCod) {
+      if (window.AVN_META && window.AVN_META.trackPurchase) {
+        window.AVN_META.trackPurchase(orderId, amount, {
+          eventID: eventId,
+          content_type: 'product',
+          content_name: 'Avnideep 6Pro Shilajit Capsules',
+          content_ids: ['AVN-6PRO-001'],
+          // COD needs the browser CAPI relay; prepaid is sent by /api/order.
+          capi: isConfirmedCod
+        });
+      } else {
+        // Fallback if /assets/meta-track.js failed to load.
         try {
-          fetch('/api/events', {
-            method: 'POST',
-            keepalive: true,
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-              event_name: 'Purchase',
-              event_id: eventId,
-              event_source_url: window.location.href.split('?')[0],
-              custom_data: { value: amount, currency: 'INR', content_type: 'product', order_id: orderId },
-              user_data: { client_user_agent: navigator.userAgent || '' }
-            })
-          }).catch(function(){});
-        } catch(e){}
+          if (typeof fbq === 'function') fbq('track', 'Purchase', purchaseData, { eventID: eventId });
+        } catch (e) { console.warn('FB Pixel error:', e); }
+        if (isConfirmedCod) {
+          try {
+            fetch('/api/events', {
+              method: 'POST',
+              keepalive: true,
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({
+                event_name: 'Purchase',
+                event_id: eventId,
+                event_source_url: window.location.href.split('?')[0],
+                custom_data: purchaseData,
+                user_data: { client_user_agent: navigator.userAgent || '' }
+              })
+            }).catch(function(){});
+          } catch(e){}
+        }
       }
 
-      // 3) Mark dedup flag for this order
-
+      // Mark dedup flag for this order
       purchaseTracked = true;
-
       try { sessionStorage.setItem(dedupKey, '1'); localStorage.setItem(dedupKey, '1'); } catch(e){}
 
     }
