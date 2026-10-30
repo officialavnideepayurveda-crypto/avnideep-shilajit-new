@@ -72,12 +72,14 @@
 
   /* ------------------------------------------------------- fbq bootstrap */
   if (!window.fbq) {
-    var _queue = [];
     var stub = function () {
+      /* Push into stub.queue itself — fbevents.js reassigns fbq.queue when it
+         takes over, so a private closure array would swallow every event fired
+         after load (AddToCart, InitiateCheckout, Purchase...). */
       if (stub.callMethod) stub.callMethod.apply(stub, arguments);
-      else _queue.push(arguments);
+      else stub.queue.push(arguments);
     };
-    stub.queue = _queue;
+    stub.queue = [];
     stub.push = stub;
     /* fbevents.js only takes the queue over when the stub reports itself as
        installed (the official snippet sets this to true). With false here the
