@@ -37,6 +37,22 @@ export async function onRequest(context) {
   const url = new URL(request.url);
   const path = url.pathname;
 
+  // Never expose tests, dev scripts, archives, logs or local backups.
+  if (
+    /^\/(?:tests|scripts|migrations|node_modules)(?:\/|$)/i.test(path) ||
+    /^\/(?:package(?:-lock)?\.json|wrangler\.jsonc|vitest\.config\.js|check-jsonld\.js|write_up-checks\.ps1|api-prod\.json|admin_headers\.txt|psi-mobile\.json|fix_trust_badges\.js|avnideep-fix-v3\.zip|_dev\.log.*|_preview.*|index\.html\..*|app\.v3\.js\..*)$/i.test(path) ||
+    /\.(?:bak|backup|orig|old|save|tmp|zip|ps1|log|before-story-rebuild|perf-backup-[^/]*)$/i.test(path)
+  ) {
+    return new Response("Not found", {
+      status: 404,
+      headers: {
+        "content-type": "text/plain; charset=utf-8",
+        "x-robots-tag": "noindex",
+        "cache-control": "no-store",
+      },
+    });
+  }
+
   // Never cache API endpoints or static assets (assets are cached via _headers)
   if (path.startsWith("/api/")) return next();
   if (/\.(js|css|png|jpe?g|webp|svg|ico|gif|woff2?|ttf|otf|json|xml|txt|webmanifest|map)$/i.test(path)) return next();
