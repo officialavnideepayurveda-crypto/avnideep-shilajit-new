@@ -1,6 +1,0 @@
-The redirect rule /buy → 301 /#checkout could be made more performant by bringing it above any lines with splats or placeholders.
-The redirect rule /order → 301 /#checkout could be made more performant by bringing it above any lines with splats or placeholders.
-The redirect rule /home → 301 / could be made more performant by bringing it above any lines with splats or placeholders.
-The redirect rule /home/ → 301 / could be made more performant by bringing it above any lines with splats or placeholders.
-The redirect rule /shop.html → 301 / could be made more performant by bringing it above any lines with splats or placeholders.
-[wrangler:info] Ready on http://127.0.0.1:8788
