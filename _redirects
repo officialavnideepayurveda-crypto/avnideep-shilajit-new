@@ -3,8 +3,9 @@
 
 # Cache manifest, sitemap (cache handled by _headers file)
 /manifest.webmanifest  /manifest.webmanifest  200
-/sitemap.xml  /sitemap.xml  200
 /robots.txt  /robots.txt  200
+# NOTE: no self-rewrite for /sitemap.xml - functions/sitemap.xml.js serves it
+# (static sitemap + admin-published blog URLs). A self-rewrite would shadow it.
 
 # Clean URLs are handled automatically by Cloudflare Pages (serves *.html for /path).
 # NOTE: Do NOT add manual 200-rewrites for .html files - they conflict with Pages'
@@ -37,3 +38,15 @@
 
 # Redirect old shop.html to homepage - contains old Purchase tracking code
 /shop.html  /  301
+
+# Old duplicate Shilajit page -> canonical PDP (duplicate content + stale schema)
+/shilajitpro  /shilajit/  301
+/shilajitpro/*  /shilajit/  301
+
+# SECURITY: never publish local dev secrets. `.dev.vars` lives in the repo root
+# for `wrangler dev`; Pages uploads it even though .gitignore lists it, so it was
+# publicly downloadable. Redirect every request away from it.
+/.dev.vars  /  301
+/.dev.vars/*  /  301
+/.env  /  301
+/.env.local  /  301

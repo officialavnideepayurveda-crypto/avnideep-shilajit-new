@@ -113,7 +113,7 @@ function trackFbEvent(eventName, params, eventId, userExtra) {
   if (!eventId) eventId = _genEventId(eventName);
   try {
     if (typeof fbq === 'function') {
-      fbq('track', eventName, Object.assign({}, params || {}, {eventID: eventId}));
+      fbq('track', eventName, Object.assign({}, params || {}), {eventID: eventId});
     }
   } catch(e){}
   _sendCapiEvent(eventName, eventId, params, userExtra);
@@ -599,7 +599,7 @@ function initVideo(){
 
 
 
-      trackFbEvent('ViewContent', {content_name:'AVN-BALM-001', content_type:'product'});
+      /* Page-level ViewContent already fired in <head>; do not double-fire on video load. */
 
 
     }
@@ -1028,6 +1028,7 @@ function fetchT(url, opt, ms){
 async function sendOrder(payload, retries){
 
 
+  try { if (payload && window.AVN_META && window.AVN_META.checkoutId && !payload.ic_event_id) payload.ic_event_id = window.AVN_META.checkoutId(false); } catch (e) {}
   retries = retries ?? 2;
 
 

@@ -115,7 +115,7 @@ function trackFbEvent(eventName, params, eventId, userExtra) {
   if (!eventId) eventId = _genEventId(eventName);
   try {
     if (typeof fbq === 'function') {
-      fbq('track', eventName, Object.assign({}, params || {}, {eventID: eventId}));
+      fbq('track', eventName, Object.assign({}, params || {}), {eventID: eventId});
     }
   } catch(e){}
   _sendCapiEvent(eventName, eventId, params, userExtra);
@@ -497,6 +497,7 @@ window.closeOrderPopup = closeOrderPopup;
   }
 
   async function sendOrder(payload, retries){
+    try { if (payload && window.AVN_META && window.AVN_META.checkoutId && !payload.ic_event_id) payload.ic_event_id = window.AVN_META.checkoutId(false); } catch (e) {}
     retries = retries ?? 2;
     var lastErr = null;
     for(var i=0; i<=retries; i++){

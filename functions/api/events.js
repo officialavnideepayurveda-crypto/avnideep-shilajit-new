@@ -88,23 +88,42 @@ export async function onRequestPost(context) {
     // fall back to User-Agent header for server-to-server calls
     const userUa = user_data?.client_user_agent || request.headers.get('User-Agent') || '';
     const userIp = request.headers.get('CF-Connecting-IP') || request.headers.get('X-Forwarded-For') || '';
+
+    // If the browser had not set _fbc yet (pixel script deferred), rebuild it
+    // from the fbclid on the landing URL so ad clicks still attribute.
+    let fbc = user_data?.fbc || '';
+    if (!fbc && event_source_url) {
+      try {
+        const fbclid = new URL(event_source_url).searchParams.get('fbclid');
+        if (fbclid) fbc = 'fb.1.' + Date.now() + '.' + fbclid;
+      } catch (e) {}
+    }
+
     const userData = await buildUserData({
       name: user_data?.name,
       phone: user_data?.phone,
       fbp: user_data?.fbp,
-      fbc: user_data?.fbc,
+      fbc: fbc,
       ip: userIp,
       ua: userUa,
       orderId: custom_data?.order_id
     });
 
-    // Build custom_data
-    const metaCustomData = buildCustomData({
+    // Build custom_data. PageView has no product payload — sending a default
+    // SKU there would wrongly attribute every page view to a product.
+    const metaCustomData = event_name === 'PageView' ? {} : buildCustomData({
       value: custom_data?.value,
       currency: custom_data?.currency || 'INR',
       orderId: custom_data?.order_id,
       contentName: custom_data?.content_name,
-      contentType: custom_data?.content_type
+      contentType: custom_data?.content_type,
+      contentIds: custom_data?.content_ids,
+      numItems: custom_data?.num_items,
+      contents: custom_data?.contents,
+      contentCategory: custom_data?.content_category,
+      searchString: custom_data?.search_string,
+      paymentMethod: custom_data?.payment_method,
+      status: custom_data?.status
     });
 
     // Perf: send to Meta CAPI in background (waitUntil) so we respond instantly.

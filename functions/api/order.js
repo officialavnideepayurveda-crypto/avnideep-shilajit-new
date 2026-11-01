@@ -38,6 +38,13 @@ async function withTimeout(promise, ms = 5000, name = "request") {
 
 const REQUIRED = ["name", "phone", "paymentMethod"];
 
+// Client-generated InitiateCheckout id (shared with the browser Pixel/CAPI).
+// Accept only a conservative id shape; anything else falls back to order_id.
+function sanitizeEventId(value) {
+  const s = String(value || "").trim();
+  return /^[A-Za-z0-9_-]{6,80}$/.test(s) ? s : "";
+}
+
 // Order-total sanity range in ₹ (see "Step 4b" below before changing these).
 // Cheapest catalogue price today is ₹279 (oil prepaid; COD ₹349) and the biggest coupon is ₹100
 // off with a ₹599 minimum spend, so ₹99 is comfortably below any genuine total
@@ -982,7 +989,7 @@ async function sendEmail(order, env) {
 // 🔷 FACEBOOK CONVERSION API (Server-Side Events)
 // Uses shared CAPI utility from _capi.js for consistent event tracking
 // ============================================================
-async function sendFacebookCAPI(order, env, eventName = 'Purchase', requestUa = '') {
+async function sendFacebookCAPI(order, env, eventName = 'Purchase', requestUa = '', eventIdOverride = '') {
   try {
     const rawPhone = String(order.phone || '').replace(/[^0-9]/g, '');
     if (!rawPhone) {
@@ -1008,11 +1015,12 @@ async function sendFacebookCAPI(order, env, eventName = 'Purchase', requestUa = 
     });
 
     const rawLogUserData = { ph: userData.ph ? userData.ph.substring(0,8)+"..." : null, em: userData.em ? userData.em.substring(0,8)+"..." : null, fn: userData.fn ? "[HASHED]" : null, ln: userData.ln ? "[HASHED]" : null, external_id: userData.external_id ? userData.external_id.substring(0,8)+"..." : null, client_ip_address: userData.client_ip_address, fbp: userData.fbp, fbc: userData.fbc };
-      console.log(`[CAPILOG] SERVER CAPI PAYLOAD: eventName=${eventName} eventId=${String(order.order_id || "")} userData=${JSON.stringify(rawLogUserData)} customData=${JSON.stringify(customData)}`);
+      const resolvedEventId = eventIdOverride || String(order.order_id || "");
+      console.log(`[CAPILOG] SERVER CAPI PAYLOAD: eventName=${eventName} eventId=${resolvedEventId} userData=${JSON.stringify(rawLogUserData)} customData=${JSON.stringify(customData)}`);
       const result = await sendCAPIEvent({
       env,
       eventName: eventName,
-      eventId: String(order.order_id || ''),
+      eventId: resolvedEventId,
       userData,
       customData,
       eventSourceUrl: order.page_url || 'https://avnideepayurveda.in/',

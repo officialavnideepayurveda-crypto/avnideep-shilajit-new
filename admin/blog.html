@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<title>Blog Manager | Avnideep Admin</title>
+<link rel="icon" href="/assets/favicon.ico?v=2" sizes="any">
+<style>
+  :root { --brand:#123B2C; --accent:#C08B4B; --muted:#6B6257; --line:#EADFD3; --bg:#FAF6F1; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:15px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:#1F1B16; }
+  header { background:var(--brand); color:#fff; padding:14px 20px; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+  header b { font-size:17px; letter-spacing:.2px; }
+  header span { opacity:.8; font-size:13px; }
+  .wrap { max-width:1180px; margin:0 auto; padding:20px; display:grid; gap:18px; grid-template-columns: 1.15fr .85fr; }
+  @media (max-width: 980px) { .wrap { grid-template-columns: 1fr; } }
+  .card { background:#fff; border:1px solid var(--line); border-radius:14px; padding:18px; }
+  h1 { font-size:19px; margin:0 0 4px; }
+  h2 { font-size:15px; margin:0 0 12px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); }
+  label { display:block; font-weight:600; font-size:13px; margin:12px 0 5px; }
+  input[type=text], input[type=password], input[type=url], textarea, select {
+    width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:10px; font:inherit; background:#fff; color:inherit;
+  }
+  textarea { min-height:260px; resize:vertical; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:13.5px; line-height:1.5; }
+  .row { display:flex; gap:10px; flex-wrap:wrap; }
+  .row > * { flex:1 1 180px; }
+  button { font:inherit; font-weight:600; cursor:pointer; border-radius:10px; padding:10px 16px; border:1px solid var(--brand); background:var(--brand); color:#fff; }
+  button.ghost { background:#fff; color:var(--brand); }
+  button.danger { background:#fff; color:#A3231D; border-color:#E6B4B1; }
+  button:disabled { opacity:.55; cursor:not-allowed; }
+  .hint { color:var(--muted); font-size:12.5px; margin-top:4px; }
+  .counter { font-size:12px; color:var(--muted); }
+  .counter.warn { color:#A3231D; font-weight:600; }
+  #status { padding:10px 12px; border-radius:10px; font-size:13.5px; display:none; margin-top:12px; }
+  #status.ok { display:block; background:#E8F3EA; color:#1D5B2C; }
+  #status.err { display:block; background:#FCEBE9; color:#8E211B; }
+  ul.posts { list-style:none; margin:0; padding:0; display:grid; gap:10px; }
+  ul.posts li { border:1px solid var(--line); border-radius:12px; padding:12px; display:grid; gap:6px; }
+  .p-title { font-weight:700; }
+  .p-meta { color:var(--muted); font-size:12.5px; word-break:break-all; }
+  .badge { display:inline-block; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; padding:2px 8px; border-radius:999px; }
+  .badge.published { background:#E8F3EA; color:#1D5B2C; }
+  .badge.draft { background:#F4EEE6; color:#7A6A55; }
+  .p-actions { display:flex; gap:8px; flex-wrap:wrap; }
+  .p-actions button { padding:6px 12px; font-size:13px; }
+  .preview { border:1px dashed var(--line); border-radius:10px; padding:12px; background:#FDFBF8; max-height:320px; overflow:auto; }
+  .preview h2 { text-transform:none; letter-spacing:0; font-size:17px; color:#1F1B16; margin:14px 0 6px; }
+  .preview h3 { font-size:15px; margin:12px 0 4px; }
+  .preview ul { padding-left:20px; }
+  a { color:var(--brand); }
+</style>
+</head>
+<body>
+<header>
+  <b>Avnideep · Blog Manager</b>
+  <span>Posts yahan se likhein — publish karte hi /blog/ par aa jayenge</span>
+</header>
+
+<div class="wrap">
+  <section class="card">
+    <h1 id="formTitle">Naya post</h1>
+    <p class="hint">Content me simple markdown chalta hai: <code>## heading</code>, <code>- list</code>, <code>**bold**</code>, <code>[link](/pain-oil/)</code>, blank line = naya paragraph.</p>
+
+    <div class="row">
+      <div>
+        <label for="title">Title (H1 + SEO title)</label>
+        <input id="title" type="text" placeholder="Joint Pain Oil Ke Fayde: Jodon Ke Dard Ka Ayurvedic Oil" maxlength="120">
+        <div class="counter" id="titleCount">0 / 60</div>
+      </div>
+      <div>
+        <label for="slug">URL slug</label>
+        <input id="slug" type="text" placeholder="joint-pain-oil-ke-fayde" maxlength="80">
+        <div class="hint">/blog/<span id="slugPreview">…</span>/</div>
+      </div>
+    </div>
+
+    <label for="description">Meta description</label>
+    <textarea id="description" style="min-height:74px" maxlength="300" placeholder="140–160 characters — search me yahi line dikhti hai."></textarea>
+    <div class="counter" id="descCount">0 / 160</div>
+
+    <div class="row">
+      <div>
+        <label for="hero">Hero image URL</label>
+        <input id="hero" type="text" placeholder="/pain-oil/oil-1.png">
+      </div>
+      <div>
+        <label for="heroAlt">Image alt text</label>
+        <input id="heroAlt" type="text" placeholder="Avnideep Pain Relief Oil bottle">
+      </div>
+    </div>
+
+    <label for="body">Content</label>
+    <textarea id="body" placeholder="## Heading&#10;&#10;Paragraph yahan…&#10;&#10;- Point 1&#10;- Point 2"></textarea>
+
+    <div class="row" style="margin-top:12px;align-items:center">
+      <div>
+        <label for="status">Status</label>
+        <select id="status">
+          <option value="draft">Draft (site par nahi)</option>
+          <option value="published">Published (live)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row" style="margin-top:16px">
+      <button id="saveBtn" type="button">Save post</button>
+      <button id="previewBtn" class="ghost" type="button">Preview</button>
+      <button id="resetBtn" class="ghost" type="button">Naya post</button>
+    </div>
+    <div id="status" role="status"></div>
+    <div id="previewBox" class="preview" style="margin-top:14px;display:none"></div>
+
+    <hr style="border:none;border-top:1px solid var(--line);margin:20px 0">
+    <h2>Admin key</h2>
+    <div class="row">
+      <input id="key" type="password" placeholder="BLOG_ADMIN_KEY" autocomplete="off">
+      <button id="keyBtn" class="ghost" type="button" style="flex:0 0 auto">Unlock</button>
+    </div>
+    <div class="hint">Key sirf is tab ki sessionStorage me rehti hai, server par hash/verify hoti hai.</div>
+  </section>
+
+  <section class="card">
+    <h2>Posts <span id="count" class="hint"></span></h2>
+    <ul class="posts" id="list"><li class="p-meta">Unlock karke list dekhein…</li></ul>
+    <div class="hint" style="margin-top:14px">
+      Publish hone ke baad URL live: <code>/blog/&lt;slug&gt;/</code> · Hub: <a href="/blog/" target="_blank" rel="noopener">/blog/</a> · Sitemap khud update hota hai.
+    </div>
+  </section>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var editingSlug = '';
+
+  function key() { try { return sessionStorage.getItem('avn_blog_key') || ''; } catch (e) { return ''; } }
+  function setKey(v) { try { sessionStorage.setItem('avn_blog_key', v); } catch (e) {} }
+
+  function say(msg, kind) {
+    var el = $('status');
+    el.className = kind || 'ok';
+    el.textContent = msg;
+    if (!msg) el.className = '';
+  }
+
+  function api(method, body, slug) {
+    var url = '/api/admin/blog' + (slug ? '?slug=' + encodeURIComponent(slug) : '');
+    return fetch(url, {
+      method: method,
+      headers: { 'Content-Type': 'application/json', 'x-blog-key': key() },
+      body: body ? JSON.stringify(body) : undefined
+    }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (data) {
+        if (!r.ok) throw new Error(data.error || ('HTTP ' + r.status));
+        return data;
+      });
+    });
+  }
+
+  /* ---- markdown-lite (same structure blog.css already styles) ---- */
+  function inline(t) {
+    return t
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, function (m, text, href) {
+        return /^(https?:\/\/|\/)/.test(href) ? '<a href="' + href + '">' + text + '</a>' : text;
+      });
+  }
+
+  function toHtml(md) {
+    var lines = String(md || '').replace(/\r\n/g, '\n').split('\n');
+    var out = [], list = null, para = [];
+
+    function flushPara() {
+      if (para.length) { out.push('<p>' + inline(para.join(' ')) + '</p>'); para = []; }
+    }
+    function flushList() {
+      if (list) { out.push('<' + list.tag + '>' + list.items.map(function (i) { return '<li>' + inline(i) + '</li>'; }).join('') + '</' + list.tag + '>'); list = null; }
+    }
+
+    lines.forEach(function (raw) {
+      var line = raw.trim();
+      if (!line) { flushPara(); flushList(); return; }
+      var h = /^(#{2,3})\s+(.*)$/.exec(line);
+      if (h) { flushPara(); flushList(); out.push('<' + (h[1].length === 2 ? 'h2' : 'h3') + '>' + inline(h[2]) + '</' + (h[1].length === 2 ? 'h2' : 'h3') + '>'); return; }
+      var ul = /^[-*]\s+(.*)$/.exec(line);
+      if (ul) { flushPara(); if (!list || list.tag !== 'ul') { flushList(); list = { tag: 'ul', items: [] }; } list.items.push(ul[1]); return; }
+      var ol = /^\d+[.)]\s+(.*)$/.exec(line);
+      if (ol) { flushPara(); if (!list || list.tag !== 'ol') { flushList(); list = { tag: 'ol', items: [] }; } list.items.push(ol[1]); return; }
+      flushList(); para.push(line);
+    });
+    flushPara(); flushList();
+    return out.join('\n');
+  }
+
+  function slugify(v) {
+    return String(v).toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 80);
+  }
+
+  function refreshCounters() {
+    var t = $('title').value.length, d = $('description').value.length;
+    $('titleCount').textContent = t + ' / 60' + (t > 60 ? ' — chhota karein' : (t >= 50 ? '' : ' — thoda bada'));
+    $('titleCount').className = 'counter' + (t > 60 ? ' warn' : '');
+    $('descCount').textContent = d + ' / 160' + (d > 160 ? ' — chhota karein' : (d >= 140 ? '' : ' — thoda bada'));
+    $('descCount').className = 'counter' + (d > 160 ? ' warn' : '');
+    $('slugPreview').textContent = $('slug').value || slugify($('title').value) || '…';
+  }
+
+  function resetForm() {
+    editingSlug = '';
+    $('formTitle').textContent = 'Naya post';
+    $('title').value = ''; $('slug').value = ''; $('description').value = '';
+    $('hero').value = '/home/assets/shilajit-1-400.webp'; $('heroAlt').value = '';
+    $('body').value = '## Heading\n\nParagraph yahan…\n\n- Point 1\n- Point 2';
+    $('status').value = 'draft';
+    $('previewBox').style.display = 'none';
+    say('', '');
+    refreshCounters();
+  }
+
+  function payload() {
+    return {
+      slug: $('slug').value || slugify($('title').value),
+      title: $('title').value.trim(),
+      description: $('description').value.trim(),
+      hero_image: $('hero').value.trim(),
+      hero_alt: $('heroAlt').value.trim() || $('title').value.trim(),
+      body: toHtml($('body').value),
+      status: $('status').value
+    };
+  }
+
+  function render(posts) {
+    var list = $('list');
+    $('count').textContent = posts.length ? '(' + posts.length + ')' : '';
+    if (!posts.length) { list.innerHTML = '<li class="p-meta">Abhi koi post nahi. Left form se pehla post likhein.</li>'; return; }
+    list.innerHTML = posts.map(function (p) {
+      return '<li>' +
+        '<div class="p-title">' + (p.title || '').replace(/</g, '&lt;') + '</div>' +
+        '<div class="p-meta"><span class="badge ' + p.status + '">' + p.status + '</span> · /blog/' + p.slug + '/</div>' +
+        '<div class="p-actions">' +
+          '<button class="ghost" data-edit="' + p.slug + '" type="button">Edit</button>' +
+          '<a href="/blog/' + p.slug + '/" target="_blank" rel="noopener"><button class="ghost" type="button">View</button></a>' +
+          '<button class="danger" data-del="' + p.slug + '" type="button">Delete</button>' +
+        '</div></li>';
+    }).join('');
+
+    Array.prototype.forEach.call(list.querySelectorAll('[data-edit]'), function (btn) {
+      btn.addEventListener('click', function () {
+        var slug = btn.getAttribute('data-edit');
+        var post = posts.filter(function (p) { return p.slug === slug; })[0];
+        if (!post) return;
+        editingSlug = post.slug;
+        $('formTitle').textContent = 'Edit: ' + post.slug;
+        $('title').value = post.title || '';
+        $('slug').value = post.slug || '';
+        $('description').value = post.description || '';
+        $('hero').value = post.hero_image || '';
+        $('heroAlt').value = post.hero_alt || '';
+        $('status').value = post.status || 'draft';
+        $('body').value = htmlToMd(post.body_html || '');
+        refreshCounters();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    });
+
+    Array.prototype.forEach.call(list.querySelectorAll('[data-del]'), function (btn) {
+      btn.addEventListener('click', function () {
+        var slug = btn.getAttribute('data-del');
+        if (!confirm('Delete /blog/' + slug + '/ ? Ye wapas nahi aayega.')) return;
+        api('DELETE', null, slug).then(function () { say('Deleted ' + slug, 'ok'); load(); })
+          .catch(function (e) { say(e.message, 'err'); });
+      });
+    });
+  }
+
+  function htmlToMd(html) {
+    return String(html || '')
+      .replace(/<h2[^>]*>([\s\S]*?)<\/h2>/gi, '\n## $1\n')
+      .replace(/<h3[^>]*>([\s\S]*?)<\/h3>/gi, '\n### $1\n')
+      .replace(/<li[^>]*>([\s\S]*?)<\/li>/gi, '\n- $1')
+      .replace(/<\/(ul|ol)>/gi, '\n')
+      .replace(/<p[^>]*>([\s\S]*?)<\/p>/gi, '\n$1\n')
+      .replace(/<strong[^>]*>([\s\S]*?)<\/strong>/gi, '**$1**')
+      .replace(/<a[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi, '[$2]($1)')
+      .replace(/<[^>]+>/g, '')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+  }
+
+  function load() {
+    if (!key()) return;
+    api('GET').then(function (d) { render(d.posts || []); })
+      .catch(function (e) { say(e.message, 'err'); $('list').innerHTML = '<li class="p-meta">' + e.message + '</li>'; });
+  }
+
+  $('saveBtn').addEventListener('click', function () {
+    var data = payload();
+    if (!key()) { say('Pehle admin key daal kar Unlock karein.', 'err'); return; }
+    $('saveBtn').disabled = true;
+    var req = editingSlug ? api('PUT', data, editingSlug) : api('POST', data, null);
+    req.then(function (res) {
+      say('Saved: /blog/' + res.slug + '/ (' + res.status + ')', 'ok');
+      editingSlug = res.slug;
+      $('formTitle').textContent = 'Edit: ' + res.slug;
+      load();
+    }).catch(function (e) { say(e.message, 'err'); })
+      .then(function () { $('saveBtn').disabled = false; });
+  });
+
+  $('previewBtn').addEventListener('click', function () {
+    var box = $('previewBox');
+    box.style.display = 'block';
+    box.innerHTML = '<h2 style="text-transform:none;letter-spacing:0;color:#1F1B16">' +
+      ($('title').value || 'Title') + '</h2>' + toHtml($('body').value);
+  });
+
+  $('resetBtn').addEventListener('click', resetForm);
+
+  $('keyBtn').addEventListener('click', function () {
+    var v = $('key').value.trim();
+    if (!v) { say('Key khali hai.', 'err'); return; }
+    setKey(v);
+    api('GET').then(function (d) { say('Unlocked. ' + (d.posts || []).length + ' posts mile.', 'ok'); render(d.posts || []); })
+      .catch(function (e) { setKey(''); say(e.message, 'err'); });
+  });
+
+  $('key').value = key();
+  $('title').addEventListener('input', function () { if (!editingSlug) $('slug').value = slugify($('title').value); refreshCounters(); });
+  $('slug').addEventListener('input', function () { if (!editingSlug) $('slug').value = slugify($('slug').value); refreshCounters(); });
+  $('description').addEventListener('input', refreshCounters);
+
+  resetForm();
+  if (key()) load();
+})();
+</script>
+</body>
+</html>

@@ -170,7 +170,16 @@
   function itemCount() { var n = 0; ids().forEach(function (k) { n += cart[k]; }); return n; }
   function sum(fn) { var s = 0; ids().forEach(function (k) { var p = P(k); if (p) s += fn(p) * cart[k]; }); return s; }
   function inr(n) { return '₹' + n.toLocaleString('en-IN'); }
-  function track(event, params) { try { if (typeof fbq === 'function') fbq('track', event, params); } catch (e) {} }
+  function track(event, params, opts) {
+    try {
+      if (window.AVN_META && window.AVN_META.track) {
+        // Shared tracker fans out to Pixel + CAPI with one event_id.
+        window.AVN_META.track(event, params, opts);
+      } else if (typeof fbq === 'function') {
+        fbq('track', event, params, opts && opts.eventID ? { eventID: opts.eventID } : undefined);
+      }
+    } catch (e) {}
+  }
 
   function sub(totalSo) { return sum(function (p) { return p.cod; }); }
 
@@ -859,7 +868,10 @@
       // Purge the stale lines so the drawer stops showing them.
       Object.keys(cart).forEach(function (k) { if (!P(k)) { delete cart[k]; dropped = true; } });
       if (dropped) { store(); render(); }
-      track('InitiateCheckout', { value: sub(), currency: 'INR', num_items: itemCount() });
+      var icoId = (window.AVN_META && window.AVN_META.checkoutId)
+        ? window.AVN_META.checkoutId(true)
+        : ('ico_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8));
+      track('InitiateCheckout', { value: sub(), currency: 'INR', num_items: itemCount() }, { eventID: icoId });
       closeDr();
       // EVERY cart goes through the order popup, including a MIXED cart (two or
       // more product families). Mixed carts used to be dumped on WhatsApp from

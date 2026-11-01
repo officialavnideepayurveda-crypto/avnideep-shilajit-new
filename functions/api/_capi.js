@@ -82,7 +82,7 @@ async function buildUserData({ name, phone, email, fbp, fbc, ip, ua, orderId }) 
 // ============================================================
 // Build custom data object for the event
 // ============================================================
-function buildCustomData({ value, currency = 'INR', orderId, contentName, contentType }) {
+function buildCustomData({ value, currency = 'INR', orderId, contentName, contentType, contentIds, numItems, contents, contentCategory, searchString, paymentMethod, status }) {
   const customData = {
     value: Number(value) || 0,
     currency,
@@ -93,6 +93,22 @@ function buildCustomData({ value, currency = 'INR', orderId, contentName, conten
   if (orderId) {
     customData.order_id = String(orderId);
   }
+
+  // Catalogue fields matter for Advantage+ / dynamic ads matching. Only add
+  // them when present so existing callers keep the exact same payload.
+  if (Array.isArray(contentIds) && contentIds.length) {
+    customData.content_ids = contentIds.map((id) => String(id));
+  }
+  if (numItems !== undefined && numItems !== null && numItems !== '') {
+    customData.num_items = Number(numItems) || 0;
+  }
+  if (Array.isArray(contents) && contents.length) {
+    customData.contents = contents;
+  }
+  if (contentCategory) customData.content_category = String(contentCategory);
+  if (searchString) customData.search_string = String(searchString);
+  if (paymentMethod) customData.payment_method = String(paymentMethod);
+  if (status) customData.status = String(status);
 
   return customData;
 }

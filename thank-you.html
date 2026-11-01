@@ -71,6 +71,11 @@
 
   <!-- Meta Pixel + CAPI (shared tracker) -->
 
+  <!-- Keep the buyer's name/phone out of the URL that the Pixel reports as
+       event_source_url. We stash the original query for the page logic below
+       and rewrite the address bar before any tracking script runs. -->
+  <script>window.__AVN_TY_QS=window.location.search;(function(){try{var u=new URL(window.location.href);['name','phone','email','address','pincode','city','wa_url'].forEach(function(k){u.searchParams.delete(k);});window.history.replaceState(null,'',u.pathname+u.search+u.hash);}catch(e){}})();</script>
+
   <script>window.AVN_META_CFG={pixel:'1715387275770711'};</script>
 
   <script data-cfasync="false" src="/assets/meta-track.js?v=2"></script>
@@ -350,7 +355,7 @@
 
   (function(){
 
-    var params = new URLSearchParams(window.location.search);
+    var params = new URLSearchParams(window.__AVN_TY_QS || window.location.search);
 
     var orderId = params.get('order_id') || '';
 
@@ -467,14 +472,20 @@
     // prices when the URL + storage both miss but the product name carries the
     // pack, e.g. old cached redirects).
     // PRICING RULE: COD = MRP, prepaid = MRP - 20% (Shilajit pack MRPs
-    // 2,500 / 5,000 / 7,500 — the same rule the PDP and /api/order use).
+    // 1,250 / 2,500 / 3,750 — the same rule the PDP and /api/order use).
     if (amount === null || isNaN(amount)) {
       var _nm = (name || '').toLowerCase();
       var _isPack3 = _nm.indexOf('pack of 3') >= 0 || _nm.indexOf('pack 3') >= 0;
       var _isPack2 = _nm.indexOf('pack of 2') >= 0 || _nm.indexOf('pack 2') >= 0;
-      var _mrp = _isPack3 ? 7500 : (_isPack2 ? 5000 : 2500);
-      var _payingPrepaid = isRazorpaySuccess || method === 'prepaid';
-      amount = _payingPrepaid ? Math.round(_mrp * 0.8) : _mrp;
+      var _pi = _isPack3 ? 2 : (_isPack2 ? 1 : 0);
+      // Per-product table (COD / advance / prepaid), mirroring assets/cart.js,
+      // so a missing ?amount= can never report another product's price or a
+      // doubled pack price. "hair" is matched before "oil" ("Herbal Hair Oil").
+      var _prTbl = _nm.indexOf('hair') >= 0 ? { cod: [499, 998, 1497], advance: [499, 998, 1497], prepaid: [399, 798, 1198] } :
+                   _nm.indexOf('balm') >= 0 ? { cod: [349, 698, 1047], advance: [349, 698, 1047], prepaid: [279, 558, 838] } :
+                   _nm.indexOf('oil') >= 0  ? { cod: [349, 698, 1047], advance: [320, 698, 1047], prepaid: [299, 558, 838] } :
+                                              { cod: [1250, 2500, 3750], advance: [1250, 2500, 3750], prepaid: [1000, 2000, 3000] };
+      var _pk = (method === 'advance_cod' || method === 'advance') ? 'advance' : (method === 'prepaid' || isRazorpaySuccess) ? 'prepaid' : 'cod'; amount = _prTbl[_pk][_pi];
     }
 
 
