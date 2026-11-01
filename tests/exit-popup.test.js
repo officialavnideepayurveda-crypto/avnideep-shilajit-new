@@ -102,15 +102,15 @@ describe('Exit-intent popup', () => {
     expect(exitPopupActive()).toBe(false);
   });
 
-  it('shows when the tab/app is switched (visibilitychange -> hidden)', () => {
+  it('does not show when the tab/app is switched (visibilitychange -> hidden)', () => {
     loadPage();
 
-    // Simulate the browser hiding the tab (mobile exit signal)
+    // Tab switching is not an exit signal; the popup must stay closed.
     Object.defineProperty(dom.window.document, 'hidden', { configurable: true, get: () => true });
     dom.window.document.dispatchEvent(new dom.window.Event('visibilitychange'));
 
-    vi.advanceTimersByTime(600); // scheduleShow() waits 500ms
-    expect(exitPopupActive()).toBe(true);
+    vi.advanceTimersByTime(600);
+    expect(exitPopupActive()).toBe(false);
   });
 
   it('does not show if an order was already placed in this session', () => {

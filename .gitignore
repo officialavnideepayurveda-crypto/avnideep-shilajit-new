@@ -34,11 +34,20 @@ home/assets/shilajit-new.png
 # ignore - so keeping them here would publish duplicate copies of the homepage.
 perf-*.html
 *.perf-backup-*
-_preview*.log
+_preview*.log*
+_dev.log*
 .lh/
 psi-mobile.json
 admin_headers.txt
 api-prod.json
 pain oil zip/
 *.before-story-rebuild
+
+# Never publish archives, dev scripts or unused root files
+*.zip
+/check-jsonld.js
+/write_up-checks.ps1
+/script.js
+/styles.css
+/renee-theme.css
 

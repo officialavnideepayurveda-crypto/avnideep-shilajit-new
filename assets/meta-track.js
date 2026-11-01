@@ -51,6 +51,20 @@
     try { sessionStorage.removeItem('avn_ic_id'); } catch (e) {}
   }
 
+  /* Thank-you / order URLs carry the buyer's name + phone in the query string.
+     Meta must never receive that PII inside event_source_url, so drop the
+     personal keys before mirroring an event server-side (fbclid/utm are kept
+     so ad attribution still works). */
+  function cleanSource(url) {
+    try {
+      var u = new URL(url || location.href, location.href);
+      ['name', 'phone', 'email', 'address', 'pincode', 'city', 'wa_url'].forEach(function (k) {
+        u.searchParams.delete(k);
+      });
+      return u.href;
+    } catch (e) { return url || ''; }
+  }
+
   function readCookie(name) {
     try {
       var m = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
@@ -148,7 +162,7 @@
       var body = JSON.stringify({
         event_name: event,
         event_id: eventId,
-        event_source_url: source || (location.href.split('#')[0]),
+        event_source_url: cleanSource(source),
         custom_data: data,
         user_data: userData
       });
@@ -255,6 +269,9 @@
 
   function bind() {
     document.addEventListener('click', function (e) {
+      // Ignore synthetic clicks: the checkout re-selects the default payment
+      // card on load, which used to fire AddPaymentInfo for every visitor.
+      if (e && e.isTrusted === false) return;
       var el = e.target;
       if (!el || !el.closest) return;
       var a = el.closest('a[href]');
@@ -274,6 +291,9 @@
     }, true);
 
     document.addEventListener('change', function (e) {
+      // cart.js restores the saved payment method with a synthetic `change`
+      // event (isTrusted=false); that is not a real selection, so don't count it.
+      if (e && e.isTrusted === false) return;
       var t = e.target;
       if (t && t.name === 'paymentMethod' && t.checked) {
         paymentChanged(t.value);
