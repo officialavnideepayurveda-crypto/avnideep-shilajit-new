@@ -1,30 +1,24 @@
 /**
- * Placeholder tracking endpoint
- * Returns 204 No Content to prevent 405 errors from frontend tracking calls
- * Accepts all HTTP methods (GET, POST, OPTIONS, etc.)
+ * Placeholder tracking endpoint.
+ *
+ * Returns 204 No Content so old frontend beacons do not 405. It stores and
+ * forwards nothing, and its CORS headers now come from the shared allowlist
+ * instead of a wildcard.
  */
-export async function onRequest(context) {
-  const { request } = context;
+import { corsHeaders } from './_lib/cors.js';
 
-  // Handle CORS preflight
-  if (request.method === "OPTIONS") {
+export async function onRequest(context) {
+  const { request, env } = context;
+
+  if (request.method === 'OPTIONS') {
     return new Response(null, {
       status: 204,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type",
-        "Access-Control-Max-Age": "86400",
-      },
+      headers: { ...corsHeaders(request, env), 'Access-Control-Max-Age': '86400' },
     });
   }
 
-  // Return 204 No Content for any tracking call
   return new Response(null, {
     status: 204,
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Cache-Control": "no-store",
-    },
+    headers: { ...corsHeaders(request, env), 'Cache-Control': 'no-store' },
   });
 }

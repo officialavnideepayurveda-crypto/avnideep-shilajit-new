@@ -4,20 +4,22 @@
 // Used as fallback if edge HTML rewrite hasn't applied yet.
 // ============================================================
 
+import { corsHeaders } from './_lib/cors.js';
+
 const DEFAULT_PIXEL = "1715387275770711";
 
-function json(data, status = 200) {
+function json(data, status, request, env) {
   return new Response(JSON.stringify(data), {
-    status,
+    status: status || 200,
     headers: {
       "Content-Type": "application/json",
       "Cache-Control": "public, max-age=60, s-maxage=300",
-      "Access-Control-Allow-Origin": "*",
+      ...corsHeaders(request, env, 'GET, OPTIONS'),
     },
   });
 }
 
-export async function onRequestGet({ env }) {
+export async function onRequestGet({ request, env }) {
   try {
     let pixel = DEFAULT_PIXEL;
     if (env?.DB) {
@@ -31,15 +33,15 @@ export async function onRequestGet({ env }) {
         if (/^\d{8,20}$/.test(v)) pixel = v;
       } catch (e) {}
     }
-    return json({ ok: true, meta_pixel_id: pixel });
+    return json({ ok: true, meta_pixel_id: pixel }, 200, request, env);
   } catch (e) {
-    return json({ ok: true, meta_pixel_id: DEFAULT_PIXEL });
+    return json({ ok: true, meta_pixel_id: DEFAULT_PIXEL }, 200, request, env);
   }
 }
 
-export async function onRequestOptions() {
+export async function onRequestOptions({ request, env }) {
   return new Response(null, {
     status: 204,
-    headers: { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "GET, OPTIONS" },
+    headers: corsHeaders(request, env, 'GET, OPTIONS'),
   });
 }
