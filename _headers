@@ -40,3 +40,11 @@
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
+  Cross-Origin-Opener-Policy: same-origin-allow-popups
+  # CSP: allows exactly the third parties the site already loads (Meta pixel,
+  # GTM/GA, Razorpay checkout, YouTube facades, Google Fonts, the image CDN and
+  # the partner subdomain). 'unsafe-inline' is required because the pages carry
+  # inline scripts/handlers; a nonce would need per-request HTML rewriting, so
+  # that is a follow-up, not a same-day change. Everything else - framing,
+  # object embeds, base-uri hijacking, plugin content - is blocked outright.
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self' https://checkout.razorpay.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://connect.facebook.net https://*.facebook.com https://*.googletagmanager.com https://*.google-analytics.com https://www.youtube.com https://s.ytimg.com https://*.razorpay.com https://apis.google.com https://script.google.com https://partners.avnideepayurveda.in; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://cdn.avnideepayurveda.in https://*.facebook.com https://*.google-analytics.com https://*.googletagmanager.com https://*.ytimg.com https://*.razorpay.com https://api.zippopotam.us; connect-src 'self' https://*.facebook.com https://connect.facebook.net https://*.google-analytics.com https://*.googletagmanager.com https://*.razorpay.com https://partners.avnideepayurveda.in https://avnideep-admin-api.officialavnideepayurveda.workers.dev https://api.zippopotam.us; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://*.razorpay.com https://*.facebook.com; media-src 'self' https://cdn.avnideepayurveda.in; worker-src 'self' blob:; upgrade-insecure-requests

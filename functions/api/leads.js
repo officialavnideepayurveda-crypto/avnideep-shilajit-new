@@ -76,10 +76,10 @@ export async function onRequestPost({ request, env }) {
     // ok:true even when D1 was missing or the write threw.
     if (d1Result.ok !== true) {
       return new Response(
+        // Never echo the internal error text: it exposes D1/schema details.
         JSON.stringify({
           ok: false,
-          error: d1Result.skipped ? "Lead storage unavailable" : "Could not save lead",
-          detail: d1Result.error
+          error: d1Result.skipped ? "Lead storage unavailable" : "Could not save lead"
         }),
         { status: 503, headers: corsHeaders(env) }
       );
@@ -91,7 +91,7 @@ export async function onRequestPost({ request, env }) {
     );
   } catch (error) {
     return new Response(
-      JSON.stringify({ ok: false, error: error.message || "Server error" }),
+      JSON.stringify({ ok: false, error: "Server error" }),
       { status: 500, headers: corsHeaders(env) }
     );
   }
