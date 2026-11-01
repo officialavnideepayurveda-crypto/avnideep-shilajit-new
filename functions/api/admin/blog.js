@@ -11,6 +11,8 @@
  *   DELETE /api/admin/blog?slug=xyz   -> delete
  */
 
+import { sanitizeBlogHtml } from '../_lib/sanitizeHtml.js';
+
 const STATIC_POST_SLUGS = new Set([
   'shilajit-capsules-ke-fayde',
   'joint-pain-oil-ke-fayde',
@@ -35,14 +37,12 @@ function configuredKey(env) {
   return env.BLOG_ADMIN_KEY || env.ADMIN_TOKEN || '';
 }
 
-/* Admin trusted hai, phir bhi HTML ko clean karte hain taaki ek galat paste
-   script/iframe ke through live page na tod de. */
+/* Parser-based sanitisation at the trust boundary. The admin key holder can
+   paste any HTML, and regex stripping missed entity-encoded, malformed and
+   attribute-encoded payloads - so the stored body_html is rebuilt from an
+   allowlist by sanitize-html instead. */
 function sanitize(html) {
-  return String(html || '')
-    .replace(/<\s*(script|iframe|object|embed|style|form)[^>]*>[\s\S]*?<\s*\/\s*\1\s*>/gi, '')
-    .replace(/<\s*(script|iframe|object|embed|style|form)[^>]*\/?>/gi, '')
-    .replace(/\son[a-z]+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, '')
-    .replace(/javascript:/gi, '');
+  return sanitizeBlogHtml(html);
 }
 
 function cleanSlug(input) {

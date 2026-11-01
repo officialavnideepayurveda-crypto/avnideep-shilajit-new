@@ -23,6 +23,7 @@
     "vitest": "^4.1.10"
   },
   "dependencies": {
+    "sanitize-html": "^2.18.1",
     "sharp": "^0.35.3"
   }
 }

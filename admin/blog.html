@@ -232,18 +232,24 @@
     };
   }
 
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (m) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m];
+    });
+  }
+
   function render(posts) {
     var list = $('list');
     $('count').textContent = posts.length ? '(' + posts.length + ')' : '';
     if (!posts.length) { list.innerHTML = '<li class="p-meta">Abhi koi post nahi. Left form se pehla post likhein.</li>'; return; }
     list.innerHTML = posts.map(function (p) {
       return '<li>' +
-        '<div class="p-title">' + (p.title || '').replace(/</g, '&lt;') + '</div>' +
-        '<div class="p-meta"><span class="badge ' + p.status + '">' + p.status + '</span> · /blog/' + p.slug + '/</div>' +
+        '<div class="p-title">' + esc(p.title) + '</div>' +
+        '<div class="p-meta"><span class="badge ' + esc(p.status) + '">' + esc(p.status) + '</span> · /blog/' + esc(p.slug) + '/</div>' +
         '<div class="p-actions">' +
-          '<button class="ghost" data-edit="' + p.slug + '" type="button">Edit</button>' +
-          '<a href="/blog/' + p.slug + '/" target="_blank" rel="noopener"><button class="ghost" type="button">View</button></a>' +
-          '<button class="danger" data-del="' + p.slug + '" type="button">Delete</button>' +
+          '<button class="ghost" data-edit="' + esc(p.slug) + '" type="button">Edit</button>' +
+          '<a href="/blog/' + encodeURIComponent(p.slug || '') + '/" target="_blank" rel="noopener"><button class="ghost" type="button">View</button></a>' +
+          '<button class="danger" data-del="' + esc(p.slug) + '" type="button">Delete</button>' +
         '</div></li>';
     }).join('');
 
@@ -293,7 +299,7 @@
   function load() {
     if (!key()) return;
     api('GET').then(function (d) { render(d.posts || []); })
-      .catch(function (e) { say(e.message, 'err'); $('list').innerHTML = '<li class="p-meta">' + e.message + '</li>'; });
+      .catch(function (e) { say(e.message, 'err'); $('list').innerHTML = '<li class="p-meta">' + esc(e.message) + '</li>'; });
   }
 
   $('saveBtn').addEventListener('click', function () {
@@ -314,7 +320,7 @@
     var box = $('previewBox');
     box.style.display = 'block';
     box.innerHTML = '<h2 style="text-transform:none;letter-spacing:0;color:#1F1B16">' +
-      ($('title').value || 'Title') + '</h2>' + toHtml($('body').value);
+      esc($('title').value || 'Title') + '</h2>' + toHtml($('body').value);
   });
 
   $('resetBtn').addEventListener('click', resetForm);

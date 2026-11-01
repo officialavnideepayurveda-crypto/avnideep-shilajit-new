@@ -21,11 +21,8 @@ export async function onRequestGet({ env }) {
   try {
     let pixel = DEFAULT_PIXEL;
     if (env?.DB) {
-      try {
-        await env.DB.exec(
-          "CREATE TABLE IF NOT EXISTS settings (section TEXT NOT NULL DEFAULT 'commission', key TEXT NOT NULL, value TEXT DEFAULT '', updated_at TEXT DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (section, key))"
-        );
-      } catch (e) {}
+      // No DDL on a public GET: the settings table is created by the admin
+      // migrations. A failed read simply falls back to the default pixel.
       try {
         const row = await env.DB.prepare(
           "SELECT value FROM settings WHERE section = ? AND key = ?"

@@ -232,6 +232,15 @@ export async function onRequestPost({ request, env }) {
   if (!/^[6-9]\d{9}$/.test(phone)) {
     return json({ ok: false, error: "Enter the valid 10-digit mobile number used at checkout." }, 400);
   }
+  // A phone number alone is NOT a secret: it would let anyone enumerate a
+  // customer's orders by walking the number space. Require a per-order secret
+  // (order ID or courier AWB) as the second factor.
+  if (!orderId && !awb) {
+    return json({
+      ok: false,
+      error: "Enter your order ID (or AWB tracking number) along with the mobile number used at checkout.",
+    }, 400);
+  }
   if (orderId && !/^[A-Za-z0-9_-]{4,80}$/.test(orderId)) {
     return json({ ok: false, error: "Invalid order ID" }, 400);
   }
@@ -247,11 +256,9 @@ export async function onRequestPost({ request, env }) {
   }
 
   if (!orders.length) {
-    return json({
-      ok: false,
-      error: "No order found for this mobile number." +
-        (orderId || awb ? " Check the order ID / AWB, or clear it and search with the mobile number only." : ""),
-    }, 404);
+    // One generic message: it must not reveal whether the number exists or
+    // whether the order ID was the part that did not match.
+    return json({ ok: false, error: "No order found for that mobile number and order ID / AWB. Please check both and try again." }, 404);
   }
 
   // Ask Ekart for a fresh scan at most once per request, and only for the
