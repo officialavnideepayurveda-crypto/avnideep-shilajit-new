@@ -41,6 +41,10 @@ export async function onRequest(context) {
   if (
     /^\/(?:tests|scripts|migrations|node_modules)(?:\/|$)/i.test(path) ||
     /^\/(?:package(?:-lock)?\.json|wrangler\.jsonc|vitest\.config\.js|check-jsonld\.js|write_up-checks\.ps1|api-prod\.json|admin_headers\.txt|psi-mobile\.json|fix_trust_badges\.js|avnideep-fix-v3\.zip|_dev\.log.*|_preview.*|index\.html\..*|app\.v3\.js\..*)$/i.test(path) ||
+    // Never serve dotfiles (dev secrets, git metadata) even if a future deploy
+    // uploads them: .dev.vars was publicly downloadable, and .git/* must never
+    // be reachable.
+    /^\/(?:\.dev\.vars(?:\..*)?|\.env(?:\..*)?|\.git(?:\/|$)|\.wrangler(?:\/|$))/i.test(path) ||
     /\.(?:bak|backup|orig|old|save|tmp|zip|ps1|log|before-story-rebuild|perf-backup-[^/]*)$/i.test(path)
   ) {
     return new Response("Not found", {

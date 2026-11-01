@@ -5,13 +5,15 @@
 // Never leaks other customers' data; address/pincode are withheld.
 // ============================================================
 
-function json(data, status = 200) {
+import { corsHeaders } from "./_lib/cors.js";
+
+function json(data, status = 200, request = null, env = null) {
   return new Response(JSON.stringify(data), {
     status,
     headers: {
       "Content-Type": "application/json",
       "Cache-Control": "no-store, no-cache, must-revalidate",
-      "Access-Control-Allow-Origin": "*",
+      ...corsHeaders(request, env, "GET, OPTIONS"),
     },
   });
 }
@@ -49,18 +51,18 @@ async function readSessionMobile(env, request) {
   }
 }
 
-export async function onRequestOptions() {
+export async function onRequestOptions({ request, env }) {
   return new Response(null, {
     status: 204,
-    headers: { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "GET, OPTIONS" },
+    headers: corsHeaders(request, env, "GET, OPTIONS"),
   });
 }
 
 export async function onRequestGet({ request, env }) {
   try {
-    if (!env?.DB) return json({ ok: false, error: "Service unavailable" }, 503);
+    if (!env?.DB) return json({ ok: false, error: "Service unavailable" }, 503, request, env);
     const mobile = await readSessionMobile(env, request);
-    if (!mobile) return json({ ok: false, error: "Please login to view your orders." }, 401);
+    if (!mobile) return json({ ok: false, error: "Please login to view your orders." }, 401, request, env);
 
     // Phones may be stored with +91/spaces — compare last 10 digits only.
     const res = await env.DB.prepare(
@@ -79,8 +81,8 @@ export async function onRequestGet({ request, env }) {
       status: r.status || "",
       created_at: r.created_at || "",
     }));
-    return json({ ok: true, mobile, orders });
+    return json({ ok: true, mobile, orders }, 200, request, env);
   } catch (e) {
-    return json({ ok: false, error: "Could not load orders" }, 500);
+    return json({ ok: false, error: "Could not load orders" }, 500, request, env);
   }
 }

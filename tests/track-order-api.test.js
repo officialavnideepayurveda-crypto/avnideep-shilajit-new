@@ -72,9 +72,18 @@ const secondOrder = {
 };
 
 describe("POST /api/track-order", () => {
-  it("tracks with the mobile number alone (no order ID / AWB)", async () => {
+  it("rejects a mobile number on its own - no phone-only enumeration path", async () => {
+    const { env } = makeEnv({ orders: [baseOrder] });
+    const res = await onRequestPost({ request: request({ phone: "9876543210", order_id: "" }), env });
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.ok).toBe(false);
+    expect(body.error).toMatch(/order id/i);
+  });
+
+  it("tracks with the mobile number plus the order ID", async () => {
     const { env, calls } = makeEnv({ orders: [baseOrder] });
-    const res = await onRequestPost({ request: request({ phone: "9876543210" }), env });
+    const res = await onRequestPost({ request: request({ phone: "9876543210", order_id: "AVN-10001" }), env });
     expect(res.status).toBe(200);
 
     const body = await res.json();
@@ -87,12 +96,12 @@ describe("POST /api/track-order", () => {
     const ordersQuery = calls.find((c) => c.sql.includes("FROM orders o"));
     expect(ordersQuery).toBeTruthy();
     expect(ordersQuery.sql).toContain("substr(");
-    expect(ordersQuery.params).toEqual(["9876543210"]);
+    expect(ordersQuery.params).toEqual(["9876543210", "AVN-10001"]);
   });
 
   it("still works when the Ekart public-tracking toggle is off", async () => {
     const { env } = makeEnv({ enabled: "0", orders: [baseOrder] });
-    const res = await onRequestPost({ request: request({ phone: "9876543210" }), env });
+    const res = await onRequestPost({ request: request({ phone: "9876543210", order_id: "AVN-10001" }), env });
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.ok).toBe(true);
@@ -104,13 +113,13 @@ describe("POST /api/track-order", () => {
       if (sql.includes("FROM settings")) throw new Error("no such table: settings");
       return original(sql);
     })(env.DB.prepare.bind(env.DB));
-    const res = await onRequestPost({ request: request({ phone: "9876543210" }), env });
+    const res = await onRequestPost({ request: request({ phone: "9876543210", order_id: "AVN-10001" }), env });
     expect(res.status).toBe(200);
   });
 
   it("lists every order placed with the number, newest first", async () => {
     const { env } = makeEnv({ orders: [baseOrder, secondOrder] });
-    const res = await onRequestPost({ request: request({ phone: "9876543210" }), env });
+    const res = await onRequestPost({ request: request({ phone: "9876543210", order_id: "AVN-10001" }), env });
     const body = await res.json();
     expect(body.count).toBe(2);
     expect(body.orders.map((o) => o.order_id)).toEqual(["AVN-10001", "AVN-10002"]);
@@ -132,7 +141,7 @@ describe("POST /api/track-order", () => {
 
   it("falls back to order status when the Ekart tables are missing", async () => {
     const { env } = makeEnv({ orders: [{ ...baseOrder, shipment_id: null, awb: "", latest_status: "", shipment_status: "" }], noShipmentTable: true });
-    const res = await onRequestPost({ request: request({ phone: "9876543210" }), env });
+    const res = await onRequestPost({ request: request({ phone: "9876543210", order_id: "AVN-10001" }), env });
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.count).toBe(1);
@@ -150,7 +159,7 @@ describe("POST /api/track-order", () => {
 
   it("returns a friendly 404 when the number has no orders", async () => {
     const { env } = makeEnv({ orders: [] });
-    const res = await onRequestPost({ request: request({ phone: "9999999999" }), env });
+    const res = await onRequestPost({ request: request({ phone: "9999999999", order_id: "AVN-99999" }), env });
     expect(res.status).toBe(404);
     const body = await res.json();
     expect(body.ok).toBe(false);
@@ -164,7 +173,7 @@ describe("POST /api/track-order", () => {
         { shipment_id: 7, mapped_status: "in_transit", status: "in_transit", event_at: "2026-10-22T09:00:00.000Z", location: "Delhi" },
       ],
     });
-    const res = await onRequestPost({ request: request({ phone: "9876543210" }), env });
+    const res = await onRequestPost({ request: request({ phone: "9876543210", order_id: "AVN-10001" }), env });
     const body = await res.json();
     expect(body.orders[0].shipment.timeline).toHaveLength(1);
     expect(body.orders[0].shipment.timeline[0].location).toBe("Delhi");
@@ -176,7 +185,7 @@ describe("POST /api/track-order", () => {
 
   it("keeps the legacy single-order fields for older cached pages", async () => {
     const { env } = makeEnv({ orders: [baseOrder] });
-    const res = await onRequestPost({ request: request({ phone: "9876543210" }), env });
+    const res = await onRequestPost({ request: request({ phone: "9876543210", order_id: "AVN-10001" }), env });
     const body = await res.json();
     expect(body.order.order_id).toBe("AVN-10001");
     expect(body.order.order_status_label).toBe("Order placed (COD)");

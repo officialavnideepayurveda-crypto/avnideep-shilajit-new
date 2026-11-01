@@ -119,19 +119,19 @@
     <section class="trk-panel">
       <span class="trk-kicker">Order tracking</span>
       <h1>Where is my order?</h1>
-      <p class="lead">Enter the mobile number you used at checkout. We will show every order placed with that number and the latest despatch updates. Order ID or AWB is optional.</p>
+      <p class="lead">Enter the mobile number you used at checkout together with your order ID. That pair is the only way we can open your order, so nobody can look up orders using a phone number alone.</p>
       <form id="trackForm" autocomplete="on">
         <div class="trk-field">
           <label for="phone">Mobile number used at checkout</label>
           <input id="phone" name="phone" type="tel" inputmode="numeric" placeholder="10-digit mobile number" maxlength="15" autocomplete="tel" pattern="[0-9 +-]{10,15}" required>
           <div class="hint">We match the last 10 digits, so +91 or spaces are fine.</div>
         </div>
-        <details class="trk-details" id="optionalFields">
-          <summary>Have your order ID or AWB? (optional)</summary>
+        <details class="trk-details" id="optionalFields" open>
+          <summary>Order ID / AWB (required)</summary>
           <div class="trk-field">
             <label for="orderId">Order ID</label>
-            <input id="orderId" name="order_id" type="text" placeholder="AVN..." maxlength="80" autocomplete="off">
-            <div class="hint">Example: AVN followed by your order number.</div>
+            <input id="orderId" name="order_id" type="text" placeholder="AVN..." maxlength="80" autocomplete="off" required>
+            <div class="hint">You received it on the thank-you page, SMS/WhatsApp or your order email.</div>
           </div>
           <div class="trk-field">
             <label for="awb">AWB / Tracking ID</label>
@@ -146,7 +146,7 @@
 
     <section class="trk-panel trk-result" id="trackResult" aria-live="polite">
       <div class="trk-empty" id="trackEmpty">
-        Enter your mobile number to see your orders, their status and the courier timeline here. We never show your full address or phone number on this page.
+        Enter your mobile number and order ID to see the status and courier timeline here. We never show your full address or phone number on this page.
       </div>
     </section>
   </div>

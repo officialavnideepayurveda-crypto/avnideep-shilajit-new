@@ -7,9 +7,10 @@
 // Perf: leads table bootstrap runs once per isolate, not on every lead call
 let leadsSchemaBootstrapped = false;
 
-const corsHeaders = (env) => ({
-  "Access-Control-Allow-Origin": env.ALLOWED_ORIGIN || "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
+import { corsHeaders as originCors } from "./_lib/cors.js";
+
+const corsHeaders = (request, env) => ({
+  ...originCors(request, env, "POST, OPTIONS"),
   "Access-Control-Allow-Headers": "Content-Type",
   "Access-Control-Max-Age": "86400",
   "Content-Type": "application/json; charset=utf-8",
@@ -24,7 +25,7 @@ export async function onRequestPost({ request, env }) {
     if (!/^[6-9]\d{9}$/.test(phone)) {
       return new Response(
         JSON.stringify({ ok: false, error: "Valid phone number required" }),
-        { status: 400, headers: corsHeaders(env) }
+        { status: 400, headers: corsHeaders(request, env) }
       );
     }
 
@@ -76,34 +77,32 @@ export async function onRequestPost({ request, env }) {
     // ok:true even when D1 was missing or the write threw.
     if (d1Result.ok !== true) {
       return new Response(
+        // Never echo the internal error text: it exposes D1/schema details.
         JSON.stringify({
           ok: false,
-          error: d1Result.skipped ? "Lead storage unavailable" : "Could not save lead",
-          detail: d1Result.error
+          error: d1Result.skipped ? "Lead storage unavailable" : "Could not save lead"
         }),
-        { status: 503, headers: corsHeaders(env) }
+        { status: 503, headers: corsHeaders(request, env) }
       );
     }
 
     return new Response(
       JSON.stringify({ ok: true, message: "Lead saved", lead: { name, phone, source } }),
-      { status: 200, headers: corsHeaders(env) }
+      { status: 200, headers: corsHeaders(request, env) }
     );
   } catch (error) {
     return new Response(
-      JSON.stringify({ ok: false, error: error.message || "Server error" }),
-      { status: 500, headers: corsHeaders(env) }
+      JSON.stringify({ ok: false, error: "Server error" }),
+      { status: 500, headers: corsHeaders(request, env) }
     );
   }
 }
 
-export async function onRequestOptions() {
+export async function onRequestOptions({ request, env }) {
   return new Response(null, {
     status: 204,
     headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
+      ...corsHeaders(request, env),
       "Access-Control-Max-Age": "86400",
     },
   });

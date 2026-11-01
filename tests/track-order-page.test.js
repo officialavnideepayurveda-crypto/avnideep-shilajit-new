@@ -36,6 +36,8 @@ function boot({ response, query = '' } = {}) {
 
 function submit(w, phone) {
   w.document.getElementById('phone').value = phone;
+  var oid = w.document.getElementById('orderId');
+  if (oid) oid.value = 'AVN-10001';
   w.document.getElementById('trackForm').dispatchEvent(new w.Event('submit', { bubbles: true, cancelable: true }));
 }
 
@@ -74,7 +76,7 @@ const orderWithoutShipment = {
 };
 
 describe('track-order page', () => {
-  it('tracks with the mobile number alone and sends no order ID', async () => {
+  it('tracks with the mobile number plus the order ID it sent', async () => {
     const { win, sent } = boot({
       response: { ok: true, json: async () => ({ ok: true, count: 1, orders: [orderWithShipment] }) },
     });
@@ -83,7 +85,7 @@ describe('track-order page', () => {
 
     expect(sent).toHaveLength(1);
     expect(sent[0].url).toContain('/api/track-order');
-    expect(sent[0].body).toEqual({ phone: '9876543210', order_id: '', awb: '' });
+    expect(sent[0].body).toEqual({ phone: '9876543210', order_id: 'AVN-10001', awb: '' });
 
     const result = win.document.getElementById('trackResult');
     expect(result.querySelectorAll('.trk-order')).toHaveLength(1);
